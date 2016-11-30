@@ -43,10 +43,10 @@ public class AutoBlue extends LinearOpMode {
     public static final String COLORLEFTBOTTOMNAME = "cb";//Port 3
     public static final String COLORRIGHTBOTTOMNAME = "cb2"; //Port 4
 
-    public static final double LEFT_SERVO_OFF_VALUE = .3;
+    public static final double LEFT_SERVO_OFF_VALUE = .25;
     public static final double LEFT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_ON_VALUE = 1;
-    public static final double RIGHT_SERVO_OFF_VALUE = .3;
+    public static final double RIGHT_SERVO_OFF_VALUE = .25;
 
     private double ticksPerRev = 7;
     private double gearBoxOne = 40.0;
@@ -113,20 +113,18 @@ public class AutoBlue extends LinearOpMode {
             new state(states.Move,          55,      - 0.40),
 
             new state(states.LineSearch,    2,       - 0.13),
-            new state(states.StrafeToWall,  10,        0.10),
+            new state(states.StrafeToWall,  12,        0.10),
             new state(states.LineSearch,    2,         0.13),
-            new state(states.StrafeToWall,  7,         0.10),
+//            new state(states.StrafeToWall,  7,         0.10),
             new state(states.PressBeacon,   team.Blue      ),
 
             new state(states.StrafeRight,   1.00,      0.25),
             new state(states.Move,          125,       0.50),
 
             new state(states.LineSearch,    2,         0.13),
-            new state(states.StrafeToWall,  8,         0.10),
+            new state(states.StrafeToWall,  12,        0.10),
             new state(states.LineSearch,    2,       - 0.13),
-//          new state(states.StrafeToWall,  7,         0.10),
             new state(states.PressBeacon,   team.Blue      ),
-
 
             new state(states.StrafeRight,   1.0,        1.0),
             new state(states.TurnRight,     175,        1.0),
@@ -155,12 +153,14 @@ public class AutoBlue extends LinearOpMode {
     double circleFrac, movement, changeFactor, modified, currentDistance;
     team colorReading = team.NotSensed;
     int redReading, blueReading;
+    boolean movedServo = false;
 
     public int stateNumber = -1;
     public state updateState(){
         stateNumber++;
         colorReading = team.NotSensed;
         initialized = false;
+        movedServo = false;
         time = 0;
         if(stateNumber == stateOrder.length){
             return new state(states.Finished);
@@ -207,27 +207,11 @@ public class AutoBlue extends LinearOpMode {
         ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
         gyroSensor = hardwareMap.get(ModernRoboticsI2cGyro.class, GYRONAME);
 
-        /*
-        gyroSensor.calibrate();
-        while (gyroSensor.isCalibrating()) {
-            telemetry.addData("Gyro", "Calibrating...");
-            telemetry.update();
-        }
-        telemetry.addData("Gyro", "Calibrated!");
-        */
-
         telemetry.addData("Raw Ultrasonic", range.rawUltrasonic());
         telemetry.addData("Color Side Red", colorSensorOnSide.red());
         telemetry.addData("Color Left Alpha", colorSensorLeftBottom.alpha());
 
 
-/*
-        String temp = leftFrontWheel.getController().getDeviceName();
-        voltage_sensor = hardwareMap.voltageSensor.get(temp);
-        if(voltage_sensor.getVoltage() < 12){
-            telemetry.addLine("Battery Voltage is Critically Low!!");
-        }
-*/
         telemetry.update();
         CurrentState = updateState();
         colorSensorLeftBottom.enableLed(true);
@@ -282,6 +266,7 @@ public class AutoBlue extends LinearOpMode {
                         leftBackWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                         CurrentState = updateState();
                     }
+
                     break;
                 case TurnLeft:
                     degrees = CurrentState.getSensorValue();
@@ -493,21 +478,31 @@ public class AutoBlue extends LinearOpMode {
 
                     if(colorReading == Alliance)
                     {
-                        dim.setLED(0, false); //Blue
-                        dim.setLED(1, true); //Red
-                        leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
-                        if(leftButtonPusher.getPosition() == LEFT_SERVO_ON_VALUE){
+                        dim.setLED(0, true); //Red
+                        dim.setLED(1, false); //Blue
+                        if(!movedServo){
+                            leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
+                            movedServo = true;
+                        }
+                        if(time > 1000){
                             leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
-                            CurrentState = updateState();
+                            if(time > 1500){
+                                CurrentState = updateState();
+
+                            }
                         }
                         //The left servo is below the voltage_sensor
                     } else {
-                        dim.setLED(0, true); //Blue
-                        dim.setLED(1, false); //Red
-                        rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
-                        if(rightButtonPusher.getPosition() == RIGHT_SERVO_ON_VALUE){
+                        dim.setLED(0, false); //Red
+                        dim.setLED(1, true); //Blue
+                        if(!movedServo) {
+                            rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
+                            movedServo = true;
+                        }
+                        if(time > 1000){
                             rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
-                            CurrentState = updateState();
+                            if(time > 1500)
+                                CurrentState = updateState();
                         }
                     }
                     break;

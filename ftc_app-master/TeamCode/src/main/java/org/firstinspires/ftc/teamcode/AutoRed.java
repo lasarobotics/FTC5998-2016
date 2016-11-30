@@ -43,10 +43,10 @@ public class AutoRed extends LinearOpMode {
     public static final String COLORLEFTBOTTOMNAME = "cb";//Port 3
     public static final String COLORRIGHTBOTTOMNAME = "cb2"; //Port 4
 
-    public static final double LEFT_SERVO_OFF_VALUE = .3;
+    public static final double LEFT_SERVO_OFF_VALUE = .20;
     public static final double LEFT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_ON_VALUE = 1;
-    public static final double RIGHT_SERVO_OFF_VALUE = .3;
+    public static final double RIGHT_SERVO_OFF_VALUE = .20;
 
     private double ticksPerRev = 7;
     private double gearBoxOne = 40.0;
@@ -115,21 +115,21 @@ public class AutoRed extends LinearOpMode {
             new state(states.Move,          75,         .45),
 
             new state(states.LineSearch,    2,          .13),
-            new state(states.StrafeToWall,  9,          .10),
+            new state(states.StrafeToWall,  12,         .10),
             new state(states.LineSearch,    2,        - .13),
             new state(states.PressBeacon,   team.Red       ),
 
-            new state(states.StrafeLeft,    0.2,        .25),
+            new state(states.StrafeRight,   0.2,        .35),
             new state(states.Move,          125,      - .50),
 
             new state(states.LineSearch,    2,        - .13),
-            new state(states.StrafeToWall,  9,          .10),
+            new state(states.StrafeToWall,  12,         .10),
             new state(states.LineSearch,    2,          .13),
             new state(states.PressBeacon,   team.Red       ),
 
             new state(states.StrafeRight,   1.0,        1.0),
             new state(states.TurnRight,     45,         1.0),
-            new state(states.Move,          125,        1.0),
+            new state(states.Move,          100,        1.0),
             new state(states.StrafeRight,   0.75,       1.0),
     };
 
@@ -149,7 +149,7 @@ public class AutoRed extends LinearOpMode {
     state CurrentState, PreviousState;
     long lastTime;
     long time;
-    boolean initialized = false;
+    boolean initialized = false, movedServo = false;
     double circleFrac, movement, changeFactor, modified, currentDistance;
     team colorReading = team.NotSensed;
     int redReading, blueReading;
@@ -160,6 +160,7 @@ public class AutoRed extends LinearOpMode {
         colorReading = team.NotSensed;
         initialized = false;
         time = 0;
+        movedServo = false;
         if(stateNumber == stateOrder.length){
             return new state(states.Finished);
         }
@@ -491,21 +492,31 @@ public class AutoRed extends LinearOpMode {
 
                     if(colorReading == Alliance)
                     {
-                        dim.setLED(0, false); //Blue
-                        dim.setLED(1, true); //Red
-                        leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
-                        if(leftButtonPusher.getPosition() == LEFT_SERVO_ON_VALUE){
+                        dim.setLED(0, true); //Red
+                        dim.setLED(1, false); //Blue
+                        if(!movedServo){
+                            leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
+                            movedServo = true;
+                        }
+                        if(time > 1000){
                             leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
-                            CurrentState = updateState();
+                            if(time > 1500){
+                                CurrentState = updateState();
+
+                            }
                         }
                         //The left servo is below the voltage_sensor
                     } else {
-                        dim.setLED(0, true); //Blue
-                        dim.setLED(1, false); //Red
-                        rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
-                        if(rightButtonPusher.getPosition() == RIGHT_SERVO_ON_VALUE){
+                        dim.setLED(0, false); //Red
+                        dim.setLED(1, true); //Blue
+                        if(!movedServo) {
+                            rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
+                            movedServo = true;
+                        }
+                        if(time > 1000){
                             rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
-                            CurrentState = updateState();
+                            if(time > 1500)
+                                CurrentState = updateState();
                         }
                     }
                     break;
