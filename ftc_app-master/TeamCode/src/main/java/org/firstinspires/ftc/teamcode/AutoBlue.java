@@ -106,31 +106,31 @@ public class AutoBlue extends LinearOpMode {
     //Editing this array would change how to auto runs, in it's entirety. If we could have a GUI to change these values from the phone, we could basically do doodle.
     state[] stateOrder = new state[]{
             //              State       Sensor/Distance  Power
-            new state(states.Move,          105,      - 1.0),
-            new state(states.TurnRight,     45,         1.0),
-            new state(states.Move,          245,     -  1.0),
-            new state(states.TurnLeft,      25,         1.0),
-            new state(states.Move,          55,      - 0.40),
+            new state(states.Move,          110,     - 0.50),
+            new state(states.TurnRight,     45,        0.65),
+            new state(states.Move,          280,     -  0.9),
+            new state(states.TurnLeft,      15,        0.65),
+            new state(states.Move,          30,      - 0.55),
 
-            new state(states.LineSearch,    2,       - 0.13),
-            new state(states.StrafeToWall,  12,        0.10),
-            new state(states.LineSearch,    2,         0.13),
-//            new state(states.StrafeToWall,  7,         0.10),
+            new state(states.LineSearch,    2,       - 0.10),
+            new state(states.StrafeToWall,  9,         0.10),
+            new state(states.LineSearch,    2,         0.10),
             new state(states.PressBeacon,   team.Blue      ),
 
-            new state(states.StrafeRight,   1.00,      0.25),
-            new state(states.Move,          125,       0.50),
+            new state(states.StrafeRight,   0.35,      0.25),
+            new state(states.Move,          125,       0.60),
 
-            new state(states.LineSearch,    2,         0.13),
-            new state(states.StrafeToWall,  12,        0.10),
-            new state(states.LineSearch,    2,       - 0.13),
+            new state(states.LineSearch,    2,         0.10),
+            new state(states.StrafeToWall,  9,         0.10),
+            new state(states.LineSearch,    2,       - 0.10),
             new state(states.PressBeacon,   team.Blue      ),
 
             new state(states.StrafeRight,   1.0,        1.0),
-            new state(states.TurnRight,     175,        1.0),
-            new state(states.Move,          45,         1.0),
-            new state(states.Shoot                         ),
-            new state(states.Move,          50,         1.0),
+            new state(states.TurnRight,     135,        0.75),
+
+            new state(states.Move,          65,       0.60),
+            new state(states.Shoot),
+            new state(states.Move,          60,       0.60)
     };
 
     //NotSensed is for the Color Sensor while we are pushing the beacon.
@@ -528,10 +528,9 @@ public class AutoBlue extends LinearOpMode {
             telemetry.addData("Side Color", colorReading);
             telemetry.addData("G", gyroSensor.getHeading());
             telemetry.update();
-            while(1000*1000 > SystemClock.elapsedRealtimeNanos() - lastTime){
-
-            } //guarantees a loop speed of 1000 milliseconds.
+            while(1000*1000 > SystemClock.elapsedRealtimeNanos() - lastTime){ } //guarantees a loop speed of 1000 milliseconds.
             lastTime = SystemClock.elapsedRealtimeNanos();
+            idle();
         }
         dim.setLED(0, false);
         dim.setLED(1, false);

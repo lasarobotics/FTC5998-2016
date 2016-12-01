@@ -263,7 +263,7 @@ public class TeleOpFinal extends OpMode {
          */
 
         if(RECENT_X_BUTTON && !gamepad2.x){
-            RIGHTSERVOSTATE = (RIGHTSERVOSTATE == SERVOSTATE.OFF ? SERVOSTATE.ON : SERVOSTATE.OFF);
+            LEFTSERVOSTATE = (LEFTSERVOSTATE == SERVOSTATE.OFF ? SERVOSTATE.ON : SERVOSTATE.OFF);
         }
         switch (RIGHTSERVOSTATE){
             case ON:
@@ -275,7 +275,7 @@ public class TeleOpFinal extends OpMode {
         RECENT_X_BUTTON = gamepad2.x;
 
         if(RECENT_B_BUTTON && !gamepad2.b){
-            LEFTSERVOSTATE = (LEFTSERVOSTATE == SERVOSTATE.OFF ? SERVOSTATE.ON : SERVOSTATE.OFF);
+            RIGHTSERVOSTATE = (RIGHTSERVOSTATE== SERVOSTATE.OFF ? SERVOSTATE.ON : SERVOSTATE.OFF);
         }
         switch (LEFTSERVOSTATE){
             case ON:
