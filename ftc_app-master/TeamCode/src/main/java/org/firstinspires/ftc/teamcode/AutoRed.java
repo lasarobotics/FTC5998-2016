@@ -106,33 +106,31 @@ public class AutoRed extends LinearOpMode {
     //Editing this array would change how to auto runs, in it's entirety. If we could have a GUI to change these values from the phone, we could basically do doodle.
     state[] stateOrder = new state[]{
             //              State       Sensor/Distance  Power
-            new state(states.Move,          115,        0.5),
-            new state(states.Shoot                         ),
-            new state(states.Move,          15,       - 0.7),
-            new state(states.TurnLeft,      45,        0.75),
-            new state(states.Move,          230,        .70),
-            new state(states.TurnRight,     45,        0.75),
+            new state(states.Move,          105,        0.5),
+            new state(states.TurnLeft,      45,        0.65),
+            new state(states.Move,          230,       0.50),
+            new state(states.TurnRight,     45,        0.65),
             new state(states.Move,          75,         .45),
 
-            new state(states.LineSearch,    2,          .13),
-            new state(states.StrafeToWall,  8,          .10),
-            new state(states.LineSearch,    2,        - .13),
+            new state(states.LineSearch,    2,          .10),
+            new state(states.StrafeToWall,  9,          .10),
+            new state(states.LineSearch,    2,        - .10),
             new state(states.PressBeacon,   team.Red       ),
 
             new state(states.StrafeRight,   0.2,        .35),
             new state(states.Move,          125,      - .50),
 
-            new state(states.LineSearch,    2,        - .13),
-            new state(states.StrafeToWall,  8,          .10),
+            new state(states.LineSearch,    2,        - .10),
+            new state(states.StrafeToWall,  9,          .10),
+            new state(states.LineSearch,    2,          .10),
             new state(states.PressBeacon,   team.Red       ),
 
-            new state(states.StrafeRight,   1.0,        1.0),
-            new state(states.TurnRight,     45,         1.0),
-            new state(states.Move,          45,         1.0),
-            new state(states.TurnRight,     90,         1.0),
-            new state(states.Move,          150,        1.0),
-            new state(states.Move,          125,      - .50),
-    };
+            new state(states.StrafeRight,   1.5,        1.0),
+            new state(states.TurnRight,     135,       0.65),
+            new state(states.Move,          25,        0.50),
+            new state(states.Shoot                         ),
+            new state(states.Move,          75,         1.0),
+        };
 
     //NotSensed is for the Color Sensor while we are pushing the beacon.
     public enum team {

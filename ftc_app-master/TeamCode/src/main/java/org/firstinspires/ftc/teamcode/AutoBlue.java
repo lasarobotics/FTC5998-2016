@@ -108,12 +108,13 @@ public class AutoBlue extends LinearOpMode {
             //              State       Sensor/Distance  Power
             new state(states.Move,          110,     - 0.50),
             new state(states.TurnRight,     45,        0.65),
-            new state(states.Move,          280,     -  0.9),
+            new state(states.Move,          280,     -  0.7),
             new state(states.TurnLeft,      15,        0.65),
             new state(states.Move,          30,      - 0.55),
 
             new state(states.LineSearch,    2,       - 0.10),
             new state(states.StrafeToWall,  9,         0.10),
+            new state(states.StrafeLeft,    0.15,      0.25),
             new state(states.LineSearch,    2,         0.10),
             new state(states.PressBeacon,   team.Blue      ),
 
@@ -121,14 +122,14 @@ public class AutoBlue extends LinearOpMode {
             new state(states.Move,          125,       0.60),
 
             new state(states.LineSearch,    2,         0.10),
-            new state(states.StrafeToWall,  9,         0.10),
+            new state(states.StrafeToWall,  8,         0.10),
+            new state(states.StrafeLeft,    0.15,      0.25),
             new state(states.LineSearch,    2,       - 0.10),
             new state(states.PressBeacon,   team.Blue      ),
 
-            new state(states.StrafeRight,   1.0,        1.0),
-            new state(states.TurnRight,     135,        0.75),
-
-            new state(states.Move,          65,       0.60),
+            new state(states.StrafeRight,   1.25,       1.0),
+            new state(states.TurnRight,     155,       0.65),
+            new state(states.Move,          25,        0.50),
             new state(states.Shoot),
             new state(states.Move,          60,       0.60)
     };
@@ -481,11 +482,11 @@ public class AutoBlue extends LinearOpMode {
                         dim.setLED(0, true); //Red
                         dim.setLED(1, false); //Blue
                         if(!movedServo){
-                            leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
+                            rightButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
                             movedServo = true;
                         }
                         if(time > 1000){
-                            leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+                            rightButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
                             if(time > 1500){
                                 CurrentState = updateState();
 
@@ -496,11 +497,11 @@ public class AutoBlue extends LinearOpMode {
                         dim.setLED(0, false); //Red
                         dim.setLED(1, true); //Blue
                         if(!movedServo) {
-                            rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
+                            leftButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
                             movedServo = true;
                         }
                         if(time > 1000){
-                            rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+                            leftButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
                             if(time > 1500)
                                 CurrentState = updateState();
                         }
