@@ -108,12 +108,13 @@ public class AutoRed extends LinearOpMode {
             //              State       Sensor/Distance  Power
             new state(states.Move,          105,        0.5),
             new state(states.TurnLeft,      45,        0.65),
-            new state(states.Move,          230,       0.50),
+            new state(states.Move,          230,       0.65),
             new state(states.TurnRight,     45,        0.65),
-            new state(states.Move,          75,         .45),
+            new state(states.Move,          75,         .55),
 
             new state(states.LineSearch,    2,          .10),
             new state(states.StrafeToWall,  9,          .10),
+            new state(states.StrafeLeft,    0.15,      0.25),
             new state(states.LineSearch,    2,        - .10),
             new state(states.PressBeacon,   team.Red       ),
 
@@ -122,14 +123,15 @@ public class AutoRed extends LinearOpMode {
 
             new state(states.LineSearch,    2,        - .10),
             new state(states.StrafeToWall,  9,          .10),
+            new state(states.StrafeLeft,    0.15,      0.25),
             new state(states.LineSearch,    2,          .10),
             new state(states.PressBeacon,   team.Red       ),
 
-            new state(states.StrafeRight,   1.5,        1.0),
-            new state(states.TurnRight,     135,       0.65),
+            new state(states.StrafeRight,   1.25,       1.0),
+            new state(states.TurnRight,     180,       0.65),
             new state(states.Move,          25,        0.50),
             new state(states.Shoot                         ),
-            new state(states.Move,          75,         1.0),
+            new state(states.Move,          25,         1.0),
         };
 
     //NotSensed is for the Color Sensor while we are pushing the beacon.
