@@ -65,7 +65,7 @@ public class doubleFloorColor extends LinearOpMode {
 
     //Getting Beacons
     public static final double POWER7 = .25, COLOR_READING_FOR_LINE = 4; //Backwards to beacon #1
-    public static final double POWER8 = -.25; //Forwards to Beacon #2
+    public static final double POWER8 = -.25; //Forwards to pressBeacon #2
 
     //Cap Ball
     public static  final double POWER9 = .2, GYRO9 = 45; //ReOrient for Hitting Cap Ball

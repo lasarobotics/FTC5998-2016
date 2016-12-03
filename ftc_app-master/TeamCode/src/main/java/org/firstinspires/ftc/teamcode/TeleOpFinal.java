@@ -305,8 +305,8 @@ public class TeleOpFinal extends OpMode {
 
         telemetry.addData("Infeed", infeed.getPower() > .1 ? "IN" : infeed.getPower() < -.1 ? "OUT" : "OFF");
         telemetry.addData("Shooter", SHOOTERSTATUS == SHOOTERSTATE.SHOOTING ? "Shooting" : "Not Shooting");
-        telemetry.addData("Right Servo", RIGHTSERVOSTATE);
-        telemetry.addData("Left Servo", LEFTSERVOSTATE);
+        telemetry.addData("turnRight Servo", RIGHTSERVOSTATE);
+        telemetry.addData("turnLeft Servo", LEFTSERVOSTATE);
         //Ternary, basically it just outputs the Infeed states.
 
         telemetry.update();

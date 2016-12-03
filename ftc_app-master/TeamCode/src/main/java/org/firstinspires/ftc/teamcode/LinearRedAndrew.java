@@ -10,12 +10,18 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.Servo;
+import java.util.Arrays;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="LinearRed", group="Autonomous")
+/**
+ * Created by Andrew on 11/22/2016.
+ * Copyright © 2016 Andrew Gunawan
+ */
+
+@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="Andrew's Linear Red", group="Autonomous")
 @Disabled
-public class LinearRed extends LinearOpMode
+public class LinearRedAndrew extends LinearOpMode
 {
     DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed;
     Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlockLeft;
@@ -69,7 +75,20 @@ public class LinearRed extends LinearOpMode
         colorSensorLeftBottom.setI2cAddress(I2cAddr.create8bit(0x4c));
         colorSensorOnSide.setI2cAddress(I2cAddr.create8bit(0x3c));
         colorSensorRightBottom.setI2cAddress(I2cAddr.create8bit(0x2c));
+        gyroSensor = hardwareMap.get(ModernRoboticsI2cGyro.class, GYRONAME);
         dim = hardwareMap.get(DeviceInterfaceModule.class, "Device Interface Module 1");
+
+        gyroSensor.calibrate();
+
+        while (gyroSensor.isCalibrating() )
+        {
+            telemetry.addData("Gyro", "Calibrating...");
+            telemetry.update();
+        }
+        telemetry.addData("Gyro", "Calibrated");
+        telemetry.addData("raw ultrasonic", range.rawUltrasonic());
+        telemetry.update();
+
 
         leftButtonPusher.setPosition(0);
         rightButtonPusher.setPosition(0);
@@ -82,34 +101,22 @@ public class LinearRed extends LinearOpMode
 
         colorSensorLeftBottom.enableLed(true);
 
-        move(105, .5);
-        turnLeft(45, .65);
-        move(230, -.7);
-        turnRight(45, .65);
-        move(75, .55);
-
-        lineSearch(0.10);
-        strafetoWall(0.10, 9);
-        strafeLeft(0.25, 150);
-        lineSearch(-0.10);
-        pressBeacon("Red");
-
-        strafeRight(0.2, 350);
-        move(125, -.5);
-
-        lineSearch(-0.10);
-        strafetoWall(0.10, 8);
-        strafeLeft(0.25, 150);
-        lineSearch(0.10);
-        pressBeacon("Red");
-
-        strafeRight(1.0, 1250);
-        turnRight(180, .65);
-        move(25, .5);
+        move(130, .5);
         shoot();
-        move(60, .5);
-
-
+        Left(45, 1);
+        move(275, .5);
+        Right(50, 1);
+        lineSearch(.13);
+        move(2, - .3);
+        StrafetoWall(.5, 7);
+        Beacon("Red");
+        move(70, -.5);
+        lineSearch(-.13);
+        Beacon("Red");
+        Strafe("turnRight", .5, 1);
+        Right(90, 1);
+        move(77, 1);
+        Right(360, 1);
     }
 
     private double ticksPerRev = 7;
@@ -149,14 +156,6 @@ public class LinearRed extends LinearOpMode
         shoot1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         shoot2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         infeed.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-    }
-
-    public void setDrivePower(double power)
-    {
-        leftBackWheel.setPower(power);
-        leftFrontWheel.setPower(power);
-        rightBackWheel.setPower(power);
-        rightFrontWheel.setPower(power);
     }
 
     public void setStrafePower(String Direction, double Speed)
@@ -223,18 +222,17 @@ public class LinearRed extends LinearOpMode
 
     }
 
-    public void strafeLeft(double speed, long milliseconds) throws InterruptedException {
-        setStrafePower("Left", speed);
-        Thread.sleep(milliseconds);
-        setDrivePower(0);
-    }
-    public void strafeRight(double speed, long milliseconds) throws InterruptedException {
-        setStrafePower("Right", speed);
-        Thread.sleep(milliseconds);
+    public void Strafe(String Direction, double Speed, int Seconds) throws InterruptedException
+    {
+        initEncoders();
+
+        int Time = Seconds*1000;
+        setStrafePower(Direction, Speed);
+        Thread.sleep(Time);
         setDrivePower(0);
     }
 
-    public void turnLeft(double degrees, double power) throws InterruptedException{
+    public void Left(double degrees, double power) throws InterruptedException{
 
         initEncoders();
         double startTime = System.currentTimeMillis();
@@ -272,7 +270,6 @@ public class LinearRed extends LinearOpMode
             telemetry.addData("Target Heading: ", degrees);
             telemetry.addData("Current Heading: ", currentHeading);
             telemetry.update();
-            idle();
         }
 
         setDrivePower(0);
@@ -283,10 +280,7 @@ public class LinearRed extends LinearOpMode
         leftBackWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-
-
-    public void turnRight(double degrees, double power) throws InterruptedException
-    {
+    public void Right(double degrees, double power) throws InterruptedException {
         initEncoders();
         double startTime = System.currentTimeMillis();
 
@@ -323,7 +317,6 @@ public class LinearRed extends LinearOpMode
             telemetry.addData("Target Heading: ", degrees);
             telemetry.addData("Current Heading: ", currentHeading);
             telemetry.update();
-            idle();
         }
 
         setDrivePower(0);
@@ -338,8 +331,7 @@ public class LinearRed extends LinearOpMode
     }
 
 
-    public int getHeading()
-    {
+    public int getHeading() {
 
         int currentHeading = gyroSensor.getHeading();
 
@@ -352,8 +344,7 @@ public class LinearRed extends LinearOpMode
         return output;
     }
 
-    public void checkDegrees(double target, double power) throws InterruptedException
-    {
+    public void checkDegrees(double target, double power) throws InterruptedException {
         double threshold = 0;
 
         while ((getHeading() <= target - threshold || getHeading() >= target + threshold) && opModeIsActive())
@@ -362,7 +353,7 @@ public class LinearRed extends LinearOpMode
             if (getHeading() <= target - threshold) {
 
                 double degreeChange = Math.abs(getHeading()) - target;
-                turnRight(degreeChange, power);
+                Right(degreeChange, power);
 
                 telemetry.addData("Degree change", degreeChange);
                 telemetry.addData("Current Heading", getHeading());
@@ -371,18 +362,16 @@ public class LinearRed extends LinearOpMode
             } else if (getHeading() >= target + threshold) {
 
                 double degreeChange = getHeading() - target;
-                turnLeft(degreeChange, power);
+                Left(degreeChange, power);
 
                 telemetry.addData("Degree change", degreeChange);
                 telemetry.addData("Current Heading", getHeading());
                 telemetry.update();
             }
-            idle();
         }
     }
 
-    public void lineSearch(double Speed) throws InterruptedException
-    {
+    public void lineSearch(double Speed) throws InterruptedException {
         initEncoders();
 
         String color = "";
@@ -408,13 +397,12 @@ public class LinearRed extends LinearOpMode
             telemetry.addData("Blue: ", blue);
             telemetry.addData("Alpha: ", alpha);
             telemetry.update();
-            idle();
         }
         colorSensorLeftBottom.enableLed(false);
 
     }
 
-    public void pressBeacon(String allianceColor) throws InterruptedException
+    public void Beacon(String allianceColor) throws InterruptedException
     {
         String Color = "";
         telemetry.addLine("Detecting pressBeacon Color ...");
@@ -442,7 +430,7 @@ public class LinearRed extends LinearOpMode
             leftButtonPusher.setPosition(1);
             while(leftButtonPusher.getPosition() != 1 && opModeIsActive())
             {
-                idle();
+
             }
             leftButtonPusher.setPosition(0);
         }
@@ -451,7 +439,7 @@ public class LinearRed extends LinearOpMode
             rightButtonPusher.setPosition(1);
             while(leftButtonPusher.getPosition() != 1 && opModeIsActive())
             {
-                idle();
+
             }
             rightButtonPusher.setPosition(0);
         }
@@ -478,7 +466,7 @@ public class LinearRed extends LinearOpMode
         shoot2.setPower(0);
     }
 
-    public void strafetoWall(double Speed, double Distance) throws InterruptedException
+    public void StrafetoWall(double Speed, double Distance) throws InterruptedException
     {
         initEncoders();
 
@@ -489,12 +477,18 @@ public class LinearRed extends LinearOpMode
             telemetry.addData("Target Distance: ", Distance);
             telemetry.addData("Current Distance", range.getDistance(DistanceUnit.CM));
             telemetry.update();
-            idle();
         }
 
         setDrivePower(0);
     }
 
+    public void setDrivePower(double power){
+        leftFrontWheel.setPower(power);
+        leftBackWheel.setPower(power);
+        rightFrontWheel.setPower(power);
+        rightBackWheel.setPower(power);
+
+    }
 
 
 

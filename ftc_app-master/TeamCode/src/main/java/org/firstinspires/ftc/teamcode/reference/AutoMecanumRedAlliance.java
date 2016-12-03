@@ -132,11 +132,11 @@ public class AutoMecanumRedAlliance extends LinearOpMode {
                     |___/
         */
         resetEncs(leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
-        telemetry.addData("Left", leftFrontWheelEncoderPosition);
+        telemetry.addData("turnLeft", leftFrontWheelEncoderPosition);
         telemetry.update();
         drive(-.85, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
         while(Math.abs((leftFrontWheel.getCurrentPosition()-leftFrontWheelEncoderPosition)) < DISTANCEBEFORESHOT) {
-            telemetry.addData("Left Encoder", leftFrontWheel.getCurrentPosition() - leftFrontWheelEncoderPosition);
+            telemetry.addData("turnLeft Encoder", leftFrontWheel.getCurrentPosition() - leftFrontWheelEncoderPosition);
             telemetry.update();
         }
         drive(0, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
@@ -167,7 +167,7 @@ public class AutoMecanumRedAlliance extends LinearOpMode {
         */
         drive(.45, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
         while(Math.abs((leftFrontWheel.getCurrentPosition()-leftFrontWheelEncoderPosition)) > DISTANCEBEFORESHOT + DISTANCEBACKPOSTSHOT) {
-            telemetry.addData("Left Encoder", leftFrontWheel.getCurrentPosition() - leftFrontWheelEncoderPosition);
+            telemetry.addData("turnLeft Encoder", leftFrontWheel.getCurrentPosition() - leftFrontWheelEncoderPosition);
             telemetry.update();
         }
         drive(0, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
@@ -229,7 +229,7 @@ public class AutoMecanumRedAlliance extends LinearOpMode {
 /*        leftFrontWheelEncoderPosition = leftFrontWheel.getCurrentPosition();
         drive(.3*FORWARDSFACTOR, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
         while(Math.abs((leftFrontWheel.getCurrentPosition()-leftFrontWheelEncoderPosition)) < 500) {
-            telemetry.addData("Left", leftFrontWheel.getCurrentPosition() - leftFrontWheelEncoderPosition);
+            telemetry.addData("turnLeft", leftFrontWheel.getCurrentPosition() - leftFrontWheelEncoderPosition);
             telemetry.update();
         }
         drive(0, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
@@ -296,7 +296,7 @@ public class AutoMecanumRedAlliance extends LinearOpMode {
          | |
          |_|
          */
-        telemetry.addData("Red Value, First Beacon", colorSensorOnSide.red());
+        telemetry.addData("Red Value, First pressBeacon", colorSensorOnSide.red());
         if(colorSensorOnSide.red() < colorSensorOnSide.blue()){
             rightButtonPusher.setPosition(RIGHTSERVOMAXVALUE);
             leftButtonPusher.setPosition(LEFTSERVOMAXVALUE);
@@ -342,7 +342,7 @@ public class AutoMecanumRedAlliance extends LinearOpMode {
          | |
          |_|
          */
-        telemetry.addData("Red Value, Second Beacon", colorSensorOnSide.red());
+        telemetry.addData("Red Value, Second pressBeacon", colorSensorOnSide.red());
         if(colorSensorOnSide.red() < colorSensorOnSide.blue()){
             rightButtonPusher.setPosition(RIGHTSERVOMAXVALUE);
             leftButtonPusher.setPosition(LEFTSERVOMAXVALUE); //make sure it doesn't press the wrong button

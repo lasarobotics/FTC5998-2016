@@ -52,7 +52,7 @@ import org.firstinspires.ftc.teamcode.navX.ftc.AHRS;
 import java.util.Arrays;
 
 @Disabled
-@Autonomous(name="Strafes Left", group="Autonomous")
+@Autonomous(name="Strafes turnLeft", group="Autonomous")
 public class AutoMecanumDummy extends LinearOpMode {
 
     //Runs op mode
@@ -87,11 +87,11 @@ public class AutoMecanumDummy extends LinearOpMode {
         waitForStart();
 
         resetEncs(left1, right1, left2, right2);
-        telemetry.addData("Left", encPos);
+        telemetry.addData("turnLeft", encPos);
         telemetry.update();
         drive(-.65, left1, right1, left2, right2);
         while(Math.abs((left1.getCurrentPosition()-encPos)) < 3000) {
-            telemetry.addData("Left", left1.getCurrentPosition() - encPos);
+            telemetry.addData("turnLeft", left1.getCurrentPosition() - encPos);
             telemetry.update();
         }
         drive(0, left1, right1, left2, right2);
@@ -110,7 +110,7 @@ public class AutoMecanumDummy extends LinearOpMode {
         encPos = left1.getCurrentPosition();
         drive(.3, left1, right1, left2, right2);
         while(Math.abs((left1.getCurrentPosition()-encPos)) < 300) {
-            telemetry.addData("Left", left1.getCurrentPosition() - encPos);
+            telemetry.addData("turnLeft", left1.getCurrentPosition() - encPos);
             telemetry.update();
         }
 

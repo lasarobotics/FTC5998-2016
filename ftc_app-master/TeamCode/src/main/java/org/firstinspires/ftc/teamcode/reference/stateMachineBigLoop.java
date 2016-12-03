@@ -90,7 +90,7 @@ public class stateMachineBigLoop extends LinearOpMode {
     //Getting Beacons
     public static final double POWER7 = .15, COLOR_READING_FOR_LINE = 3; //Backwards to beacon #1
     public static final double POWER_HANDLE_COLOR = .15;
-    public static final double POWER8 = -.2, DISTANCE8 = 250; //Forwards to Beacon #2
+    public static final double POWER8 = -.2, DISTANCE8 = 250; //Forwards to pressBeacon #2
 
     //Cap Ball
     public static  final double POWER9 = .2, GYRO9 = 45; //ReOrient for Hitting Cap Ball
@@ -157,8 +157,8 @@ public class stateMachineBigLoop extends LinearOpMode {
 
         telemetry.addData("Raw Ultrasonic", range.rawUltrasonic());
         telemetry.addData("Color Side Red", colorSensorOnSide.red());
-        telemetry.addData("Color Left Alpha", colorSensorLeftBottom.alpha());
-        telemetry.addData("Color Right Alpha", colorSensorRightBottom.alpha());
+        telemetry.addData("Color turnLeft Alpha", colorSensorLeftBottom.alpha());
+        telemetry.addData("Color turnRight Alpha", colorSensorRightBottom.alpha());
         telemetry.update();
         CurrentState = state.ForwardsToShoot;
 
@@ -454,8 +454,8 @@ public class stateMachineBigLoop extends LinearOpMode {
                     }
 
                     telemetry.addData("Recent State", PreviousState);
-                    telemetry.addData("Left Bottom", colorSensorLeftBottom.alpha());
-                    telemetry.addData("Right Bottom", colorSensorRightBottom.alpha());
+                    telemetry.addData("turnLeft Bottom", colorSensorLeftBottom.alpha());
+                    telemetry.addData("turnRight Bottom", colorSensorRightBottom.alpha());
                     telemetry.addData("Side Color", colorSensorOnSide.red() > 2 || colorSensorOnSide.blue() > 2
                             ? colorSensorOnSide.red() > colorSensorOnSide.blue() ? "Blue" : "Red" : "Not Sure");
                     telemetry.addData("G", gyroSensor.getHeading());
@@ -485,8 +485,8 @@ public class stateMachineBigLoop extends LinearOpMode {
             }
 
             telemetry.addData("Recent State", PreviousState);
-            telemetry.addData("Left Bottom", colorSensorLeftBottom.alpha());
-            telemetry.addData("Right Bottom", colorSensorRightBottom.alpha());
+            telemetry.addData("turnLeft Bottom", colorSensorLeftBottom.alpha());
+            telemetry.addData("turnRight Bottom", colorSensorRightBottom.alpha());
             telemetry.addData("Side Color", colorSensorOnSide.red() > 2 || colorSensorOnSide.blue() > 2
                     ? colorSensorOnSide.red() > colorSensorOnSide.blue() ? "Blue" : "Red" : "Not Sure");
             telemetry.addData("G", gyroSensor.getHeading());

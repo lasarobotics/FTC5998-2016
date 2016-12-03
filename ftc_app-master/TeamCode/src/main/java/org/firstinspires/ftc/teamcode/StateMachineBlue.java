@@ -23,8 +23,8 @@ import java.util.Arrays;
  * Created by Ethan Schaffer on 11/17/2016.
  */
 
-@Autonomous(name="AutoBlue", group="Autonomous")
-public class AutoBlue extends LinearOpMode {
+@Autonomous(name="StateBlue", group="Autonomous")
+public class StateMachineBlue extends LinearOpMode {
     public static final String LEFT1NAME = "l1"; //LX Port 2
     public static final String LEFT2NAME = "l2"; //LX Port 1
     public static final String RIGHT1NAME = "r1";//0A Port 1
@@ -106,32 +106,33 @@ public class AutoBlue extends LinearOpMode {
     //Editing this array would change how to auto runs, in it's entirety. If we could have a GUI to change these values from the phone, we could basically do doodle.
     state[] stateOrder = new state[]{
             //              State       Sensor/Distance  Power
-            new state(states.Move,          110,     - 0.50),
-            new state(states.TurnRight,     45,        0.65),
-            new state(states.Move,          280,     -  0.7),
-            new state(states.TurnLeft,      15,        0.65),
-            new state(states.Move,          30,      - 0.55),
+            new state(states.Move,          110,     - 0.45),
+            new state(states.TurnRight,     45,        0.50),
+            new state(states.Move,          280,     - 0.45),
+            new state(states.TurnLeft,      15,        0.50),
+            new state(states.Move,          15,      - 0.45),
+
+            new state(states.StrafeToWall,  17,        0.10),
 
             new state(states.LineSearch,    2,       - 0.10),
             new state(states.StrafeToWall,  9,         0.10),
-            new state(states.StrafeLeft,    0.15,      0.25),
             new state(states.LineSearch,    2,         0.10),
             new state(states.PressBeacon,   team.Blue      ),
 
-            new state(states.StrafeRight,   0.35,      0.25),
-            new state(states.Move,          125,       0.60),
+            new state(states.StrafeRight,   0.2,       0.35),
+            new state(states.Move,          125,       0.50),
 
             new state(states.LineSearch,    2,         0.10),
             new state(states.StrafeToWall,  8,         0.10),
-            new state(states.StrafeLeft,    0.15,      0.25),
+            new state(states.StrafeLeft,    0.15,      0.10),
             new state(states.LineSearch,    2,       - 0.10),
             new state(states.PressBeacon,   team.Blue      ),
 
-            new state(states.StrafeRight,   1.25,       1.0),
-            new state(states.TurnRight,     155,       0.65),
-            new state(states.Move,          25,        0.50),
-            new state(states.Shoot),
-            new state(states.Move,          60,       0.60)
+            new state(states.StrafeRight,   1.25,      1.00),
+            new state(states.TurnRight,     235,       0.65),
+            new state(states.Move,          25,        0.75),
+            new state(states.Shoot                         ),
+            new state(states.Move,          25,        1.00),
     };
 
     //NotSensed is for the Color Sensor while we are pushing the beacon.
@@ -210,7 +211,7 @@ public class AutoBlue extends LinearOpMode {
 
         telemetry.addData("Raw Ultrasonic", range.rawUltrasonic());
         telemetry.addData("Color Side Red", colorSensorOnSide.red());
-        telemetry.addData("Color Left Alpha", colorSensorLeftBottom.alpha());
+        telemetry.addData("Color turnLeft Alpha", colorSensorLeftBottom.alpha());
 
 
         telemetry.update();
@@ -391,7 +392,7 @@ public class AutoBlue extends LinearOpMode {
                     time++;
 
                     Time = Seconds*1000;
-                    setStrafePower("Left", Speed);
+                    setStrafePower("turnLeft", Speed);
                     if(time > Time){
                         setDrivePower(0);
                         CurrentState = updateState();
@@ -406,7 +407,7 @@ public class AutoBlue extends LinearOpMode {
                     time++;
 
                     Time = Seconds*1000;
-                    setStrafePower("Right", Speed);
+                    setStrafePower("turnRight", Speed);
                     if(time > Time){
                         setDrivePower(0);
                         CurrentState = updateState();
@@ -419,7 +420,7 @@ public class AutoBlue extends LinearOpMode {
                         break;
                     }
 
-                    setStrafePower("Left", Speed);
+                    setStrafePower("turnLeft", Speed);
 
                     telemetry.addData("Target Distance: ", DistanceReading);
                     telemetry.addData("Current Distance", range.getDistance(DistanceUnit.CM));
@@ -525,7 +526,7 @@ public class AutoBlue extends LinearOpMode {
             telemetry.addData("Recent State", PreviousState);
             telemetry.addData("Uptime", (totalTime/1000)+" seconds");
 
-            telemetry.addData("Left Bottom", colorSensorLeftBottom.alpha());
+            telemetry.addData("turnLeft Bottom", colorSensorLeftBottom.alpha());
             telemetry.addData("Side Color", colorReading);
             telemetry.addData("G", gyroSensor.getHeading());
             telemetry.update();
@@ -607,14 +608,14 @@ public class AutoBlue extends LinearOpMode {
     }
 
     public void setStrafePower(String Direction, double Speed) {
-        if(Direction == "Left")
+        if(Direction == "turnLeft")
         {
             rightFrontWheel.setPower(Speed);
             rightBackWheel.setPower(-Speed);
             leftFrontWheel.setPower(-Speed);
             leftBackWheel.setPower(Speed);
         }
-        if(Direction == "Right")
+        if(Direction == "turnRight")
         {
             rightFrontWheel.setPower(-Speed);
             rightBackWheel.setPower(Speed);

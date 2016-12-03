@@ -98,7 +98,7 @@ public class TestColorSensingLine extends LinearOpMode {
         drive(0, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
 
         //AT FIRST BEACON
-        telemetry.addData("Red Value, First Beacon", colorSensorOnSide.red());
+        telemetry.addData("Red Value, First pressBeacon", colorSensorOnSide.red());
         telemetry.update();
         if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
             rightButtonPusher.setPosition(LEFTSERVOMAXVALUE);
@@ -115,7 +115,7 @@ public class TestColorSensingLine extends LinearOpMode {
         }
         drive(0, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
         //AT SECOND BEACON
-        telemetry.addData("Red Value, Second Beacon", colorSensorOnSide.red());
+        telemetry.addData("Red Value, Second pressBeacon", colorSensorOnSide.red());
         telemetry.update();
         if(colorSensorOnSide.red() > 3){
             rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);

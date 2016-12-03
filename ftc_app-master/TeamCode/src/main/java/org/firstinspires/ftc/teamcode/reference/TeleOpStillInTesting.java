@@ -283,8 +283,8 @@ public class TeleOpStillInTesting extends OpMode {
 
         telemetry.addData("Infeed", infeed.getPower() > .1 ? "IN" : infeed.getPower() < -.1 ? "OUT" : "OFF");
         telemetry.addData("Shooter", SHOOTERSTATUS == SHOOTERSTATE.SHOOTING ? "Shooting" : "Not Shooting");
-        telemetry.addData("Right Servo", RIGHTSERVOSTATE == SERVOSTATE.ON ? "On" + rightButtonPusher.getPosition() : "Off" + rightButtonPusher.getPosition());
-        telemetry.addData("Left Servo", LEFTSERVOSTATE == SERVOSTATE.ON ? "On"+leftButtonPusher.getPosition() : "Off" + leftButtonPusher.getPosition());
+        telemetry.addData("turnRight Servo", RIGHTSERVOSTATE == SERVOSTATE.ON ? "On" + rightButtonPusher.getPosition() : "Off" + rightButtonPusher.getPosition());
+        telemetry.addData("turnLeft Servo", LEFTSERVOSTATE == SERVOSTATE.ON ? "On"+leftButtonPusher.getPosition() : "Off" + leftButtonPusher.getPosition());
         //Ternary, basically it just outputs the Infeed states.
 
         telemetry.update();

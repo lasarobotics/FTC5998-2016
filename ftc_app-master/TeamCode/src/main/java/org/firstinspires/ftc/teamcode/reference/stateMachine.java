@@ -72,7 +72,7 @@ public class stateMachine extends OpMode {
     //Getting Beacons
     public static final double POWER7 = .15, COLOR_READING_FOR_LINE = 4; //Backwards to beacon #1
     public static final double POWER_HANDLE_COLOR = .15;
-    public static final double POWER8 = -.2, DISTANCE8 = 250; //Forwards to Beacon #2
+    public static final double POWER8 = -.2, DISTANCE8 = 250; //Forwards to pressBeacon #2
 
     //Cap Ball
     public static  final double POWER9 = .2, GYRO9 = 45; //ReOrient for Hitting Cap Ball
@@ -371,8 +371,8 @@ public class stateMachine extends OpMode {
         telemetry.clear();
         telemetry.addData("State", CurrentState);
         telemetry.addData("Recent State", RecentState);
-        telemetry.addData("Left Bottom", colorSensorLeftBottom.alpha());
-        telemetry.addData("Right Bottom", colorSensorRightBottom.alpha());
+        telemetry.addData("turnLeft Bottom", colorSensorLeftBottom.alpha());
+        telemetry.addData("turnRight Bottom", colorSensorRightBottom.alpha());
         telemetry.addData("Side Color", colorSensorOnSide.red() > 2 || colorSensorOnSide.blue() > 2
                 ? colorSensorOnSide.red() > colorSensorOnSide.blue() ? "Blue" : "Red" : "Not Sure");
         telemetry.update();

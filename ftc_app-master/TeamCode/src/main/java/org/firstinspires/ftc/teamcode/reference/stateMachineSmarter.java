@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.reference;
 
 import android.os.SystemClock;
 
@@ -93,7 +93,7 @@ public class stateMachineSmarter extends LinearOpMode {
     //Getting Beacons
     public static final double POWER_TO_GET_TO_BEACON1 = .15;
     public static final double POWER_TO_GET_TO_BEACON2 = -POWER_TO_GET_TO_BEACON1, COLOR_READING_FOR_LINE = 3; //Backwards to beacon #1
-    public static final double POWER_BEFORE_DISTANCE_REACHED = -.4, DISTANCE_BEFORE_ENABLE_COLOR_SENSOR = 500, POWER_AFTER_DISTANCE_REACHED = -.2; //Forwards to Beacon #2
+    public static final double POWER_BEFORE_DISTANCE_REACHED = -.4, DISTANCE_BEFORE_ENABLE_COLOR_SENSOR = 500, POWER_AFTER_DISTANCE_REACHED = -.2; //Forwards to pressBeacon #2
 
     //Cap Ball
     public static final double POWER_CAP_REORIENT_FROM_BEACON2 = .2, GYRO_CAP_REORIENT_FROM_BEACON2 = 45; //ReOrient for Hitting Cap Ball
@@ -182,8 +182,8 @@ public class stateMachineSmarter extends LinearOpMode {
 
         telemetry.addData("Raw Ultrasonic", range.rawUltrasonic());
         telemetry.addData("Color Side Red", colorSensorOnSide.red());
-        telemetry.addData("Color Left Alpha", colorSensorLeftBottom.alpha());
-        telemetry.addData("Color Right Alpha", colorSensorRightBottom.alpha());
+        telemetry.addData("Color turnLeft Alpha", colorSensorLeftBottom.alpha());
+        telemetry.addData("Color turnRight Alpha", colorSensorRightBottom.alpha());
         telemetry.update();
         CurrentState = getNextState();
 
@@ -588,8 +588,8 @@ public class stateMachineSmarter extends LinearOpMode {
                     }
 
                     telemetry.addData("Recent State", PreviousState);
-                    telemetry.addData("Left Bottom", colorSensorLeftBottom.alpha());
-                    telemetry.addData("Right Bottom", colorSensorRightBottom.alpha());
+                    telemetry.addData("turnLeft Bottom", colorSensorLeftBottom.alpha());
+                    telemetry.addData("turnRight Bottom", colorSensorRightBottom.alpha());
                     telemetry.addData("Side Color", colorSensorOnSide.red() > 2 || colorSensorOnSide.blue() > 2
                             ? colorSensorOnSide.red() > colorSensorOnSide.blue() ? "Blue" : "Red" : "Not Sure");
                     telemetry.addData("G", gyroSensor.getHeading());
@@ -620,8 +620,8 @@ public class stateMachineSmarter extends LinearOpMode {
             telemetry.addData("Recent State", PreviousState);
             telemetry.addData("Uptime", (totalTime/1000)+" seconds");
 
-            telemetry.addData("Left Bottom", colorSensorLeftBottom.alpha());
-            telemetry.addData("Right Bottom", colorSensorRightBottom.alpha());
+            telemetry.addData("turnLeft Bottom", colorSensorLeftBottom.alpha());
+            telemetry.addData("turnRight Bottom", colorSensorRightBottom.alpha());
             telemetry.addData("Side Color", colorSensorOnSide.red() > 2 || colorSensorOnSide.blue() > 2
                     ? colorSensorOnSide.red() > colorSensorOnSide.blue() ? "Blue" : "Red" : "Not Sure");
             telemetry.addData("G", gyroSensor.getHeading());
