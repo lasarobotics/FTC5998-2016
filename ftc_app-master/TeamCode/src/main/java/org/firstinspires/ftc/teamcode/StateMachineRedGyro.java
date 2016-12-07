@@ -58,7 +58,7 @@ public class StateMachineRedGyro extends LinearOpMode {
     public double cmPerTick = (wheelDiameter / (ticksPerRev * gearBoxOne * gearBoxTwo * gearBoxThree)) * cmPerInch; //Allows us to drive our roobt with accuracy to the centiment
 
     public enum states {
-        Move, Shoot, TurnLeft, TurnRight, StrafeLeft, StrafeRight, StrafeToWall, LineSearch, PressBeacon, Wait5Seconds, Finished
+        Move, Shoot, TurnLeft, TurnRight, AlignToAngle, StrafeLeft, StrafeRight, StrafeToWall, LineSearch, PressBeacon, Wait5Seconds, Finished
     }
     public team Alliance = team.Red; //Sets our alliance color
 
@@ -105,42 +105,47 @@ public class StateMachineRedGyro extends LinearOpMode {
     state[] stateOrder = new state[]{
             //              State         Sensor       Power
             new state(states.Move,          125,       1.00),
-            new state(states.TurnLeft,      55,        0.35),
-            new state(states.TurnRight,     55,        0.10),
+
+//            new state(states.TurnLeft,      55,        0.35),
+//            new state(states.TurnRight,     55,        0.10),
+            new state(states.AlignToAngle, 55, 3000),
 
             new state(states.Move,          200,       1.00),
-            new state(states.TurnRight,     0,         0.15),
+            new state(states.AlignToAngle, 0, 3000),
+//            new state(states.TurnRight,     0,         0.15),
 
             new state(states.Move,          30,        1.00),
-
             new state(states.StrafeToWall,  13,        0.30),
 
-            new state(states.TurnLeft,      0,         0.05),
-            new state(states.TurnRight,     0,         0.05),
+            new state(states.AlignToAngle, 0, 3000),
+//            new state(states.TurnLeft,      0,         0.05),
+//            new state(states.TurnRight,     0,         0.05),
 
             new state(states.Move,          30,        1.00),
-
             new state(states.LineSearch,    2,         0.15),
             new state(states.StrafeToWall,  9,         0.15),
 
+            new state(states.AlignToAngle, 0, 3000),
+
             new state(states.LineSearch,    2,        -0.15),
             new state(states.PressBeacon,   team.Red       ),
-
             new state(states.StrafeRight,   0.2,       0.35),
             new state(states.Move,          125,      -0.50),
-
             new state(states.LineSearch,    2,        -0.10),
             new state(states.StrafeToWall,  9,         0.10),
 
-            new state(states.TurnLeft,      0,         0.05),
-            new state(states.TurnRight,     0,         0.05),
+            new state(states.AlignToAngle, 0, 3000),
+//            new state(states.TurnLeft,      0,         0.05),
+//            new state(states.TurnRight,     0,         0.05),
 
             new state(states.StrafeLeft,    0.075,     0.10),
             new state(states.LineSearch,    2,         0.10),
             new state(states.PressBeacon,   team.Red       ),
-
             new state(states.StrafeRight,   1.25,      1.00),
-            new state(states.TurnRight,     90,       0.65),
+
+            new state(states.AlignToAngle, 90, 3000),
+//            new state(states.TurnRight,     90,       0.65),
+
             new state(states.Move,          25,        0.75),
             new state(states.Shoot                         ),
             new state(states.Move,          25,        1.00),
@@ -242,7 +247,7 @@ public class StateMachineRedGyro extends LinearOpMode {
 
         waitForStart();
         double totalTime = 0;
-        double cm, ticks, degrees, power, Seconds, Speed, Time;
+        double cm, ticks, degrees, power, Seconds, Speed, Time, targetPosition, diffVal, gyroThreshold = 1;
         int RBPos, RFPos, LBPos, LFPos, Average;
         resetEncoder(leftFrontWheel);
         while((CurrentState.getState() != states.Finished) && (opModeIsActive()) && (totalTime < (30*1000))) {
@@ -431,6 +436,36 @@ public class StateMachineRedGyro extends LinearOpMode {
                         //If the readings are above what we want them to be, we have found the line
                         setDrivePower(0);
                         CurrentState= updateState();
+                    }
+                    break;
+                case AlignToAngle:
+                    targetPosition = CurrentState.getSensorValue();
+                    time++;
+                    diffVal = targetPosition - gyroSensor.getIntegratedZValue();
+                    if( (diffVal) > gyroThreshold ){ //gyroThreshold is currently 1
+                        //Turn Right
+                        power = Math.abs(diffVal/75);
+                        leftFrontWheel.setPower(power);
+                        leftBackWheel.setPower(power);
+                        rightFrontWheel.setPower(-power);
+                        rightBackWheel.setPower(-power);
+                    } else if(diffVal < -gyroThreshold ){
+                        //Turn Left
+                        power = Math.abs(diffVal/75);
+                        leftFrontWheel.setPower(-power);
+                        leftBackWheel.setPower(-power);
+                        rightFrontWheel.setPower(power);
+                        rightBackWheel.setPower(power);
+                    } else {
+                        stopMotors();
+                        CurrentState = updateState();
+                    }
+                    if(time > CurrentState.getPowerValue()){
+                        if( (diffVal) > gyroThreshold ) { //gyroThreshold is currently 1
+                            CurrentState = new state(states.TurnRight, diffVal, .10);
+                        } else {
+                            CurrentState = new state(states.TurnLeft, diffVal, .10);
+                        }
                     }
                     break;
                 case PressBeacon:
