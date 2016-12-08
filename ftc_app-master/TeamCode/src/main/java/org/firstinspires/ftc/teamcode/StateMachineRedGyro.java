@@ -53,8 +53,6 @@ public class StateMachineRedGyro extends LinearOpMode {
     private double wheelDiameter = 4.0 * Math.PI;
     private double cmPerInch = 2.54;
 
-    private double width = 31.75;
-
     public double cmPerTick = (wheelDiameter / (ticksPerRev * gearBoxOne * gearBoxTwo * gearBoxThree)) * cmPerInch; //Allows us to drive our roobt with accuracy to the centiment
 
     public enum states {
@@ -104,47 +102,44 @@ public class StateMachineRedGyro extends LinearOpMode {
     //Editing this array would change how to auto runs, in it's entirety. If we could have a GUI to change these values from the phone, we could basically do doodle.
     state[] stateOrder = new state[]{
             //              State         Sensor       Power
-            new state(states.Move,          125,       1.00),
+            new state(states.Move,          105,       1.00),
 
-//            new state(states.TurnLeft,      55,        0.35),
-//            new state(states.TurnRight,     55,        0.10),
-            new state(states.AlignToAngle, 55, 3000),
+            new state(states.TurnLeft,      40,        0.50),
+            new state(states.TurnLeft,      75,        0.30),
+            new state(states.TurnRight,     75,        0.10),
 
-            new state(states.Move,          200,       1.00),
-            new state(states.AlignToAngle, 0, 3000),
-//            new state(states.TurnRight,     0,         0.15),
+            new state(states.Move,          230,       1.00),
+            new state(states.TurnLeft,      0,         0.05),
+            new state(states.TurnRight,     0,         0.05),
 
-            new state(states.Move,          30,        1.00),
-            new state(states.StrafeToWall,  13,        0.30),
+            new state(states.StrafeToWall,  16,        0.30),
 
-            new state(states.AlignToAngle, 0, 3000),
-//            new state(states.TurnLeft,      0,         0.05),
-//            new state(states.TurnRight,     0,         0.05),
-
-            new state(states.Move,          30,        1.00),
             new state(states.LineSearch,    2,         0.15),
-            new state(states.StrafeToWall,  9,         0.15),
+            new state(states.StrafeToWall,  8,         0.15),
 
-            new state(states.AlignToAngle, 0, 3000),
+//            new state(states.AlignToAngle, 0, 3000),
+            new state(states.TurnLeft,      0,         0.05),
+            new state(states.TurnRight,     0,         0.05),
 
             new state(states.LineSearch,    2,        -0.15),
             new state(states.PressBeacon,   team.Red       ),
             new state(states.StrafeRight,   0.2,       0.35),
             new state(states.Move,          125,      -0.50),
             new state(states.LineSearch,    2,        -0.10),
-            new state(states.StrafeToWall,  9,         0.10),
+            new state(states.StrafeToWall,  8,         0.10),
 
-            new state(states.AlignToAngle, 0, 3000),
-//            new state(states.TurnLeft,      0,         0.05),
-//            new state(states.TurnRight,     0,         0.05),
+            new state(states.TurnLeft,      0,         0.05),
+            new state(states.TurnRight,     0,         0.05),
 
             new state(states.StrafeLeft,    0.075,     0.10),
             new state(states.LineSearch,    2,         0.10),
             new state(states.PressBeacon,   team.Red       ),
             new state(states.StrafeRight,   1.25,      1.00),
 
-            new state(states.AlignToAngle, 90, 3000),
-//            new state(states.TurnRight,     90,       0.65),
+//            new state(states.AlignToAngle, 90, 3000),
+            new state(states.TurnRight,     90,       0.65),
+            new state(states.TurnLeft,      90,        0.05),
+            new state(states.TurnRight,     90,        0.05),
 
             new state(states.Move,          25,        0.75),
             new state(states.Shoot                         ),
@@ -174,12 +169,14 @@ public class StateMachineRedGyro extends LinearOpMode {
 
     public int stateNumber = -1;
     public state updateState() throws InterruptedException {
+        stopMotors();
+        idle();
         stateNumber++;
         colorReading = team.NotSensed;
         initialized = false;
-        time = 0;
         movedServo = false;
-        Thread.sleep(5);
+        time = 0;
+        idle();
         if(stateNumber == stateOrder.length){
             return new state(states.Finished);
         }
@@ -217,13 +214,16 @@ public class StateMachineRedGyro extends LinearOpMode {
 
         gyroSensor.calibrate();
         int timer = 0;
+        int cycler = 0;
         while(gyroSensor.isCalibrating()) {
             timer++;
-            if (timer % 30 < 10) {
+            cycler++;
+            if (cycler == 1) {
                 telemetry.addData("Gyro", " is Calibrating.");
-            } else if (timer % 30 < 20){
+            } else if (cycler == 2){
                 telemetry.addData("Gyro", " is Calibrating..");
             } else {
+                cycler = 0;
                 telemetry.addData("Gyro", " is Calibrating...");
             }
             telemetry.update();
@@ -441,30 +441,55 @@ public class StateMachineRedGyro extends LinearOpMode {
                 case AlignToAngle:
                     targetPosition = CurrentState.getSensorValue();
                     time++;
-                    diffVal = targetPosition - gyroSensor.getIntegratedZValue();
-                    if( (diffVal) > gyroThreshold ){ //gyroThreshold is currently 1
-                        //Turn Right
-                        power = Math.abs(diffVal/75);
-                        leftFrontWheel.setPower(power);
-                        leftBackWheel.setPower(power);
-                        rightFrontWheel.setPower(-power);
-                        rightBackWheel.setPower(-power);
-                    } else if(diffVal < -gyroThreshold ){
-                        //Turn Left
-                        power = Math.abs(diffVal/75);
-                        leftFrontWheel.setPower(-power);
-                        leftBackWheel.setPower(-power);
-                        rightFrontWheel.setPower(power);
-                        rightBackWheel.setPower(power);
+                    String direction = "R";
+                    if(targetPosition > 0){
+                        if(gyroSensor.getIntegratedZValue() < targetPosition){
+                            direction = "L";
+                        }
+                    } else if (targetPosition < 0){
+                        if(gyroSensor.getIntegratedZValue() > targetPosition){
+                            direction = "L";
+                        }
                     } else {
-                        stopMotors();
+                        if(gyroSensor.getIntegratedZValue() < 0){
+                            direction = "L";
+                        }
+                    }
+                    if(direction == "L"){
+                        diffVal = Math.abs(targetPosition - gyroSensor.getIntegratedZValue());
+                    } else {
+                        diffVal = Math.abs(targetPosition + gyroSensor.getIntegratedZValue());
+                    }
+                    if(diffVal > 90){
+                        power = .30;
+                    } else if(diffVal > 75){
+                        power = .25;
+                    } else if(diffVal > 50){
+                        power = .20;
+                    } else if(diffVal > 25){
+                        power = .15;
+                    } else if(diffVal > gyroThreshold){
+                        power = .10;
+                    } else {
+                        power = 0;
                         CurrentState = updateState();
+                    }
+                    if(direction == "L"){
+                        leftBackWheel.setPower(-power);
+                        leftFrontWheel.setPower(-power);
+                        rightBackWheel.setPower(power);
+                        rightFrontWheel.setPower(power);
+                    } else {
+                        leftBackWheel.setPower(power);
+                        leftFrontWheel.setPower(power);
+                        rightBackWheel.setPower(-power);
+                        rightFrontWheel.setPower(-power);
                     }
                     if(time > CurrentState.getPowerValue()){
                         if( (diffVal) > gyroThreshold ) { //gyroThreshold is currently 1
-                            CurrentState = new state(states.TurnRight, diffVal, .10);
+                            CurrentState = new state(states.TurnRight, targetPosition, .10);
                         } else {
-                            CurrentState = new state(states.TurnLeft, diffVal, .10);
+                            CurrentState = new state(states.TurnLeft, targetPosition, .10);
                         }
                     }
                     break;
