@@ -126,7 +126,8 @@ public class TeleOpFinal extends OpMode {
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
         ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
-
+        shoot1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shoot2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     @Override

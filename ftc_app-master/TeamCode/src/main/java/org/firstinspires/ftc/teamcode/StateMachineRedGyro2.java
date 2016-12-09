@@ -21,8 +21,8 @@ import java.util.Arrays;
  * Created by Ethan Schaffer on 11/17/2016.
  */
 
-@Autonomous(name="StateRedGyro", group="Autonomous")
-public class StateMachineRedGyro extends LinearOpMode {
+@Autonomous(name="StateRedGyro2", group="Autonomous")
+public class StateMachineRedGyro2 extends LinearOpMode {
     public static final String LEFT1NAME = "l1"; //LX Port 2
     public static final String LEFT2NAME = "l2"; //LX Port 1
     public static final String RIGHT1NAME = "r1";//0A Port 1
@@ -52,11 +52,12 @@ public class StateMachineRedGyro extends LinearOpMode {
     private double gearBoxThree = 1.0;
     private double wheelDiameter = 4.0 * Math.PI;
     private double cmPerInch = 2.54;
+    private double width = 31.75;
 
     public double cmPerTick = (wheelDiameter / (ticksPerRev * gearBoxOne * gearBoxTwo * gearBoxThree)) * cmPerInch; //Allows us to drive our roobt with accuracy to the centiment
 
     public enum states {
-        Move, Shoot, TurnLeft, TurnRight, StrafeLeft, StrafeRight, StrafeToWall, LineSearch, PressBeacon, Wait5Seconds, Finished
+        Move, Shoot, TurnLeft, TurnRight, TurnLeftEnc, TurnRightEnc, StrafeLeft, StrafeRight, StrafeToWall, LineSearch, PressBeacon, Wait5Seconds, Finished
     }
     public team Alliance = team.Red; //Sets our alliance color
 
@@ -102,53 +103,45 @@ public class StateMachineRedGyro extends LinearOpMode {
     //Editing this array would change how to auto runs, in it's entirety. If we could have a GUI to change these values from the phone, we could basically do doodle.
     state[] stateOrder = new state[]{
             //              State         Sensor       Power
-            new state(states.Move,          105,       1.00),
+            new state(states.Move,          60,       1.00),
+            new state(states.TurnLeftEnc,   60,       0.30),
+            new state(states.Move,          230,    1.00),
 
-            new state(states.TurnRight,     65,        0.35),
-            new state(states.TurnLeft,      65,        0.10),
-            new state(states.TurnRight,     65,        0.05), //in case we overshot
+            new state(states.TurnRight,     25,       0.15),
 
-            new state(states.Move,          245,       1.00),
-            new state(states.TurnRight,     25,        0.10),
+            new state(states.StrafeToWall,  11,         0.10),
 
-            new state(states.StrafeToWall,  18,        0.30),
+            new state(states.TurnRight,     0,       0.05),
+            new state(states.TurnLeft,      0,        0.05),
 
-            new state(states.TurnRight,    15,        0.15), //in case we overshoot
-            new state(states.TurnLeft,     0,         0.05),
-            new state(states.TurnRight,     0,         0.05),
+            new state(states.LineSearch,    2,       - 0.10),
+            new state(states.LineSearch,    2,         0.10),
 
-            new state(states.Move,          30,       0.50),
+            new state(states.StrafeToWall,  8,         0.10),
 
-            new state(states.LineSearch,    2,         0.15),
-            new state(states.StrafeToWall,  8,         0.15),
-
-            new state(states.TurnLeft,     0,         0.05),
-            new state(states.TurnRight,     0,         0.05),
-
-            new state(states.LineSearch,    2,       - 0.15),
             new state(states.PressBeacon,   team.Red       ),
 
-            new state(states.StrafeRight,   0.25,       0.35), //AWAY from wall
+            new state(states.StrafeRight,   0.25,       0.75), //AWAY from wall
+
+            new state(states.Move,          125,       0.50),
 
             new state(states.TurnRight,    0,         0.05), //in case we overshoot
             new state(states.TurnLeft,     0,         0.05),
 
-            new state(states.Move,          125,     - 0.50),
-            new state(states.LineSearch,    2,       - 0.10),
+            new state(states.LineSearch,    2,         0.10),
+
             new state(states.StrafeToWall,  9,         0.10),
 
-            new state(states.StrafeLeft,    0.075,     0.10),
-            new state(states.LineSearch,    2,         0.10),
+            new state(states.LineSearch,    2,       - 0.10),
+
+            new state(states.StrafeToWall,  8,         0.10),
+
             new state(states.PressBeacon,   team.Red       ),
-            new state(states.StrafeRight,   1.25,      1.00), //Away from wall
+            new state(states.StrafeRight,   0.25,      1.00), //Away from wall
 
-            new state(states.TurnRight,     90,       0.65),
-            new state(states.TurnLeft,      90,        0.05),
-            new state(states.TurnRight,     90,        0.05),
+            new state(states.TurnLeftEnc,   45,       1.00),
 
-            new state(states.Move,          25,        0.75),
-            new state(states.Shoot                         ),
-            new state(states.Move,          25,        1.00),
+            new state(states.Move,          205,      - 0.75),
         };
 
     //NotSensed is for the Color Sensor while we are pushing the beacon.
@@ -350,6 +343,93 @@ public class StateMachineRedGyro extends LinearOpMode {
                         CurrentState = updateState();
                     }
                     break;
+                case TurnLeftEnc:
+                    degrees = CurrentState.getSensorValue();
+                    power = CurrentState.getPowerValue();
+                    if(!initEncoders()){
+                        break;
+                    }
+                    //Same conept as above
+
+                    changeFactor = 90;
+                    modified = changeFactor + degrees;
+
+                    circleFrac = modified/360;
+                    cm = width * circleFrac * Math.PI * 2;
+                    movement = cm / cmPerTick;
+                    ticks = movement/2;
+                    //Use the width of the wheel to determine a value for ticks.
+
+                    rightBackWheel.setPower(power);
+                    rightFrontWheel.setPower(power);
+                    leftBackWheel.setPower(-power);
+                    leftFrontWheel.setPower(-power);
+                    //Have the robot spin.
+
+                    RBPos = Math.abs(rightBackWheel.getCurrentPosition());
+                    RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
+                    LBPos = Math.abs(leftBackWheel.getCurrentPosition());
+                    LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
+
+                    Average = (RBPos + RFPos + LBPos + LFPos)/4;
+
+                    int currentHeading = getHeading();
+                    telemetry.addData("Target Heading: ", degrees);
+                    telemetry.addData("Current Heading: ", currentHeading);
+                    telemetry.update();
+
+                    if(Average >= ticks){
+                        setDrivePower(0);
+                        rightFrontWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        leftFrontWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        rightBackWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        leftBackWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        CurrentState = updateState();
+                    }
+                    break;
+                case TurnRightEnc:
+                    //Everything here works just like it does in TurnLeft, just spinning in the opposite direction
+                    degrees = CurrentState.getSensorValue();
+                    power = CurrentState.getPowerValue();
+                    if(!initEncoders()){
+                        break;
+                    }
+
+                    changeFactor = 90;
+                    modified = changeFactor + degrees;
+
+                    circleFrac = modified/360;
+                    cm = width * circleFrac * Math.PI * 2;
+                    movement = cm / cmPerTick;
+                    ticks = movement/2;
+
+                    leftBackWheel.setPower(power);
+                    leftFrontWheel.setPower(power);
+                    rightBackWheel.setPower(-power);
+                    rightFrontWheel.setPower(-power);
+
+                    RBPos = Math.abs(rightBackWheel.getCurrentPosition());
+                    RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
+                    LBPos = Math.abs(leftBackWheel.getCurrentPosition());
+                    LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
+
+                    Average = (RBPos + RFPos + LBPos + LFPos)/4;
+
+                    currentHeading = getHeading();
+                    telemetry.addData("Target Heading: ", degrees);
+                    telemetry.addData("Current Heading: ", currentHeading);
+                    telemetry.update();
+
+                    if(Average >= ticks){
+                        setDrivePower(0);
+                        rightFrontWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        leftFrontWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        rightBackWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        leftBackWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        CurrentState = updateState();
+                    }
+                    break;
+
                 case Shoot:
                     if(!initEncoders()){
                         break;
