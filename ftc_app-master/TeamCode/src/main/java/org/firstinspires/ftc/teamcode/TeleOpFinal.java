@@ -268,10 +268,10 @@ public class TeleOpFinal extends OpMode {
         }
         switch (RIGHTSERVOSTATE){
             case ON:
-                rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
+                leftButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
                 break;
             case OFF:
-                rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+                leftButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         }
         RECENT_X_BUTTON = gamepad2.x;
 
@@ -280,10 +280,10 @@ public class TeleOpFinal extends OpMode {
         }
         switch (LEFTSERVOSTATE){
             case ON:
-                leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
+                rightButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
                 break;
             case OFF:
-                leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+                rightButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
         }
         RECENT_B_BUTTON = gamepad2.b;
 

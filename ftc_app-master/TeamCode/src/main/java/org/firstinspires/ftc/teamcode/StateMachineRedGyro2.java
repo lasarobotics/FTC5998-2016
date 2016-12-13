@@ -99,38 +99,38 @@ public class StateMachineRedGyro2 extends LinearOpMode {
 
 
     }
-
+    double tolerance = -5;
     //Editing this array would change how to auto runs, in it's entirety. If we could have a GUI to change these values from the phone, we could basically do doodle.
     state[] stateOrder = new state[]{
             //              State         Sensor       Power
             new state(states.Move,          60,       1.00),
-            new state(states.TurnLeftEnc,   60,       0.30),
+            new state(states.TurnLeftEnc,   60,       0.25),
             new state(states.Move,          230,    1.00),
 
             new state(states.TurnRight,     25,       0.15),
 
             new state(states.StrafeToWall,  11,         0.10),
 
-            new state(states.TurnRight,     0,       0.05),
-            new state(states.TurnLeft,      0,        0.05),
+            new state(states.TurnRight,     -tolerance,       0.05),
+            new state(states.TurnLeft,      tolerance,        0.05),
 
             new state(states.LineSearch,    2,       - 0.10),
-            new state(states.LineSearch,    2,         0.10),
+//            new state(states.LineSearch,    2,         0.10),
 
-            new state(states.StrafeToWall,  8,         0.10),
+            new state(states.StrafeToWall,  9,         0.10),
 
             new state(states.PressBeacon,   team.Red       ),
 
-            new state(states.StrafeRight,   0.25,       0.75), //AWAY from wall
+            new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
 
             new state(states.Move,          125,       0.50),
 
-            new state(states.TurnRight,    0,         0.05), //in case we overshoot
-            new state(states.TurnLeft,     0,         0.05),
+            new state(states.TurnRight,    -tolerance,         0.05), //in case we overshoot
+            new state(states.TurnLeft,     tolerance,         0.05),
 
             new state(states.LineSearch,    2,         0.10),
 
-            new state(states.StrafeToWall,  9,         0.10),
+            new state(states.StrafeToWall,  11,         0.13),
 
             new state(states.LineSearch,    2,       - 0.10),
 
@@ -139,9 +139,9 @@ public class StateMachineRedGyro2 extends LinearOpMode {
             new state(states.PressBeacon,   team.Red       ),
             new state(states.StrafeRight,   0.25,      1.00), //Away from wall
 
-            new state(states.TurnLeftEnc,   45,       1.00),
+            new state(states.TurnLeftEnc,   42,       1.00),
 
-            new state(states.Move,          205,      - 0.75),
+            new state(states.Move,          225,      - 1.00),
         };
 
     //NotSensed is for the Color Sensor while we are pushing the beacon.
@@ -303,13 +303,6 @@ public class StateMachineRedGyro2 extends LinearOpMode {
                         break;
                     }
                     //Same conept as above
-
-                    rightBackWheel.setPower(power);
-                    rightFrontWheel.setPower(power);
-                    leftBackWheel.setPower(-power);
-                    leftFrontWheel.setPower(-power);
-                    //Have the robot spin.
-
                     if(gyroSensor.getIntegratedZValue() >= degrees){
                         setDrivePower(0);
                         rightFrontWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -317,7 +310,15 @@ public class StateMachineRedGyro2 extends LinearOpMode {
                         rightBackWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                         leftBackWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                         CurrentState = updateState();
+                        break;
                     }
+
+                    rightBackWheel.setPower(power);
+                    rightFrontWheel.setPower(power);
+                    leftBackWheel.setPower(-power);
+                    leftFrontWheel.setPower(-power);
+                    //Have the robot spin.
+
                     break;
                 case TurnRight:
                     //Everything here works just like it does in TurnLeft, just spinning in the opposite direction
@@ -327,13 +328,6 @@ public class StateMachineRedGyro2 extends LinearOpMode {
                         break;
                     }
                     //Same conept as above
-
-                    rightBackWheel.setPower(-power);
-                    rightFrontWheel.setPower(-power);
-                    leftBackWheel.setPower(power);
-                    leftFrontWheel.setPower(power);
-                    //Have the robot spin.
-
                     if(gyroSensor.getIntegratedZValue() <= degrees){
                         setDrivePower(0);
                         rightFrontWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -341,7 +335,15 @@ public class StateMachineRedGyro2 extends LinearOpMode {
                         rightBackWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                         leftBackWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                         CurrentState = updateState();
+                        break;
                     }
+
+                    rightBackWheel.setPower(-power);
+                    rightFrontWheel.setPower(-power);
+                    leftBackWheel.setPower(power);
+                    leftFrontWheel.setPower(power);
+                    //Have the robot spin.
+
                     break;
                 case TurnLeftEnc:
                     degrees = CurrentState.getSensorValue();
