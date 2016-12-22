@@ -59,7 +59,7 @@ public class StateMachineBlueGyro2 extends LinearOpMode {
     public enum states {
         Move, Shoot, TurnLeft, TurnRight, TurnLeftEnc, TurnRightEnc, StrafeLeft, StrafeRight, StrafeToWall, LineSearch, PressBeacon, Wait5Seconds, Finished
     }
-    public team Alliance = team.Red; //Sets our alliance color
+    public team Alliance = team.Blue; //Sets our alliance color
 
     //The state object lets us declare all of our logic above.
     public class state{
@@ -114,10 +114,13 @@ public class StateMachineBlueGyro2 extends LinearOpMode {
             new state(states.TurnLeft,      tolerance,        0.05),
             new state(states.TurnRight,     -tolerance,       0.05),
 
-            new state(states.LineSearch,    2,         0.10),
 //            new state(states.LineSearch,    2,         0.10),
 
+            new state(states.LineSearch,    2,         0.10),
+
             new state(states.StrafeToWall,  8,         0.10),
+
+            new state(states.LineSearch,    2,       - 0.10),
 
             new state(states.PressBeacon,   team.Blue       ),
 
@@ -544,7 +547,7 @@ public class StateMachineBlueGyro2 extends LinearOpMode {
                         }
                     } //We only want to do this once, because the lights flash once we trigger the beacon.
 
-                    if(colorReading == Alliance)
+                    if(colorReading == CurrentState.getAlliance())
                     {
                         dim.setLED(0, false); //Red
                         dim.setLED(1, true); //Blue

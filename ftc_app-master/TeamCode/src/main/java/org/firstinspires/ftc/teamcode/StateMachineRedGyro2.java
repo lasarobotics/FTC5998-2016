@@ -544,7 +544,7 @@ public class StateMachineRedGyro2 extends LinearOpMode {
                         }
                     } //We only want to do this once, because the lights flash once we trigger the beacon.
 
-                    if(colorReading == Alliance)
+                    if(colorReading == CurrentState.getAlliance())
                     {
                         dim.setLED(0, true); //Red
                         dim.setLED(1, false); //Blue

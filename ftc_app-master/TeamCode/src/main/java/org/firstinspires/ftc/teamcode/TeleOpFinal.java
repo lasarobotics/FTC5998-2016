@@ -75,6 +75,7 @@ public class TeleOpFinal extends OpMode {
     public static final String SHOOT1NAME = "sh1";//PN Port 1
     public static final String SHOOT2NAME = "sh2";//PN Port 2
     public static final String INFEEDNAME = "in"; //2S Port 2
+    public static final String LIFTNAME = "l"; //2S Port 1
     public static final String LEFTPUSHNAME = "lp";//MO Port 1
     public static final String RIGHTPUSHNAME = "rp";//MO Port 2
     public static final String RANGENAME = "r"; //Port 0
@@ -83,7 +84,7 @@ public class TeleOpFinal extends OpMode {
     public static final String COLORRIGHTBOTTOMNAME = "cb2"; //Port 4
     public static final String GYRONAME = "g"; //Port 4
 
-    DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed;
+    DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed, lift;
     Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlockLeft;
     ColorSensor colorSensorOnSide, colorSensorLeftBottom, colorSensorRightBottom;
     ModernRoboticsI2cGyro gyroSensor;
@@ -98,6 +99,7 @@ public class TeleOpFinal extends OpMode {
         rightBackWheel = hardwareMap.dcMotor.get(RIGHT2NAME);
         leftFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
         leftBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
+        lift = hardwareMap.dcMotor.get(LIFTNAME);
 
         shoot1 = hardwareMap.dcMotor.get(SHOOT1NAME);
         shoot1.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -287,6 +289,13 @@ public class TeleOpFinal extends OpMode {
         }
         RECENT_B_BUTTON = gamepad2.b;
 
+        if(gamepad2.a){
+            lift.setPower(1);
+        } else if(gamepad2.y){
+            lift.setPower(-.25);
+        } else {
+            lift.setPower(0);
+        }
 
 
         /*
