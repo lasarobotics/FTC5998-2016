@@ -145,7 +145,7 @@ public class doubleFloorColor extends LinearOpMode {
         while(Math.abs(leftFrontWheel.getCurrentPosition()) < DISTANCE1PART2) {
             arcade(POWER_TO_SHOT, 0, 0, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
         }
-        stopMotors();
+        stopDriveMotors();
 */
 
         //Back Up
@@ -233,14 +233,14 @@ public class doubleFloorColor extends LinearOpMode {
             arcade(0, POWER_HIT_WALL, 0, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
             idle();
         }
-        stopMotors();
+        stopDriveMotors();
         resetEncoder(leftFrontWheel);
         sleep(50);
         while(Math.abs(leftFrontWheel.getCurrentPosition()) < 2* DISTANCE_TO_HIT_WALL) {
             arcade(0, -POWER_HIT_WALL, 0, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
             idle();
         }
-        stopMotors();
+        stopDriveMotors();
 */
         handleColor(-POWER_HANDLE_COLOR);
         sleep(100);

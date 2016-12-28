@@ -154,7 +154,7 @@ public class withPLoop extends LinearOpMode {
         while(Math.abs(leftFrontWheel.getCurrentPosition()) < DISTANCE1PART2) {
             arcade(POWER_TO_SHOT, 0, 0, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
         }
-        stopMotors();
+        stopDriveMotors();
 */
 
         //Back Up
