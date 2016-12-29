@@ -160,8 +160,11 @@ public class StateMachineWithShooting extends LinearOpMode {
             new state(states.PressBeacon,   team.Blue       ),
             new state(states.StrafeRight,   0.25,      1.00), //Away from wall
             new state(states.TurnRightEnc,   45,       1.00),
+            new state(states.ShootAtPower,  0,       1.00),
             new state(states.Move,          155,        1.00),
-            new state(states.Shoot),
+            new state(states.EnableShot,    1500,    1.00),
+            new state(states.ShootAtPower,  0,       0.00),
+
             new state(states.Move,          60,        1.00),
     };
     public state[] BlueBeaconShootParkRampArray = new state[]{
@@ -186,11 +189,38 @@ public class StateMachineWithShooting extends LinearOpMode {
             new state(states.LineSearch,    2,        - 0.10),
             new state(states.StrafeToWall,  8,          0.10),
             new state(states.PressBeacon,   team.Blue       ),
+            new state(states.ShootAtPower, 0,            1.00),
             new state(states.StrafeRight,   0.25,       1.00), //Away from wall
             new state(states.TurnLeftEnc,   90,         1.00),
-            new state(states.Shoot),
-            new state(states.TurnLeftEnc,   45,         1.00),
+            new state(states.EnableShot,    1500,     1.00),
+            new state(states.ShootAtPower,  0,       0.00),
+            new state(states.TurnRightEnc,   45,         1.00),
             new state(states.Move,          105,      - 1.00),
+    };
+    public state[] BlueBeaconParkRampArray = new state[]{
+            //              State         Sensor       Power
+            new state(states.Move,          105,      - 1.00),
+            new state(states.TurnRightEnc,   45,        0.25),
+            new state(states.Move,          145,      - 1.00),
+            new state(states.TurnLeft,   -   25,        0.15),
+            new state(states.StrafeToWall,   13,        0.13),
+            new state(states.TurnLeft,      tolerance,  0.05),
+            new state(states.TurnRight,     -tolerance, 0.05),
+            new state(states.LineSearch,    2,        - 0.10),
+            new state(states.StrafeToWall,  8,          0.10),
+            new state(states.LineSearch,    2,          0.10),
+            new state(states.PressBeacon,   team.Blue       ),
+            new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
+            new state(states.Move,          125,        0.50),
+            new state(states.TurnRight,    -tolerance,  0.05), //in case we overshoot
+            new state(states.TurnLeft,     tolerance,   0.05),
+            new state(states.LineSearch,    2,          0.10),
+            new state(states.StrafeToWall,  11,         0.13),
+            new state(states.LineSearch,    2,        - 0.10),
+            new state(states.StrafeToWall,  8,          0.10),
+            new state(states.PressBeacon,   team.Blue       ),
+            new state(states.StrafeRight,   0.25,       1.00), //Away from wall
+            new state(states.TurnLeftEnc,   45,         1.00),
     };
 
     public state[] RedBeaconParkWoodArray = new state[]{
@@ -220,10 +250,70 @@ public class StateMachineWithShooting extends LinearOpMode {
         };
     public state[] RedShootBeaconParkWoodArray = new state[]{
             //              State         Sensor       Power
-            new state(states.ShootAtPower,  0,       1.00),
             new state(states.Move,          60,       1.00),
-            new state(states.EnableShot,    1500,    1.00),
+            new state(states.TurnLeftEnc,   60,       0.25),
+            new state(states.Move,          230,    1.00),
+            new state(states.TurnRight,     25,       0.15),
+            new state(states.StrafeToWall,  11,         0.10),
+            new state(states.TurnRight,     -tolerance,       0.05),
+            new state(states.TurnLeft,      tolerance,        0.05),
+            new state(states.LineSearch,    2,         0.10),
+            new state(states.StrafeToWall,  9,         0.10),
+            new state(states.PressBeacon,   team.Red       ),
+            new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
+            new state(states.Move,          125,     - 0.50),
+            new state(states.TurnRight,    -tolerance,         0.05), //in case we overshoot
+            new state(states.TurnLeft,     tolerance,         0.05),
+            new state(states.LineSearch,    2,       - 0.10),
+            new state(states.StrafeToWall,  11,         0.13),
+            new state(states.LineSearch,    2,         0.10),
+            new state(states.StrafeToWall,  8,         0.10),
+            new state(states.PressBeacon,   team.Red       ),
+            new state(states.StrafeRight,   0.25,      1.00), //Away from wall
+            new state(states.TurnRightEnc,  90,       1.00),
+            new state(states.ShootAtPower,  0,       1.00),
+            new state(states.Move,          60,      - 1.00),
+            new state(states.EnableShot,    1500,     1.00),
             new state(states.ShootAtPower,  0,       0.00),
+            new state(states.StrafeLeft,    750,       1.00),
+            new state(states.TurnRightEnc,  45,     1.00),
+            new state(states.Move,  80,     1.00),
+    };
+    public state[] RedShootBeaconParkRampArray = new state[]{
+            //              State         Sensor       Power
+            new state(states.Move,          60,       1.00),
+            new state(states.TurnLeftEnc,   60,       0.25),
+            new state(states.Move,          230,    1.00),
+            new state(states.TurnRight,     25,       0.15),
+            new state(states.StrafeToWall,  11,         0.10),
+            new state(states.TurnRight,     -tolerance,       0.05),
+            new state(states.TurnLeft,      tolerance,        0.05),
+            new state(states.LineSearch,    2,         0.10),
+            new state(states.StrafeToWall,  9,         0.10),
+            new state(states.PressBeacon,   team.Red       ),
+            new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
+            new state(states.Move,          125,     - 0.50),
+            new state(states.TurnRight,    -tolerance,         0.05), //in case we overshoot
+            new state(states.TurnLeft,     tolerance,         0.05),
+            new state(states.LineSearch,    2,       - 0.10),
+            new state(states.StrafeToWall,  11,         0.13),
+            new state(states.LineSearch,    2,         0.10),
+            new state(states.StrafeToWall,  8,         0.10),
+            new state(states.PressBeacon,   team.Red       ),
+            new state(states.StrafeRight,   0.25,      1.00), //Away from wall
+            new state(states.TurnRightEnc,  90,       1.00),
+            new state(states.ShootAtPower,  0,       1.00),
+            new state(states.Move,          60,      - 1.00),
+            new state(states.EnableShot,    1500,     1.00),
+            new state(states.ShootAtPower,  0,       0.00),
+            new state(states.StrafeRight,   750,       1.00),
+            new state(states.TurnLeftEnc,  45,     1.00),
+            new state(states.Move,          80,   - 1.00),
+    };
+
+    public state[] RedBeaconParkRampArray = new state[]{
+            //              State         Sensor       Power
+            new state(states.Move,          60,       1.00),
             new state(states.TurnLeftEnc,   60,       0.25),
             new state(states.Move,          230,    1.00),
             new state(states.TurnRight,     25,       0.15),
@@ -247,35 +337,6 @@ public class StateMachineWithShooting extends LinearOpMode {
             new state(states.Move,          225,      - 1.00),
     };
 
-    public state[] RedShootBeaconParkRampArray = new state[]{
-            //              State         Sensor       Power
-            new state(states.ShootAtPower,  0,       1.00),
-            new state(states.Move,          105,       1.00),
-            new state(states.EnableShot,    1500,    1.00),
-            new state(states.ShootAtPower,  0,       0.00),
-            new state(states.TurnLeftEnc,   60,       0.25),
-            new state(states.Move,          230,    1.00),
-            new state(states.TurnRight,     25,       0.15),
-            new state(states.StrafeToWall,  11,         0.10),
-            new state(states.TurnRight,     -tolerance,       0.05),
-            new state(states.TurnLeft,      tolerance,        0.05),
-            new state(states.LineSearch,    2,         0.10),
-            new state(states.StrafeToWall,  9,         0.10),
-            new state(states.PressBeacon,   team.Red       ),
-            new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
-            new state(states.Move,          125,       0.50),
-            new state(states.TurnRight,    -tolerance,         0.05), //in case we overshoot
-            new state(states.TurnLeft,     tolerance,         0.05),
-            new state(states.LineSearch,    2,       - 0.10),
-            new state(states.StrafeToWall,  11,         0.13),
-            new state(states.LineSearch,    2,         0.10),
-            new state(states.StrafeToWall,  8,         0.10),
-            new state(states.PressBeacon,   team.Red       ),
-            new state(states.TurnLeftEnc,   45,         1.0),
-            new state(states.Move,         60,       - 1.0),
-            new state(states.TurnLeftEnc,   90,         1.0),
-            new state(states.Move,         60,       - 1.0),
-    };
     public state[] GenericShootFromFarAngleArray = new state[] {
             new state(states.Move,      180,     .75),
             new state(states.Shoot                  ),
@@ -408,6 +469,7 @@ public class StateMachineWithShooting extends LinearOpMode {
         stateOrder = DoNothingArray;
         switch (autoDecided){
             case RedBeaconParkRamp:
+                stateOrder = RedBeaconParkRampArray;
                 break;
             case RedBeaconParkWood:
                 stateOrder = RedBeaconParkWoodArray;
@@ -418,8 +480,8 @@ public class StateMachineWithShooting extends LinearOpMode {
             case RedShootBeaconParkWood:
                 stateOrder = RedShootBeaconParkWoodArray;
                 break;
-
             case BlueBeaconParkRamp:
+                stateOrder = BlueBeaconParkRampArray;
                 break;
             case BlueBeaconParkWood:
                 stateOrder = BlueBeaconParkWoodArray;
@@ -436,6 +498,8 @@ public class StateMachineWithShooting extends LinearOpMode {
             case GenericShootFromNextToRamp:
                 stateOrder = GenericShootFromNextToRampArray;
                 break;
+            //Currently, there are 10 choices for autonomous routes: 5 per alliance
+            //We can also use ReadInput to have an infinite number of finely tweaked routes
             case ReadInput:
                 break;
             case DoNothing:
