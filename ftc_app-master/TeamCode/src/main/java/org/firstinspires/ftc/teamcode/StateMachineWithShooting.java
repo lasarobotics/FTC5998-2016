@@ -21,7 +21,7 @@ import java.util.Arrays;
  * Created by Ethan Schaffer on 11/17/2016.
  */
 
-@Autonomous(name="StateRedGyro2", group="Autonomous")
+@Autonomous(name="Autonomous (Still in Testing)", group="Autonomous")
 public class StateMachineWithShooting extends LinearOpMode {
     public static final String LEFT1NAME = "l1"; //LX Port 2
     public static final String LEFT2NAME = "l2"; //LX Port 1
