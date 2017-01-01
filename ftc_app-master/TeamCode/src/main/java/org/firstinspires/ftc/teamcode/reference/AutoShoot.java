@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.reference;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
@@ -13,9 +13,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="LinearRed", group="Autonomous")
+@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="SHOOT!", group="Autonomous")
 @Disabled
-public class LinearRed extends LinearOpMode
+public class AutoShoot extends LinearOpMode
 {
     DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed;
     Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlockLeft;
@@ -82,35 +82,16 @@ public class LinearRed extends LinearOpMode
 
         colorSensorLeftBottom.enableLed(true);
 
-        move(105, .5);
-        turnLeft(45, .65);
-        move(230, -.7);
-        turnRight(45, .65);
-        move(75, .55);
-
-        lineSearch(0.10);
-        strafetoWall(0.10, 9);
-        strafeLeft(0.25, 150);
-        lineSearch(-0.10);
-        pressBeacon("Red");
-
-        strafeRight(0.2, 350);
-        move(125, -.5);
-
-        lineSearch(-0.10);
-        strafetoWall(0.10, 8);
-        strafeLeft(0.25, 150);
-        lineSearch(0.10);
-        pressBeacon("Red");
-
-        strafeRight(1.0, 1250);
-        turnRight(180, .65);
-        move(25, .5);
+        sleep(1000*10);
+        move(180, .5);
         shoot();
         move(60, .5);
-
-
+        sleep(3000);
+        move(30, -.5);
+        sleep(1200);
+        move(30, .5);
     }
+
 
     private double ticksPerRev = 7;
     private double gearBoxOne = 40.0;
@@ -466,13 +447,17 @@ public class LinearRed extends LinearOpMode
         shoot2.setPower(1);
         ballBlockRight.setPosition(0);
         ballBlockLeft.setPosition(1);
-        Thread.sleep(700);
-        infeed.setPower(1);
-        Thread.sleep(400);
-        infeed.setPower(0);
         Thread.sleep(1000);
         infeed.setPower(1);
-        Thread.sleep(300);
+        Thread.sleep(1000);
+        infeed.setPower(0);
+        Thread.sleep(500);
+        infeed.setPower(1);
+        Thread.sleep(1000);
+        infeed.setPower(0);
+        Thread.sleep(500);
+        infeed.setPower(1);
+        Thread.sleep(1000);
         infeed.setPower(0);
         shoot1.setPower(0);
         shoot2.setPower(0);

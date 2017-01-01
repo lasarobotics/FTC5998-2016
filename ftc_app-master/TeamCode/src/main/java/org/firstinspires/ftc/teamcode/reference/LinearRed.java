@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.reference;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
@@ -13,9 +13,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="LinearBlue", group="Autonomous")
+@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="LinearRed", group="Autonomous")
 @Disabled
-public class LinearBlue extends LinearOpMode
+public class LinearRed extends LinearOpMode
 {
     DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed;
     Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlockLeft;
@@ -82,33 +82,32 @@ public class LinearBlue extends LinearOpMode
 
         colorSensorLeftBottom.enableLed(true);
 
-        move(110, -.5);
+        move(105, .5);
+        turnLeft(45, .65);
+        move(230, -.7);
         turnRight(45, .65);
-        move(280, -.7);
-        turnLeft(15, .65);
-        move(30, -.55);
+        move(75, .55);
 
-        lineSearch(-0.10);
+        lineSearch(0.10);
         strafetoWall(0.10, 9);
         strafeLeft(0.25, 150);
-        lineSearch(0.10);
-        pressBeacon("Blue");
+        lineSearch(-0.10);
+        pressBeacon("Red");
 
-        strafeRight(0.25, 350);
-        move(125, .6);
+        strafeRight(0.2, 350);
+        move(125, -.5);
 
-        lineSearch(0.10);
+        lineSearch(-0.10);
         strafetoWall(0.10, 8);
         strafeLeft(0.25, 150);
-        lineSearch(-0.10);
-        pressBeacon("Blue");
+        lineSearch(0.10);
+        pressBeacon("Red");
 
         strafeRight(1.0, 1250);
-        turnRight(155, .65);
+        turnRight(180, .65);
         move(25, .5);
         shoot();
         move(60, .5);
-
 
 
     }

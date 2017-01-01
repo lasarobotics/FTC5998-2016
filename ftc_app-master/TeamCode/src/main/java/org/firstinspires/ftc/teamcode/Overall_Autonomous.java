@@ -14,6 +14,8 @@ import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.options.OptionMenu;
+import org.firstinspires.ftc.teamcode.options.SingleSelectCategory;
 
 import java.util.Arrays;
 
@@ -21,8 +23,8 @@ import java.util.Arrays;
  * Created by Ethan Schaffer on 11/17/2016.
  */
 
-@Autonomous(name="StateRedGyro2", group="Autonomous")
-public class StateMachineRedGyro2 extends LinearOpMode {
+@Autonomous(name="Autonomous (Options)", group="Autonomous")
+public class Overall_Autonomous extends LinearOpMode {
     public static final String LEFT1NAME = "l1"; //LX Port 2
     public static final String LEFT2NAME = "l2"; //LX Port 1
     public static final String RIGHT1NAME = "r1";//0A Port 1
@@ -31,8 +33,6 @@ public class StateMachineRedGyro2 extends LinearOpMode {
     public static final String SHOOT2NAME = "sh2";//PN Port 2
     public static final String INFEEDNAME = "in"; //2S Port 2
     public static final String BALLBLOCKLEFTNAME = "bl", BALLBLOCKRIGHTNAME = "br"; //MO Ports 3+4
-    public static final double BALLBLOCKLEFTOPEN = 1, BALLBLOCKLEFTCLOSED = 0;
-    public static final double BALLBLOCKRIGHTOPEN = 0, BALLBLOCKRIGHTCLOSED = 1;
     public static final String LEFTPUSHNAME = "lp";//MO Port 1
     public static final String RIGHTPUSHNAME = "rp";//MO Port 2
     public static final String GYRONAME = "g"; //Port 4
@@ -45,6 +45,8 @@ public class StateMachineRedGyro2 extends LinearOpMode {
     public static final double LEFT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_OFF_VALUE = .20;
+    public static final double BALLBLOCKLEFTOPEN = 1, BALLBLOCKLEFTCLOSED = 0;
+    public static final double BALLBLOCKRIGHTOPEN = 0, BALLBLOCKRIGHTCLOSED = 1;
 
     private double ticksPerRev = 7;
     private double gearBoxOne = 40.0;
@@ -53,15 +55,20 @@ public class StateMachineRedGyro2 extends LinearOpMode {
     private double wheelDiameter = 4.0 * Math.PI;
     private double cmPerInch = 2.54;
     private double width = 31.75;
+    //The Above Values lets us convert encoder ticks to centimeters per travelled, as shown below.
 
     public double cmPerTick = (wheelDiameter / (ticksPerRev * gearBoxOne * gearBoxTwo * gearBoxThree)) * cmPerInch; //Allows us to drive our roobt with accuracy to the centiment
 
-    public enum states {
-        Move, Shoot, TurnLeft, TurnRight, TurnLeftEnc, TurnRightEnc, StrafeLeft, StrafeRight, StrafeToWall, LineSearch, PressBeacon, Wait5Seconds, Finished
-    }
-    public team Alliance = team.Red; //Sets our alliance color
 
-    //The state object lets us declare all of our logic above.
+    //All of the different states the robot can be in during autonomous
+    //These are our building blocks
+    public enum states {
+        Move, Shoot, EnableShot, ShootAtPower, TurnLeft, TurnRight, TurnLeftEnc, TurnRightEnc, StrafeLeft, StrafeRight, StrafeToWall, LineSearch, PressBeacon, Wait5Seconds, Finished
+    }
+
+    //The state object lets us declare any power or sensor values we want to.
+    //Using this, we can change the power or sensor reading associated with any state
+    //That allows us to have less states and more modularity
     public class state{
         private states sName = states.Finished;
         private double sensorValue = 0;
@@ -99,64 +106,273 @@ public class StateMachineRedGyro2 extends LinearOpMode {
 
 
     }
+
+    //Tolerance in degrees for turning
+    //I don't think this actually works, but if it ain't broke...
     double tolerance = -5;
-    //Editing this array would change how to auto runs, in it's entirety. If we could have a GUI to change these values from the phone, we could basically do doodle.
-    state[] stateOrder = new state[]{
+
+    //Editing these arrays would change how to auto runs, in it's entirety. If we could change these values from the phone, we could basically do doodle.
+    public state[] BlueBeaconParkWoodArray = new state[]{
+            //              State         Sensor       Power
+            new state(states.Move,          60,     - 1.00),
+            new state(states.TurnRightEnc,   60,       0.25),
+            new state(states.Move,          230,    - 1.00),
+            new state(states.TurnLeft,   - 25,       0.15),
+            new state(states.StrafeToWall,  13,       0.13),
+            new state(states.TurnLeft,      tolerance,        0.05),
+            new state(states.TurnRight,     -tolerance,       0.05),
+            new state(states.LineSearch,    2,         0.10),
+            new state(states.StrafeToWall,  8,         0.10),
+            new state(states.LineSearch,    2,       - 0.10),
+            new state(states.PressBeacon,   team.Blue       ),
+            new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
+            new state(states.Move,          125,     - 0.50),
+            new state(states.TurnRight,    -tolerance,         0.05), //in case we overshoot
+            new state(states.TurnLeft,     tolerance,         0.05),
+            new state(states.LineSearch,    2,       - 0.10),
+            new state(states.StrafeToWall,  11,         0.13),
+            new state(states.LineSearch,    2,        0.10),
+            new state(states.StrafeToWall,  8,         0.10),
+            new state(states.PressBeacon,   team.Blue       ),
+            new state(states.StrafeRight,   0.25,      1.00), //Away from wall
+            new state(states.TurnRightEnc,   45,       1.00),
+            new state(states.Move,          225,        1.00),
+    };
+    public state[] BlueBeaconShootParkWoodArray = new state[]{
+            //              State         Sensor       Power
+            new state(states.Move,          60,     - 1.00),
+            new state(states.TurnRightEnc,   60,       0.25),
+            new state(states.Move,          230,    - 1.00),
+            new state(states.TurnLeft,   - 25,       0.15),
+            new state(states.StrafeToWall,  13,       0.13),
+            new state(states.TurnLeft,      tolerance,        0.05),
+            new state(states.TurnRight,     -tolerance,       0.05),
+            new state(states.LineSearch,    2,         0.10),
+            new state(states.StrafeToWall,  8,         0.10),
+            new state(states.LineSearch,    2,       - 0.10),
+            new state(states.PressBeacon,   team.Blue       ),
+            new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
+            new state(states.Move,          125,     - 0.50),
+            new state(states.TurnRight,    -tolerance,         0.05), //in case we overshoot
+            new state(states.TurnLeft,     tolerance,         0.05),
+            new state(states.LineSearch,    2,       - 0.10),
+            new state(states.StrafeToWall,  11,         0.13),
+            new state(states.LineSearch,    2,        0.10),
+            new state(states.StrafeToWall,  8,         0.10),
+            new state(states.PressBeacon,   team.Blue       ),
+            new state(states.StrafeRight,   0.25,      1.00), //Away from wall
+            new state(states.TurnRightEnc,   45,       1.00),
+            new state(states.ShootAtPower,  0,       1.00),
+            new state(states.Move,          155,        1.00),
+            new state(states.EnableShot,    1500,    1.00),
+            new state(states.ShootAtPower,  0,       0.00),
+
+            new state(states.Move,          60,        1.00),
+    };
+    public state[] BlueBeaconShootParkRampArray = new state[]{
+            //              State         Sensor       Power
+            new state(states.Move,          105,      - 1.00),
+            new state(states.TurnRightEnc,   45,        0.25),
+            new state(states.Move,          145,      - 1.00),
+            new state(states.TurnLeft,   -   25,        0.15),
+            new state(states.StrafeToWall,   13,        0.13),
+            new state(states.TurnLeft,      tolerance,  0.05),
+            new state(states.TurnRight,     -tolerance, 0.05),
+            new state(states.LineSearch,    2,        - 0.10),
+            new state(states.StrafeToWall,  8,          0.10),
+            new state(states.LineSearch,    2,          0.10),
+            new state(states.PressBeacon,   team.Blue       ),
+            new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
+            new state(states.Move,          125,        0.50),
+            new state(states.TurnRight,    -tolerance,  0.05), //in case we overshoot
+            new state(states.TurnLeft,     tolerance,   0.05),
+            new state(states.LineSearch,    2,          0.10),
+            new state(states.StrafeToWall,  11,         0.13),
+            new state(states.LineSearch,    2,        - 0.10),
+            new state(states.StrafeToWall,  8,          0.10),
+            new state(states.PressBeacon,   team.Blue       ),
+            new state(states.ShootAtPower, 0,            1.00),
+            new state(states.StrafeRight,   0.25,       1.00), //Away from wall
+            new state(states.TurnLeftEnc,   90,         1.00),
+            new state(states.EnableShot,    1500,     1.00),
+            new state(states.ShootAtPower,  0,       0.00),
+            new state(states.TurnRightEnc,   45,         1.00),
+            new state(states.Move,          105,      - 1.00),
+    };
+    public state[] BlueBeaconParkRampArray = new state[]{
+            //              State         Sensor       Power
+            new state(states.Move,          105,      - 1.00),
+            new state(states.TurnRightEnc,   45,        0.25),
+            new state(states.Move,          145,      - 1.00),
+            new state(states.TurnLeft,   -   25,        0.15),
+            new state(states.StrafeToWall,   13,        0.13),
+            new state(states.TurnLeft,      tolerance,  0.05),
+            new state(states.TurnRight,     -tolerance, 0.05),
+            new state(states.LineSearch,    2,        - 0.10),
+            new state(states.StrafeToWall,  8,          0.10),
+            new state(states.LineSearch,    2,          0.10),
+            new state(states.PressBeacon,   team.Blue       ),
+            new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
+            new state(states.Move,          125,        0.50),
+            new state(states.TurnRight,    -tolerance,  0.05), //in case we overshoot
+            new state(states.TurnLeft,     tolerance,   0.05),
+            new state(states.LineSearch,    2,          0.10),
+            new state(states.StrafeToWall,  11,         0.13),
+            new state(states.LineSearch,    2,        - 0.10),
+            new state(states.StrafeToWall,  8,          0.10),
+            new state(states.PressBeacon,   team.Blue       ),
+            new state(states.StrafeRight,   0.25,       1.00), //Away from wall
+            new state(states.TurnLeftEnc,   45,         1.00),
+    };
+
+    public state[] RedBeaconParkWoodArray = new state[]{
             //              State         Sensor       Power
             new state(states.Move,          60,       1.00),
             new state(states.TurnLeftEnc,   60,       0.25),
             new state(states.Move,          230,    1.00),
-
             new state(states.TurnRight,     25,       0.15),
-
             new state(states.StrafeToWall,  11,         0.10),
-
             new state(states.TurnRight,     -tolerance,       0.05),
             new state(states.TurnLeft,      tolerance,        0.05),
-
             new state(states.LineSearch,    2,       - 0.10),
-//            new state(states.LineSearch,    2,         0.10),
-
             new state(states.StrafeToWall,  9,         0.10),
-
             new state(states.PressBeacon,   team.Red       ),
-
             new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
-
             new state(states.Move,          125,       0.50),
-
             new state(states.TurnRight,    -tolerance,         0.05), //in case we overshoot
             new state(states.TurnLeft,     tolerance,         0.05),
-
             new state(states.LineSearch,    2,         0.10),
-
             new state(states.StrafeToWall,  11,         0.13),
-
             new state(states.LineSearch,    2,       - 0.10),
-
             new state(states.StrafeToWall,  8,         0.10),
-
             new state(states.PressBeacon,   team.Red       ),
             new state(states.StrafeRight,   0.25,      1.00), //Away from wall
-
             new state(states.TurnLeftEnc,   42,       1.00),
-
             new state(states.Move,          225,      - 1.00),
         };
+    public state[] RedShootBeaconParkWoodArray = new state[]{
+            //              State         Sensor       Power
+            new state(states.Move,          60,       1.00),
+            new state(states.TurnLeftEnc,   60,       0.25),
+            new state(states.Move,          230,    1.00),
+            new state(states.TurnRight,     25,       0.15),
+            new state(states.StrafeToWall,  11,         0.10),
+            new state(states.TurnRight,     -tolerance,       0.05),
+            new state(states.TurnLeft,      tolerance,        0.05),
+            new state(states.LineSearch,    2,         0.10),
+            new state(states.StrafeToWall,  9,         0.10),
+            new state(states.PressBeacon,   team.Red       ),
+            new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
+            new state(states.Move,          125,     - 0.50),
+            new state(states.TurnRight,    -tolerance,         0.05), //in case we overshoot
+            new state(states.TurnLeft,     tolerance,         0.05),
+            new state(states.LineSearch,    2,       - 0.10),
+            new state(states.StrafeToWall,  11,         0.13),
+            new state(states.LineSearch,    2,         0.10),
+            new state(states.StrafeToWall,  8,         0.10),
+            new state(states.PressBeacon,   team.Red       ),
+            new state(states.StrafeRight,   0.25,      1.00), //Away from wall
+            new state(states.TurnRightEnc,  90,       1.00),
+            new state(states.ShootAtPower,  0,       1.00),
+            new state(states.Move,          60,      - 1.00),
+            new state(states.EnableShot,    1500,     1.00),
+            new state(states.ShootAtPower,  0,       0.00),
+            new state(states.StrafeLeft,    750,       1.00),
+            new state(states.TurnRightEnc,  45,     1.00),
+            new state(states.Move,  80,     1.00),
+    };
+    public state[] RedShootBeaconParkRampArray = new state[]{
+            //              State         Sensor       Power
+            new state(states.Move,          60,       1.00),
+            new state(states.TurnLeftEnc,   60,       0.25),
+            new state(states.Move,          230,    1.00),
+            new state(states.TurnRight,     25,       0.15),
+            new state(states.StrafeToWall,  11,         0.10),
+            new state(states.TurnRight,     -tolerance,       0.05),
+            new state(states.TurnLeft,      tolerance,        0.05),
+            new state(states.LineSearch,    2,         0.10),
+            new state(states.StrafeToWall,  9,         0.10),
+            new state(states.PressBeacon,   team.Red       ),
+            new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
+            new state(states.Move,          125,     - 0.50),
+            new state(states.TurnRight,    -tolerance,         0.05), //in case we overshoot
+            new state(states.TurnLeft,     tolerance,         0.05),
+            new state(states.LineSearch,    2,       - 0.10),
+            new state(states.StrafeToWall,  11,         0.13),
+            new state(states.LineSearch,    2,         0.10),
+            new state(states.StrafeToWall,  8,         0.10),
+            new state(states.PressBeacon,   team.Red       ),
+            new state(states.StrafeRight,   0.25,      1.00), //Away from wall
+            new state(states.TurnRightEnc,  90,       1.00),
+            new state(states.ShootAtPower,  0,       1.00),
+            new state(states.Move,          60,      - 1.00),
+            new state(states.EnableShot,    1500,     1.00),
+            new state(states.ShootAtPower,  0,       0.00),
+            new state(states.StrafeRight,   750,       1.00),
+            new state(states.TurnLeftEnc,  45,     1.00),
+            new state(states.Move,          80,   - 1.00),
+    };
 
+    public state[] RedBeaconParkRampArray = new state[]{
+            //              State         Sensor       Power
+            new state(states.Move,          60,       1.00),
+            new state(states.TurnLeftEnc,   60,       0.25),
+            new state(states.Move,          230,    1.00),
+            new state(states.TurnRight,     25,       0.15),
+            new state(states.StrafeToWall,  11,         0.10),
+            new state(states.TurnRight,     -tolerance,       0.05),
+            new state(states.TurnLeft,      tolerance,        0.05),
+            new state(states.LineSearch,    2,       - 0.10),
+            new state(states.StrafeToWall,  9,         0.10),
+            new state(states.PressBeacon,   team.Red       ),
+            new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
+            new state(states.Move,          125,       0.50),
+            new state(states.TurnRight,    -tolerance,         0.05), //in case we overshoot
+            new state(states.TurnLeft,     tolerance,         0.05),
+            new state(states.LineSearch,    2,         0.10),
+            new state(states.StrafeToWall,  11,         0.13),
+            new state(states.LineSearch,    2,       - 0.10),
+            new state(states.StrafeToWall,  8,         0.10),
+            new state(states.PressBeacon,   team.Red       ),
+            new state(states.StrafeRight,   0.25,      1.00), //Away from wall
+            new state(states.TurnLeftEnc,   42,       1.00),
+            new state(states.Move,          225,      - 1.00),
+    };
+
+    public state[] GenericShootFromFarAngleArray = new state[] {
+            new state(states.Move,      180,     .75),
+            new state(states.Shoot                  ),
+            new state(states.Move,      60,       .5),
+            new state(states.Move,      60,     - .5),
+            new state(states.Move,      60,      1.0),
+    };
+    public state[] GenericShootFromNextToRampArray = new state[] {
+            new state(states.Move,      180,     .75),
+            new state(states.Shoot                  ),
+            new state(states.Move,      60,       .5),
+            new state(states.Move,      60,     - .5),
+            new state(states.Move,      60,      1.0),
+    };
+
+    public state[] DoNothingArray = new state[] {
+            new state(states.Finished)
+        };
+
+    state[] stateOrder;
     //NotSensed is for the Color Sensor while we are pushing the beacon.
     public enum team {
         Red, Blue, NotSensed
     }
 
-
-
+    //Declaration of the Robot iself
     DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed;
     Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlockLeft;
     ColorSensor colorSensorLeftBottom, colorSensorOnSide;
     ModernRoboticsI2cRangeSensor range;
     ModernRoboticsI2cGyro gyroSensor;
     DeviceInterfaceModule dim;
+
+    //Useful variables
     state CurrentState;
     long lastTime;
     long time;
@@ -164,10 +380,12 @@ public class StateMachineRedGyro2 extends LinearOpMode {
     double circleFrac, movement, changeFactor, modified, currentDistance;
     team colorReading = team.NotSensed;
     int redReading, blueReading;
+    //By declaring certain values here and not within our case statements, we avoid declaring them multiple times.
 
     public int stateNumber = -1;
     public state updateState() throws InterruptedException {
-        stopMotors();
+        //By Resetting encoders and other values (like time buffers) here, we avoid having to do more advanced logic within each case statement
+        stopDriveMotors();
         idle();
         stateNumber++;
         colorReading = team.NotSensed;
@@ -180,12 +398,14 @@ public class StateMachineRedGyro2 extends LinearOpMode {
         }
         return stateOrder[stateNumber];
     }
+
     public state getCurrentState(){
         return stateOrder[stateNumber];
-    }
-
+    } //We never use this, but it could be useful one day.
     @Override
     public void runOpMode() throws InterruptedException {
+        gyroSensor = hardwareMap.get(ModernRoboticsI2cGyro.class, GYRONAME);
+        gyroSensor.calibrate(); //Calibrating Gyro is important! It not only zeroes it, but it also
         leftFrontWheel = hardwareMap.dcMotor.get(LEFT1NAME);
         leftBackWheel = hardwareMap.dcMotor.get(LEFT2NAME);
         rightFrontWheel = hardwareMap.dcMotor.get(RIGHT1NAME);
@@ -208,27 +428,7 @@ public class StateMachineRedGyro2 extends LinearOpMode {
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
         ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
-        gyroSensor = hardwareMap.get(ModernRoboticsI2cGyro.class, GYRONAME);
 
-        gyroSensor.calibrate();
-        int timer = 0;
-        int cycler = 0;
-        while(gyroSensor.isCalibrating()) {
-            timer++;
-            if(timer % 10 == 0){
-                cycler++;
-            }
-            if (cycler == 1) {
-                telemetry.addData("Gyro", " is Calibrating.");
-            } else if (cycler == 2){
-                telemetry.addData("Gyro", " is Calibrating..");
-            } else {
-                cycler = 0;
-                telemetry.addData("Gyro", " is Calibrating...");
-            }
-            telemetry.update();
-        }
-        telemetry.addData("Gyro", "Calibrated (" + timer + " cycles)");
 
         range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGENAME);
         colorSensorLeftBottom = hardwareMap.colorSensor.get(COLORLEFTBOTTOMNAME);
@@ -237,21 +437,137 @@ public class StateMachineRedGyro2 extends LinearOpMode {
         colorSensorOnSide.setI2cAddress(I2cAddr.create8bit(0x3c));
         dim = hardwareMap.get(DeviceInterfaceModule.class, "Device Interface Module 1");
 
-        telemetry.addData("Raw Ultrasonic", range.rawUltrasonic());
-        telemetry.addData("Color Side Red", colorSensorOnSide.red());
-        telemetry.addData("Color turnLeft Alpha", colorSensorLeftBottom.alpha());
+        int timer = 0;
+        int cycler = 0;
 
+
+
+        /*
+              __  __
+             |  \/  |
+             | \  / | ___ _ __  _   _
+             | |\/| |/ _ \ '_ \| | | |
+             | |  | |  __/ | | | |_| |
+             |_|  |_|\___|_| |_|\__,_|
+        */
+        OptionMenu.Builder color_builder = new OptionMenu.Builder(hardwareMap.appContext);
+        OptionMenu.Builder builder = new OptionMenu.Builder(hardwareMap.appContext);
+        //Setup a SingleSelectCategory
+        SingleSelectCategory color = new SingleSelectCategory("alliance_color");
+        color.addOption("Red");
+        color.addOption("Blue");
+        color.addOption("Neither");
+        color_builder.addCategory(color);
+        OptionMenu menu = color_builder.create();
+        menu.show();
+        String allianceColor = menu.selectedOption("alliance_color");
+
+        SingleSelectCategory route = new SingleSelectCategory("autonomous_route");
+        if(allianceColor == "Red"){
+            route.addOption("RedBeaconParkWood");
+            route.addOption("RedBeaconParkRamp");
+            route.addOption("RedShootBeaconParkRamp");
+            route.addOption("RedShootBeaconParkWood");
+        } else if(allianceColor == "Blue"){
+            route.addOption("BlueBeaconParkWood");
+            route.addOption("BlueBeaconParkRamp");
+            route.addOption("BlueShootBeaconParkRamp");
+            route.addOption("BlueShootBeaconParkWood");
+        } else {
+            route.addOption("GenericShootFromFarAngle");
+            route.addOption("GenericShootFromNextToRamp");
+            route.addOption("ReadInput");
+        }
+        builder.addCategory(route);
+        menu = builder.create();
+        //Display menu
+        menu.show();
+        String autoRouteChosen = menu.selectedOption("autonomous_route");
+
+        //Based on the value of autoRouteChosen, we set the stateOrder array to the correct value
+        stateOrder = DoNothingArray;
+        switch (autoRouteChosen){
+            case "RedBeaconParkRamp":
+                stateOrder = RedBeaconParkRampArray;
+                break;
+            case "RedBeaconParkWood":
+                stateOrder = RedBeaconParkWoodArray;
+                break;
+            case "RedShootBeaconParkRamp":
+                stateOrder = RedShootBeaconParkRampArray;
+                break;
+            case "RedShootBeaconParkWood":
+                stateOrder = RedShootBeaconParkWoodArray;
+                break;
+            case "BlueBeaconParkRamp":
+                stateOrder = BlueBeaconParkRampArray;
+                break;
+            case "BlueBeaconParkWood":
+                stateOrder = BlueBeaconParkWoodArray;
+                break;
+            case "BlueShootBeaconParkRamp":
+                stateOrder = BlueBeaconShootParkRampArray;
+                break;
+            case "BlueShootBeaconParkWood":
+                stateOrder = BlueBeaconShootParkWoodArray;
+                break;
+            case "GenericShootFromFarAngle":
+                stateOrder = GenericShootFromFarAngleArray;
+                break;
+            case "GenericShootFromNextToRamp":
+                stateOrder = GenericShootFromNextToRampArray;
+                break;
+            //Currently, there are 10 choices for autonomous routes: 4 per alliance color, and two reserve options
+            //We can also use ReadInput to have an infinite number of finely tweaked routes
+            case "ReadInput":
+                stateOrder = DoNothingArray;
+                break;
+            case "DoNothing":
+                stateOrder = DoNothingArray;
+                break;
+            default:
+                stateOrder = DoNothingArray;
+                break;
+        }
+        if(stateOrder == DoNothingArray){
+            telemetry.clear();
+            telemetry.addLine("Uh oh! Something Went Wrong!");
+            telemetry.addLine("No Case for " + autoRouteChosen);
+            telemetry.update();
+        }
+
+        while(gyroSensor.isCalibrating()) {
+            timer++;
+            if(timer % 10 == 0){
+                cycler++;
+            }
+            if (cycler == 1) {
+                telemetry.addData("Gyro", " is still Calibrating.");
+            } else if (cycler == 2){
+                telemetry.addData("Gyro", " is still Calibrating..");
+            } else {
+                cycler = 0;
+                telemetry.addData("Gyro", " is still Calibrating...");
+            }
+            telemetry.update();
+        } //This silly looking code above animates a "..." sequence in telemetry
+        telemetry.clear();
+        telemetry.addData("Auto Route", autoRouteChosen);
+        if(range.rawUltrasonic() > 0 && colorSensorOnSide.alpha() == 0 && colorSensorLeftBottom.alpha() > 0){
+            telemetry.addData("Sensors", "Good to go");
+        } else {
+            telemetry.addData("Sensors", "Something Wrong");
+        }
         telemetry.update();
-        CurrentState = updateState();
-        colorSensorLeftBottom.enableLed(true);
+
+        CurrentState = updateState(); // Set Current State
+        colorSensorLeftBottom.enableLed(true); //If you don't set the LED until after the waitForStart(), it doesn't work.
+        double cm, ticks, degrees, power, Seconds, Speed, Time;
+        int RBPos, RFPos, LBPos, LFPos, Average;
 
         waitForStart();
-        double totalTime = 0;
-        double cm, ticks, degrees, power, Seconds, Speed, Time, targetPosition, diffVal, gyroThreshold = 1;
-        int RBPos, RFPos, LBPos, LFPos, Average;
-        resetEncoder(leftFrontWheel);
-        while((CurrentState.getState() != states.Finished) && (opModeIsActive()) && (totalTime < (30*1000))) {
-            totalTime++; //Because every cycle takes exactly 1ms, we know how long we have been running. totalTime will automatically stop the robot at 30 seconds
+
+        while((CurrentState.getState() != states.Finished) && (opModeIsActive())) {
             switch (CurrentState.getState()) {
                 // We will be using this switch as our main control loop.
                 // The nice thing about this architechture is we can do manual overrides of states,
@@ -574,10 +890,28 @@ public class StateMachineRedGyro2 extends LinearOpMode {
                         }
                     }
                     break;
+                case ShootAtPower:
+                    shoot1.setPower(CurrentState.getPowerValue());
+                    shoot2.setPower(CurrentState.getPowerValue());
+                    CurrentState = updateState();
+                    break;
+                case EnableShot:
+                    time++;
+                    ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
+                    ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
+                    infeed.setPower(CurrentState.getPowerValue());
+                    if(time < CurrentState.getSensorValue()){
+                        break;
+                    }
+                    ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
+                    ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
+                    infeed.setPower(0);
+                    CurrentState = updateState();
+                    break;
                 case Finished:
+                    stopDriveMotors();
                     telemetry.clear();
                     telemetry.addLine("All Done!");
-                    telemetry.addLine("It look " + totalTime/1000 + " seconds to complete this autonomous");
                     telemetry.update();
                     super.stop();
                     break;
@@ -589,7 +923,6 @@ public class StateMachineRedGyro2 extends LinearOpMode {
             } //Code Below this point will run on every cycle
             telemetry.clear();
             telemetry.addData("State", CurrentState.getState());
-            telemetry.addData("Uptime", (totalTime/1000)+" seconds");
 
             telemetry.addData("turnLeft Bottom", colorSensorLeftBottom.alpha());
             telemetry.addData("Side Color", colorReading);
@@ -614,7 +947,7 @@ public class StateMachineRedGyro2 extends LinearOpMode {
         return true;
     }
 
-    public void stopMotors(){
+    public void stopDriveMotors(){
         leftFrontWheel.setPower(0);
         leftBackWheel.setPower(0);
         rightFrontWheel.setPower(0);

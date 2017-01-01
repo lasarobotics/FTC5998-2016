@@ -1,20 +1,17 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.reference;
 
 import android.os.SystemClock;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -24,9 +21,8 @@ import java.util.Arrays;
  * Created by Ethan Schaffer on 11/17/2016.
  */
 
-@Autonomous(name="StateRed", group="Autonomous")
-@Disabled
-public class StateMachineRed extends LinearOpMode {
+@Autonomous(name="StateRedGyro2", group="Autonomous")
+public class StateMachineRedGyro2 extends LinearOpMode {
     public static final String LEFT1NAME = "l1"; //LX Port 2
     public static final String LEFT2NAME = "l2"; //LX Port 1
     public static final String RIGHT1NAME = "r1";//0A Port 1
@@ -56,13 +52,12 @@ public class StateMachineRed extends LinearOpMode {
     private double gearBoxThree = 1.0;
     private double wheelDiameter = 4.0 * Math.PI;
     private double cmPerInch = 2.54;
-
     private double width = 31.75;
 
     public double cmPerTick = (wheelDiameter / (ticksPerRev * gearBoxOne * gearBoxTwo * gearBoxThree)) * cmPerInch; //Allows us to drive our roobt with accuracy to the centiment
 
     public enum states {
-        Move, Shoot, TurnLeft, TurnRight, StrafeLeft, StrafeRight, StrafeToWall, LineSearch, PressBeacon, Wait5Seconds, Finished
+        Move, Shoot, TurnLeft, TurnRight, TurnLeftEnc, TurnRightEnc, StrafeLeft, StrafeRight, StrafeToWall, LineSearch, PressBeacon, Wait5Seconds, Finished
     }
     public team Alliance = team.Red; //Sets our alliance color
 
@@ -104,38 +99,49 @@ public class StateMachineRed extends LinearOpMode {
 
 
     }
-
+    double tolerance = -5;
     //Editing this array would change how to auto runs, in it's entirety. If we could have a GUI to change these values from the phone, we could basically do doodle.
     state[] stateOrder = new state[]{
             //              State         Sensor       Power
-            new state(states.Move,          105,       0.45),
-            new state(states.TurnLeft,      45,        0.50),
-            new state(states.Move,          230,       0.45),
-            new state(states.TurnRight,     45,        0.50),
-            new state(states.Move,          60,        0.45),
+            new state(states.Move,          60,       1.00),
+            new state(states.TurnLeftEnc,   60,       0.25),
+            new state(states.Move,          230,    1.00),
 
-            new state(states.StrafeToWall,  17,        0.10),
+            new state(states.TurnRight,     25,       0.15),
 
-            new state(states.LineSearch,    2,         0.10),
+            new state(states.StrafeToWall,  11,         0.10),
+
+            new state(states.TurnRight,     -tolerance,       0.05),
+            new state(states.TurnLeft,      tolerance,        0.05),
+
+            new state(states.LineSearch,    2,       - 0.10),
+//            new state(states.LineSearch,    2,         0.10),
+
             new state(states.StrafeToWall,  9,         0.10),
-            new state(states.StrafeLeft,    0.15,      0.10),
-//            new state(states.LineSearch,    2,        -0.10),
+
             new state(states.PressBeacon,   team.Red       ),
 
-            new state(states.StrafeRight,   0.2,       0.35),
-            new state(states.Move,          125,      -0.50),
+            new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
 
-            new state(states.LineSearch,    2,        -0.10),
-            new state(states.StrafeToWall,  9,         0.10),
-            new state(states.StrafeLeft,    0.075,     0.10),
+            new state(states.Move,          125,       0.50),
+
+            new state(states.TurnRight,    -tolerance,         0.05), //in case we overshoot
+            new state(states.TurnLeft,     tolerance,         0.05),
+
             new state(states.LineSearch,    2,         0.10),
-            new state(states.PressBeacon,   team.Red       ),
 
-            new state(states.StrafeRight,   1.25,      1.00),
-            new state(states.TurnRight,     235,       0.65),
-            new state(states.Move,          25,        0.75),
-            new state(states.Shoot                         ),
-            new state(states.Move,          25,        1.00),
+            new state(states.StrafeToWall,  11,         0.13),
+
+            new state(states.LineSearch,    2,       - 0.10),
+
+            new state(states.StrafeToWall,  8,         0.10),
+
+            new state(states.PressBeacon,   team.Red       ),
+            new state(states.StrafeRight,   0.25,      1.00), //Away from wall
+
+            new state(states.TurnLeftEnc,   42,       1.00),
+
+            new state(states.Move,          225,      - 1.00),
         };
 
     //NotSensed is for the Color Sensor while we are pushing the beacon.
@@ -151,7 +157,7 @@ public class StateMachineRed extends LinearOpMode {
     ModernRoboticsI2cRangeSensor range;
     ModernRoboticsI2cGyro gyroSensor;
     DeviceInterfaceModule dim;
-    state CurrentState, PreviousState;
+    state CurrentState;
     long lastTime;
     long time;
     boolean initialized = false, movedServo = false;
@@ -161,12 +167,14 @@ public class StateMachineRed extends LinearOpMode {
 
     public int stateNumber = -1;
     public state updateState() throws InterruptedException {
+        stopMotors();
+        idle();
         stateNumber++;
         colorReading = team.NotSensed;
         initialized = false;
-        time = 0;
         movedServo = false;
-        Thread.sleep(5);
+        time = 0;
+        idle();
         if(stateNumber == stateOrder.length){
             return new state(states.Finished);
         }
@@ -174,9 +182,6 @@ public class StateMachineRed extends LinearOpMode {
     }
     public state getCurrentState(){
         return stateOrder[stateNumber];
-    }
-    public state getFutureState(){
-        return stateOrder[stateNumber++];
     }
 
     @Override
@@ -199,6 +204,32 @@ public class StateMachineRed extends LinearOpMode {
         leftButtonPusher = hardwareMap.servo.get(LEFTPUSHNAME);
         rightButtonPusher = hardwareMap.servo.get(RIGHTPUSHNAME);
 
+        leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+        rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+        ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
+        ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
+        gyroSensor = hardwareMap.get(ModernRoboticsI2cGyro.class, GYRONAME);
+
+        gyroSensor.calibrate();
+        int timer = 0;
+        int cycler = 0;
+        while(gyroSensor.isCalibrating()) {
+            timer++;
+            if(timer % 10 == 0){
+                cycler++;
+            }
+            if (cycler == 1) {
+                telemetry.addData("Gyro", " is Calibrating.");
+            } else if (cycler == 2){
+                telemetry.addData("Gyro", " is Calibrating..");
+            } else {
+                cycler = 0;
+                telemetry.addData("Gyro", " is Calibrating...");
+            }
+            telemetry.update();
+        }
+        telemetry.addData("Gyro", "Calibrated (" + timer + " cycles)");
+
         range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGENAME);
         colorSensorLeftBottom = hardwareMap.colorSensor.get(COLORLEFTBOTTOMNAME);
         colorSensorOnSide = hardwareMap.colorSensor.get(COLORSIDENAME);
@@ -206,40 +237,17 @@ public class StateMachineRed extends LinearOpMode {
         colorSensorOnSide.setI2cAddress(I2cAddr.create8bit(0x3c));
         dim = hardwareMap.get(DeviceInterfaceModule.class, "Device Interface Module 1");
 
-        leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
-        rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
-        ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
-        ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
-        gyroSensor = hardwareMap.get(ModernRoboticsI2cGyro.class, GYRONAME);
-
-        /*
-        gyroSensor.calibrate();
-        while (gyroSensor.isCalibrating()) {
-            telemetry.addData("Gyro", "Calibrating...");
-            telemetry.update();
-        }
-        telemetry.addData("Gyro", "Calibrated!");
-        */
-
         telemetry.addData("Raw Ultrasonic", range.rawUltrasonic());
         telemetry.addData("Color Side Red", colorSensorOnSide.red());
         telemetry.addData("Color turnLeft Alpha", colorSensorLeftBottom.alpha());
 
-
-/*
-        String temp = leftFrontWheel.getController().getDeviceName();
-        voltage_sensor = hardwareMap.voltageSensor.get(temp);
-        if(voltage_sensor.getVoltage() < 12){
-            telemetry.addLine("Battery Voltage is Critically Low!!");
-        }
-*/
         telemetry.update();
         CurrentState = updateState();
         colorSensorLeftBottom.enableLed(true);
 
         waitForStart();
         double totalTime = 0;
-        double cm, ticks, degrees, power, Seconds, Speed, Time;
+        double cm, ticks, degrees, power, Seconds, Speed, Time, targetPosition, diffVal, gyroThreshold = 1;
         int RBPos, RFPos, LBPos, LFPos, Average;
         resetEncoder(leftFrontWheel);
         while((CurrentState.getState() != states.Finished) && (opModeIsActive()) && (totalTime < (30*1000))) {
@@ -295,6 +303,55 @@ public class StateMachineRed extends LinearOpMode {
                         break;
                     }
                     //Same conept as above
+                    if(gyroSensor.getIntegratedZValue() >= degrees){
+                        setDrivePower(0);
+                        rightFrontWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        leftFrontWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        rightBackWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        leftBackWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        CurrentState = updateState();
+                        break;
+                    }
+
+                    rightBackWheel.setPower(power);
+                    rightFrontWheel.setPower(power);
+                    leftBackWheel.setPower(-power);
+                    leftFrontWheel.setPower(-power);
+                    //Have the robot spin.
+
+                    break;
+                case TurnRight:
+                    //Everything here works just like it does in TurnLeft, just spinning in the opposite direction
+                    degrees = CurrentState.getSensorValue();
+                    power = CurrentState.getPowerValue();
+                    if(!initEncoders()){
+                        break;
+                    }
+                    //Same conept as above
+                    if(gyroSensor.getIntegratedZValue() <= degrees){
+                        setDrivePower(0);
+                        rightFrontWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        leftFrontWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        rightBackWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        leftBackWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        CurrentState = updateState();
+                        break;
+                    }
+
+                    rightBackWheel.setPower(-power);
+                    rightFrontWheel.setPower(-power);
+                    leftBackWheel.setPower(power);
+                    leftFrontWheel.setPower(power);
+                    //Have the robot spin.
+
+                    break;
+                case TurnLeftEnc:
+                    degrees = CurrentState.getSensorValue();
+                    power = CurrentState.getPowerValue();
+                    if(!initEncoders()){
+                        break;
+                    }
+                    //Same conept as above
 
                     changeFactor = 90;
                     modified = changeFactor + degrees;
@@ -332,7 +389,7 @@ public class StateMachineRed extends LinearOpMode {
                         CurrentState = updateState();
                     }
                     break;
-                case TurnRight:
+                case TurnRightEnc:
                     //Everything here works just like it does in TurnLeft, just spinning in the opposite direction
                     degrees = CurrentState.getSensorValue();
                     power = CurrentState.getPowerValue();
@@ -374,6 +431,7 @@ public class StateMachineRed extends LinearOpMode {
                         CurrentState = updateState();
                     }
                     break;
+
                 case Shoot:
                     if(!initEncoders()){
                         break;
@@ -462,17 +520,10 @@ public class StateMachineRed extends LinearOpMode {
                     int red = colorSensorLeftBottom.red();
                     int blue = colorSensorLeftBottom.blue();
                     int alpha = colorSensorLeftBottom.alpha();
-                    telemetry.addLine("Line Searching ...");
-                    telemetry.addData("Red: ", red);
-                    telemetry.addData("Blue: ", blue);
-                    telemetry.addData("Alpha: ", alpha);
-                    telemetry.update();
 
                     if(red >= expectedReading && blue >= expectedReading && alpha >= expectedReading) {
                         //If the readings are above what we want them to be, we have found the line
                         setDrivePower(0);
-                        telemetry.addLine("Line Found!");
-                        telemetry.update();
                         CurrentState= updateState();
                     }
                     break;
@@ -493,10 +544,7 @@ public class StateMachineRed extends LinearOpMode {
                         }
                     } //We only want to do this once, because the lights flash once we trigger the beacon.
 
-                    telemetry.addData("Color Detected:", colorReading);
-                    telemetry.update();
-
-                    if(colorReading == Alliance)
+                    if(colorReading == CurrentState.getAlliance())
                     {
                         dim.setLED(0, true); //Red
                         dim.setLED(1, false); //Blue
@@ -541,7 +589,6 @@ public class StateMachineRed extends LinearOpMode {
             } //Code Below this point will run on every cycle
             telemetry.clear();
             telemetry.addData("State", CurrentState.getState());
-            telemetry.addData("Recent State", PreviousState);
             telemetry.addData("Uptime", (totalTime/1000)+" seconds");
 
             telemetry.addData("turnLeft Bottom", colorSensorLeftBottom.alpha());

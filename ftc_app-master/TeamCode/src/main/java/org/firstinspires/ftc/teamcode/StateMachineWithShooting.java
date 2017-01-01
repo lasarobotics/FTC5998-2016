@@ -5,6 +5,7 @@ import android.os.SystemClock;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -14,6 +15,8 @@ import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.options.OptionMenu;
+import org.firstinspires.ftc.teamcode.options.SingleSelectCategory;
 
 import java.util.Arrays;
 
@@ -21,7 +24,8 @@ import java.util.Arrays;
  * Created by Ethan Schaffer on 11/17/2016.
  */
 
-@Autonomous(name="Autonomous (Still in Testing)", group="Autonomous")
+@Autonomous(name="Autonomous (No Options Menu)", group="Autonomous")
+@Disabled
 public class StateMachineWithShooting extends LinearOpMode {
     public static final String LEFT1NAME = "l1"; //LX Port 2
     public static final String LEFT2NAME = "l2"; //LX Port 1
@@ -400,17 +404,11 @@ public class StateMachineWithShooting extends LinearOpMode {
     public state getCurrentState(){
         return stateOrder[stateNumber];
     } //We never use this, but it could be useful one day.
-    public enum autoOption{
-        RedBeaconParkWood, RedBeaconParkRamp, RedShootBeaconParkRamp, RedShootBeaconParkWood,
-        BlueBeaconParkWood, BlueBeaconParkRamp, BlueShootBeaconParkRamp, BlueShootBeaconParkWood,
-        GenericShootFromFarAngle, GenericShootFromNextToRamp, ReadInput, DoNothing
-    } //These are all of the auto programs we want to have access to
     @Override
     public void runOpMode() throws InterruptedException {
         gyroSensor = hardwareMap.get(ModernRoboticsI2cGyro.class, GYRONAME);
         gyroSensor.calibrate(); //Calibrating Gyro is important! It not only zeroes it, but it also
         leftFrontWheel = hardwareMap.dcMotor.get(LEFT1NAME);
-        autoOption autoDecided = autoOption.DoNothing;
         leftBackWheel = hardwareMap.dcMotor.get(LEFT2NAME);
         rightFrontWheel = hardwareMap.dcMotor.get(RIGHT1NAME);
         rightBackWheel = hardwareMap.dcMotor.get(RIGHT2NAME);
@@ -443,86 +441,39 @@ public class StateMachineWithShooting extends LinearOpMode {
 
         int timer = 0;
         int cycler = 0;
+
+
         while(gyroSensor.isCalibrating()) {
             timer++;
             if(timer % 10 == 0){
                 cycler++;
             }
             if (cycler == 1) {
-                telemetry.addData("Gyro", " is Calibrating.");
+                telemetry.addData("Gyro", " is still Calibrating.");
             } else if (cycler == 2){
-                telemetry.addData("Gyro", " is Calibrating..");
+                telemetry.addData("Gyro", " is still Calibrating..");
             } else {
                 cycler = 0;
-                telemetry.addData("Gyro", " is Calibrating...");
+                telemetry.addData("Gyro", " is still Calibrating...");
             }
             telemetry.update();
         } //This silly looking code above animates a "..." sequence in telemetry
-        telemetry.addData("Gyro", "Calibrated (" + timer + " cycles)");
-
-        telemetry.addData("Raw Ultrasonic", range.rawUltrasonic());
-        telemetry.addData("Color Side Red", colorSensorOnSide.red());
-        telemetry.addData("Color turnLeft Alpha", colorSensorLeftBottom.alpha());
+        telemetry.clear();
+        if(range.rawUltrasonic() > 0 && colorSensorOnSide.alpha() == 0 && colorSensorLeftBottom.alpha() > 0){
+            telemetry.addData("Sensors", "Good to go");
+        } else {
+            telemetry.addData("Sensors", "Something Wrong");
+        }
         telemetry.update();
 
-        //Based on the value of autodecided, we set the stateOrder array to the correct value
-        stateOrder = DoNothingArray;
-        switch (autoDecided){
-            case RedBeaconParkRamp:
-                stateOrder = RedBeaconParkRampArray;
-                break;
-            case RedBeaconParkWood:
-                stateOrder = RedBeaconParkWoodArray;
-                break;
-            case RedShootBeaconParkRamp:
-                stateOrder = RedShootBeaconParkRampArray;
-                break;
-            case RedShootBeaconParkWood:
-                stateOrder = RedShootBeaconParkWoodArray;
-                break;
-            case BlueBeaconParkRamp:
-                stateOrder = BlueBeaconParkRampArray;
-                break;
-            case BlueBeaconParkWood:
-                stateOrder = BlueBeaconParkWoodArray;
-                break;
-            case BlueShootBeaconParkRamp:
-                stateOrder = BlueBeaconShootParkRampArray;
-                break;
-            case BlueShootBeaconParkWood:
-                stateOrder = BlueBeaconShootParkWoodArray;
-                break;
-            case GenericShootFromFarAngle:
-                stateOrder = GenericShootFromFarAngleArray;
-                break;
-            case GenericShootFromNextToRamp:
-                stateOrder = GenericShootFromNextToRampArray;
-                break;
-            //Currently, there are 10 choices for autonomous routes: 5 per alliance
-            //We can also use ReadInput to have an infinite number of finely tweaked routes
-            case ReadInput:
-                break;
-            case DoNothing:
-                stateOrder = DoNothingArray;
-                break;
-            default:
-                break;
-        }
-        if(stateOrder == DoNothingArray){
-            telemetry.addLine("Uh oh! Something Went Wrong!");
-            telemetry.addLine("No Case for " + autoDecided.toString());
-            telemetry.update();
-        }
         CurrentState = updateState(); // Set Current State
         colorSensorLeftBottom.enableLed(true); //If you don't set the LED until after the waitForStart(), it doesn't work.
+        double cm, ticks, degrees, power, Seconds, Speed, Time;
+        int RBPos, RFPos, LBPos, LFPos, Average;
 
         waitForStart();
 
-        double totalTime = 0;
-        double cm, ticks, degrees, power, Seconds, Speed, Time, targetPosition, diffVal, gyroThreshold = 1;
-        int RBPos, RFPos, LBPos, LFPos, Average;
-        while((CurrentState.getState() != states.Finished) && (opModeIsActive()) && (totalTime < (30*1000))) {
-            totalTime++; //Because every cycle takes exactly 1ms, we know how long we have been running. totalTime will automatically stop the robot at 30 seconds
+        while((CurrentState.getState() != states.Finished) && (opModeIsActive())) {
             switch (CurrentState.getState()) {
                 // We will be using this switch as our main control loop.
                 // The nice thing about this architechture is we can do manual overrides of states,
@@ -864,9 +815,9 @@ public class StateMachineWithShooting extends LinearOpMode {
                     CurrentState = updateState();
                     break;
                 case Finished:
+                    stopDriveMotors();
                     telemetry.clear();
                     telemetry.addLine("All Done!");
-                    telemetry.addLine("It look " + totalTime/1000 + " seconds to complete this autonomous");
                     telemetry.update();
                     super.stop();
                     break;
@@ -878,7 +829,6 @@ public class StateMachineWithShooting extends LinearOpMode {
             } //Code Below this point will run on every cycle
             telemetry.clear();
             telemetry.addData("State", CurrentState.getState());
-            telemetry.addData("Uptime", (totalTime/1000)+" seconds");
 
             telemetry.addData("turnLeft Bottom", colorSensorLeftBottom.alpha());
             telemetry.addData("Side Color", colorReading);
