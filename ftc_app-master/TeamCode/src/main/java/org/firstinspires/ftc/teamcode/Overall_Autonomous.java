@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.os.Environment;
 import android.os.SystemClock;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
@@ -17,53 +18,60 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.options.OptionMenu;
 import org.firstinspires.ftc.teamcode.options.SingleSelectCategory;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.Scanner;
 
 /**
- * Created by Ethan Schaffer on 11/17/2016.
+ * Created by Ethan Schaffer.
  */
 
 @Autonomous(name="Autonomous (Options)", group="Autonomous")
 public class Overall_Autonomous extends LinearOpMode {
-    public static final String LEFT1NAME = "l1"; //LX Port 2
-    public static final String LEFT2NAME = "l2"; //LX Port 1
-    public static final String RIGHT1NAME = "r1";//0A Port 1
-    public static final String RIGHT2NAME = "r2";//0A Port 2
-    public static final String SHOOT1NAME = "sh1";//PN Port 1
-    public static final String SHOOT2NAME = "sh2";//PN Port 2
-    public static final String INFEEDNAME = "in"; //2S Port 2
-    public static final String BALLBLOCKLEFTNAME = "bl", BALLBLOCKRIGHTNAME = "br"; //MO Ports 3+4
-    public static final String LEFTPUSHNAME = "lp";//MO Port 1
-    public static final String RIGHTPUSHNAME = "rp";//MO Port 2
-    public static final String GYRONAME = "g"; //Port 4
-    public static final String RANGENAME = "r"; //Port 0
-    public static final String COLORSIDENAME = "cs"; //Port 2
-    public static final String COLORLEFTBOTTOMNAME = "cb";//Port 3
-    public static final String COLORRIGHTBOTTOMNAME = "cb2"; //Port 4
+    private static final String LEFT1NAME = "l1"; //LX Port 2
+    private static final String LEFT2NAME = "l2"; //LX Port 1
+    private static final String RIGHT1NAME = "r1";//0A Port 1
+    private static final String RIGHT2NAME = "r2";//0A Port 2
+    private static final String SHOOT1NAME = "sh1";//PN Port 1
+    private static final String SHOOT2NAME = "sh2";//PN Port 2
+    private static final String INFEEDNAME = "in"; //2S Port 2
+    private static final String BALLBLOCKLEFTNAME = "bl";
+    private static final String BALLBLOCKRIGHTNAME = "br"; //MO Ports 3+4
+    private static final String LEFTPUSHNAME = "lp";//MO Port 1
+    private static final String RIGHTPUSHNAME = "rp";//MO Port 2
+    private static final String GYRONAME = "g"; //Port 4
+    private static final String RANGENAME = "r"; //Port 0
+    private static final String COLORSIDENAME = "cs"; //Port 2
+    private static final String COLORLEFTBOTTOMNAME = "cb";//Port 3
+    private static final String COLORRIGHTBOTTOMNAME = "cb2"; //Port 4
 
-    public static final double LEFT_SERVO_OFF_VALUE = .20;
-    public static final double LEFT_SERVO_ON_VALUE = 1;
-    public static final double RIGHT_SERVO_ON_VALUE = 1;
-    public static final double RIGHT_SERVO_OFF_VALUE = .20;
-    public static final double BALLBLOCKLEFTOPEN = 1, BALLBLOCKLEFTCLOSED = 0;
-    public static final double BALLBLOCKRIGHTOPEN = 0, BALLBLOCKRIGHTCLOSED = 1;
+    private static final double LEFT_SERVO_OFF_VALUE = .20;
+    private static final double LEFT_SERVO_ON_VALUE = 1;
+    private static final double RIGHT_SERVO_ON_VALUE = 1;
+    private static final double RIGHT_SERVO_OFF_VALUE = .20;
+    private static final double BALLBLOCKLEFTOPEN = 1;
+    private static final double BALLBLOCKLEFTCLOSED = 0;
+    private static final double BALLBLOCKRIGHTOPEN = 0;
+    private static final double BALLBLOCKRIGHTCLOSED = 1;
 
-    private double ticksPerRev = 7;
-    private double gearBoxOne = 40.0;
-    private double gearBoxTwo = 24.0 / 16.0;
-    private double gearBoxThree = 1.0;
-    private double wheelDiameter = 4.0 * Math.PI;
-    private double cmPerInch = 2.54;
-    private double width = 31.75;
+    private final double ticksPerRev = 7;
+    private final double gearBoxOne = 40.0;
+    private final double gearBoxTwo = 24.0 / 16.0;
+    private final double gearBoxThree = 1.0;
+    private final double wheelDiameter = 4.0 * Math.PI;
+    private final double cmPerInch = 2.54;
+    private final double width = 31.75;
     //The Above Values lets us convert encoder ticks to centimeters per travelled, as shown below.
 
-    public double cmPerTick = (wheelDiameter / (ticksPerRev * gearBoxOne * gearBoxTwo * gearBoxThree)) * cmPerInch; //Allows us to drive our roobt with accuracy to the centiment
+    private final double cmPerTick = (wheelDiameter / (ticksPerRev * gearBoxOne * gearBoxTwo * gearBoxThree)) * cmPerInch; //Allows us to drive our roobt with accuracy to the centiment
 
 
     //All of the different states the robot can be in during autonomous
     //These are our building blocks
     public enum states {
-        Move, Shoot, EnableShot, ShootAtPower, TurnLeft, TurnRight, TurnLeftEnc, TurnRightEnc, StrafeLeft, StrafeRight, StrafeToWall, LineSearch, PressBeacon, Wait5Seconds, Finished
+        Move, Shoot, EnableShot, ShootAtPower, TurnLeft, TurnRight, TurnLeftEnc, TurnRightEnc, StrafeLeft, StrafeRight, StrafeToWall, LineSearch, PressBeacon, WaitForTime, Finished
     }
 
     //The state object lets us declare any power or sensor values we want to.
@@ -79,16 +87,9 @@ public class Overall_Autonomous extends LinearOpMode {
             sensorValue = firstV;
             powerValue = secondV;
         }
-        state(states s, double value){
-            sName = s;
-            sensorValue = value;
-        }
-        state(states s){
-            sName = s;
-        }
-        state(states s, team c)
+        state(team c)
         {
-            sName = s;
+            sName = states.PressBeacon;
             alliance = c;
         }
         states getState(){
@@ -109,10 +110,10 @@ public class Overall_Autonomous extends LinearOpMode {
 
     //Tolerance in degrees for turning
     //I don't think this actually works, but if it ain't broke...
-    double tolerance = -5;
+    private final double tolerance = -5;
 
     //Editing these arrays would change how to auto runs, in it's entirety. If we could change these values from the phone, we could basically do doodle.
-    public state[] BlueBeaconParkWoodArray = new state[]{
+    private final state[] BlueBeaconParkWoodArray = new state[]{
             //              State         Sensor       Power
             new state(states.Move,          60,     - 1.00),
             new state(states.TurnRightEnc,   60,       0.25),
@@ -124,7 +125,7 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.LineSearch,    2,         0.10),
             new state(states.StrafeToWall,  8,         0.10),
             new state(states.LineSearch,    2,       - 0.10),
-            new state(states.PressBeacon,   team.Blue       ),
+            new state(team.Blue       ),
             new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
             new state(states.Move,          125,     - 0.50),
             new state(states.TurnRight,    -tolerance,         0.05), //in case we overshoot
@@ -133,12 +134,12 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.StrafeToWall,  11,         0.13),
             new state(states.LineSearch,    2,        0.10),
             new state(states.StrafeToWall,  8,         0.10),
-            new state(states.PressBeacon,   team.Blue       ),
+            new state(team.Blue       ),
             new state(states.StrafeRight,   0.25,      1.00), //Away from wall
             new state(states.TurnRightEnc,   45,       1.00),
             new state(states.Move,          225,        1.00),
     };
-    public state[] BlueBeaconShootParkWoodArray = new state[]{
+    private final state[] BlueBeaconShootParkWoodArray = new state[]{
             //              State         Sensor       Power
             new state(states.Move,          60,     - 1.00),
             new state(states.TurnRightEnc,   60,       0.25),
@@ -150,7 +151,7 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.LineSearch,    2,         0.10),
             new state(states.StrafeToWall,  8,         0.10),
             new state(states.LineSearch,    2,       - 0.10),
-            new state(states.PressBeacon,   team.Blue       ),
+            new state(team.Blue       ),
             new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
             new state(states.Move,          125,     - 0.50),
             new state(states.TurnRight,    -tolerance,         0.05), //in case we overshoot
@@ -159,7 +160,7 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.StrafeToWall,  11,         0.13),
             new state(states.LineSearch,    2,        0.10),
             new state(states.StrafeToWall,  8,         0.10),
-            new state(states.PressBeacon,   team.Blue       ),
+            new state(team.Blue       ),
             new state(states.StrafeRight,   0.25,      1.00), //Away from wall
             new state(states.TurnRightEnc,   45,       1.00),
             new state(states.ShootAtPower,  0,       1.00),
@@ -169,7 +170,7 @@ public class Overall_Autonomous extends LinearOpMode {
 
             new state(states.Move,          60,        1.00),
     };
-    public state[] BlueBeaconShootParkRampArray = new state[]{
+    private final state[] BlueBeaconShootParkRampArray = new state[]{
             //              State         Sensor       Power
             new state(states.Move,          105,      - 1.00),
             new state(states.TurnRightEnc,   45,        0.25),
@@ -181,7 +182,7 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.LineSearch,    2,        - 0.10),
             new state(states.StrafeToWall,  8,          0.10),
             new state(states.LineSearch,    2,          0.10),
-            new state(states.PressBeacon,   team.Blue       ),
+            new state(team.Blue       ),
             new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
             new state(states.Move,          125,        0.50),
             new state(states.TurnRight,    -tolerance,  0.05), //in case we overshoot
@@ -190,7 +191,7 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.StrafeToWall,  11,         0.13),
             new state(states.LineSearch,    2,        - 0.10),
             new state(states.StrafeToWall,  8,          0.10),
-            new state(states.PressBeacon,   team.Blue       ),
+            new state(team.Blue       ),
             new state(states.ShootAtPower, 0,            1.00),
             new state(states.StrafeRight,   0.25,       1.00), //Away from wall
             new state(states.TurnLeftEnc,   90,         1.00),
@@ -199,7 +200,7 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.TurnRightEnc,   45,         1.00),
             new state(states.Move,          105,      - 1.00),
     };
-    public state[] BlueBeaconParkRampArray = new state[]{
+    private final state[] BlueBeaconParkRampArray = new state[]{
             //              State         Sensor       Power
             new state(states.Move,          105,      - 1.00),
             new state(states.TurnRightEnc,   45,        0.25),
@@ -211,7 +212,7 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.LineSearch,    2,        - 0.10),
             new state(states.StrafeToWall,  8,          0.10),
             new state(states.LineSearch,    2,          0.10),
-            new state(states.PressBeacon,   team.Blue       ),
+            new state(team.Blue       ),
             new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
             new state(states.Move,          125,        0.50),
             new state(states.TurnRight,    -tolerance,  0.05), //in case we overshoot
@@ -220,12 +221,12 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.StrafeToWall,  11,         0.13),
             new state(states.LineSearch,    2,        - 0.10),
             new state(states.StrafeToWall,  8,          0.10),
-            new state(states.PressBeacon,   team.Blue       ),
+            new state(team.Blue       ),
             new state(states.StrafeRight,   0.25,       1.00), //Away from wall
             new state(states.TurnLeftEnc,   45,         1.00),
     };
 
-    public state[] RedBeaconParkWoodArray = new state[]{
+    private final state[] RedBeaconParkWoodArray = new state[]{
             //              State         Sensor       Power
             new state(states.Move,          60,       1.00),
             new state(states.TurnLeftEnc,   60,       0.25),
@@ -236,7 +237,7 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.TurnLeft,      tolerance,        0.05),
             new state(states.LineSearch,    2,       - 0.10),
             new state(states.StrafeToWall,  9,         0.10),
-            new state(states.PressBeacon,   team.Red       ),
+            new state(team.Red       ),
             new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
             new state(states.Move,          125,       0.50),
             new state(states.TurnRight,    -tolerance,         0.05), //in case we overshoot
@@ -245,12 +246,12 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.StrafeToWall,  11,         0.13),
             new state(states.LineSearch,    2,       - 0.10),
             new state(states.StrafeToWall,  8,         0.10),
-            new state(states.PressBeacon,   team.Red       ),
+            new state(team.Red       ),
             new state(states.StrafeRight,   0.25,      1.00), //Away from wall
             new state(states.TurnLeftEnc,   42,       1.00),
             new state(states.Move,          225,      - 1.00),
         };
-    public state[] RedShootBeaconParkWoodArray = new state[]{
+    private final state[] RedShootBeaconParkWoodArray = new state[]{
             //              State         Sensor       Power
             new state(states.Move,          60,       1.00),
             new state(states.TurnLeftEnc,   60,       0.25),
@@ -261,7 +262,7 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.TurnLeft,      tolerance,        0.05),
             new state(states.LineSearch,    2,         0.10),
             new state(states.StrafeToWall,  9,         0.10),
-            new state(states.PressBeacon,   team.Red       ),
+            new state(team.Red       ),
             new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
             new state(states.Move,          125,     - 0.50),
             new state(states.TurnRight,    -tolerance,         0.05), //in case we overshoot
@@ -270,7 +271,7 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.StrafeToWall,  11,         0.13),
             new state(states.LineSearch,    2,         0.10),
             new state(states.StrafeToWall,  8,         0.10),
-            new state(states.PressBeacon,   team.Red       ),
+            new state(team.Red       ),
             new state(states.StrafeRight,   0.25,      1.00), //Away from wall
             new state(states.TurnRightEnc,  90,       1.00),
             new state(states.ShootAtPower,  0,       1.00),
@@ -281,7 +282,7 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.TurnRightEnc,  45,     1.00),
             new state(states.Move,  80,     1.00),
     };
-    public state[] RedShootBeaconParkRampArray = new state[]{
+    private final state[] RedShootBeaconParkRampArray = new state[]{
             //              State         Sensor       Power
             new state(states.Move,          60,       1.00),
             new state(states.TurnLeftEnc,   60,       0.25),
@@ -292,7 +293,7 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.TurnLeft,      tolerance,        0.05),
             new state(states.LineSearch,    2,         0.10),
             new state(states.StrafeToWall,  9,         0.10),
-            new state(states.PressBeacon,   team.Red       ),
+            new state(team.Red       ),
             new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
             new state(states.Move,          125,     - 0.50),
             new state(states.TurnRight,    -tolerance,         0.05), //in case we overshoot
@@ -301,7 +302,7 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.StrafeToWall,  11,         0.13),
             new state(states.LineSearch,    2,         0.10),
             new state(states.StrafeToWall,  8,         0.10),
-            new state(states.PressBeacon,   team.Red       ),
+            new state(team.Red       ),
             new state(states.StrafeRight,   0.25,      1.00), //Away from wall
             new state(states.TurnRightEnc,  90,       1.00),
             new state(states.ShootAtPower,  0,       1.00),
@@ -313,7 +314,7 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.Move,          80,   - 1.00),
     };
 
-    public state[] RedBeaconParkRampArray = new state[]{
+    private final state[] RedBeaconParkRampArray = new state[]{
             //              State         Sensor       Power
             new state(states.Move,          60,       1.00),
             new state(states.TurnLeftEnc,   60,       0.25),
@@ -324,7 +325,7 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.TurnLeft,      tolerance,        0.05),
             new state(states.LineSearch,    2,       - 0.10),
             new state(states.StrafeToWall,  9,         0.10),
-            new state(states.PressBeacon,   team.Red       ),
+            new state(team.Red       ),
             new state(states.StrafeRight,   0.45,       0.75), //AWAY from wall
             new state(states.Move,          125,       0.50),
             new state(states.TurnRight,    -tolerance,         0.05), //in case we overshoot
@@ -333,57 +334,73 @@ public class Overall_Autonomous extends LinearOpMode {
             new state(states.StrafeToWall,  11,         0.13),
             new state(states.LineSearch,    2,       - 0.10),
             new state(states.StrafeToWall,  8,         0.10),
-            new state(states.PressBeacon,   team.Red       ),
+            new state(team.Red       ),
             new state(states.StrafeRight,   0.25,      1.00), //Away from wall
             new state(states.TurnLeftEnc,   42,       1.00),
             new state(states.Move,          225,      - 1.00),
     };
 
-    public state[] GenericShootFromFarAngleArray = new state[] {
-            new state(states.Move,      180,     .75),
-            new state(states.Shoot                  ),
+    private final state[] GenericShootFromFarAngleArray = new state[] {
+            new state(states.Move,     180,      .75),
+            new state(states.Shoot,      0,        0),
             new state(states.Move,      60,       .5),
             new state(states.Move,      60,     - .5),
             new state(states.Move,      60,      1.0),
     };
-    public state[] GenericShootFromNextToRampArray = new state[] {
-            new state(states.Move,      180,     .75),
-            new state(states.Shoot                  ),
+    private final state[] GenericShootFromNextToRampArray = new state[] {
+            new state(states.Move,     180,      .75),
+            new state(states.Shoot,      0,        0),
             new state(states.Move,      60,       .5),
             new state(states.Move,      60,     - .5),
             new state(states.Move,      60,      1.0),
     };
 
-    public state[] DoNothingArray = new state[] {
-            new state(states.Finished)
+    private final state[] DoNothingArray = new state[] {
+            new state(states.Finished,0,0)
         };
 
-    state[] stateOrder;
+    private state[] stateOrder;
     //NotSensed is for the Color Sensor while we are pushing the beacon.
     public enum team {
         Red, Blue, NotSensed
     }
 
     //Declaration of the Robot iself
-    DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed;
-    Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlockLeft;
-    ColorSensor colorSensorLeftBottom, colorSensorOnSide;
-    ModernRoboticsI2cRangeSensor range;
-    ModernRoboticsI2cGyro gyroSensor;
-    DeviceInterfaceModule dim;
+    public DcMotor leftFrontWheel;
+    public DcMotor leftBackWheel;
+    public DcMotor rightFrontWheel;
+    public DcMotor rightBackWheel;
+    public DcMotor shoot1;
+    public DcMotor shoot2;
+    public DcMotor infeed;
+    public Servo leftButtonPusher;
+    public Servo rightButtonPusher;
+    public Servo ballBlockRight;
+    public Servo ballBlockLeft;
+    public ColorSensor colorSensorLeftBottom;
+    public ColorSensor colorSensorOnSide;
+    public ModernRoboticsI2cRangeSensor range;
+    public ModernRoboticsI2cGyro gyroSensor;
+    public DeviceInterfaceModule dim;
 
     //Useful variables
-    state CurrentState;
-    long lastTime;
-    long time;
-    boolean initialized = false, movedServo = false;
-    double circleFrac, movement, changeFactor, modified, currentDistance;
-    team colorReading = team.NotSensed;
-    int redReading, blueReading;
+    private state CurrentState;
+    private long lastTime;
+    private long time;
+    private boolean initialized = false;
+    private boolean movedServo = false;
+    private double circleFrac;
+    private double movement;
+    private double changeFactor;
+    private double modified;
+    private double currentDistance;
+    private team colorReading = team.NotSensed;
+    private int redReading;
+    private int blueReading;
     //By declaring certain values here and not within our case statements, we avoid declaring them multiple times.
 
-    public int stateNumber = -1;
-    public state updateState() throws InterruptedException {
+    private int stateNumber = -1;
+    private state updateState() throws InterruptedException, NullPointerException{
         //By Resetting encoders and other values (like time buffers) here, we avoid having to do more advanced logic within each case statement
         stopDriveMotors();
         idle();
@@ -394,7 +411,7 @@ public class Overall_Autonomous extends LinearOpMode {
         time = 0;
         idle();
         if(stateNumber == stateOrder.length){
-            return new state(states.Finished);
+            return new state(states.Finished, 0, 0);
         }
         return stateOrder[stateNumber];
     }
@@ -402,6 +419,7 @@ public class Overall_Autonomous extends LinearOpMode {
     public state getCurrentState(){
         return stateOrder[stateNumber];
     } //We never use this, but it could be useful one day.
+
     @Override
     public void runOpMode() throws InterruptedException {
         gyroSensor = hardwareMap.get(ModernRoboticsI2cGyro.class, GYRONAME);
@@ -429,7 +447,6 @@ public class Overall_Autonomous extends LinearOpMode {
         ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
         ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
 
-
         range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGENAME);
         colorSensorLeftBottom = hardwareMap.colorSensor.get(COLORLEFTBOTTOMNAME);
         colorSensorOnSide = hardwareMap.colorSensor.get(COLORSIDENAME);
@@ -439,8 +456,6 @@ public class Overall_Autonomous extends LinearOpMode {
 
         int timer = 0;
         int cycler = 0;
-
-
 
         /*
               __  __
@@ -463,12 +478,12 @@ public class Overall_Autonomous extends LinearOpMode {
         String allianceColor = menu.selectedOption("alliance_color");
 
         SingleSelectCategory route = new SingleSelectCategory("autonomous_route");
-        if(allianceColor == "Red"){
+        if(Objects.equals(allianceColor, "Red")){
             route.addOption("RedBeaconParkWood");
             route.addOption("RedBeaconParkRamp");
             route.addOption("RedShootBeaconParkRamp");
             route.addOption("RedShootBeaconParkWood");
-        } else if(allianceColor == "Blue"){
+        } else if(Objects.equals(allianceColor, "Blue")){
             route.addOption("BlueBeaconParkWood");
             route.addOption("BlueBeaconParkRamp");
             route.addOption("BlueShootBeaconParkRamp");
@@ -520,7 +535,85 @@ public class Overall_Autonomous extends LinearOpMode {
             //Currently, there are 10 choices for autonomous routes: 4 per alliance color, and two reserve options
             //We can also use ReadInput to have an infinite number of finely tweaked routes
             case "ReadInput":
-                stateOrder = DoNothingArray;
+                String FILE_DIR = "/InputFiles/";
+                File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + FILE_DIR, "input_no_color");
+                Scanner s = null;
+                try {
+                    s = new Scanner(file);
+                } catch (FileNotFoundException e) {
+                    stateOrder = DoNothingArray;
+                    e.printStackTrace();
+                    break;
+                }
+                try {
+                    state[] inputArray = new state[100]; //make the array large enough to never have issues
+                    int positionInArrayAsWeAdd = 0;
+                    while (s.hasNextDouble()) {
+                        double stateVal;
+                        double powerVal;
+                        double sensorVal;
+                        stateVal = s.nextDouble();
+                        powerVal = s.nextDouble();
+                        sensorVal = s.nextDouble();
+                        switch ((int) stateVal) {
+                            case 1:
+                                inputArray[positionInArrayAsWeAdd] = new state(states.Move, sensorVal, powerVal);
+                                break;
+                            case 2:
+                                inputArray[positionInArrayAsWeAdd] = new state(states.Shoot, sensorVal, powerVal);
+                                break;
+                            case 3:
+                                inputArray[positionInArrayAsWeAdd] = new state(states.EnableShot, sensorVal, powerVal);
+                                break;
+                            case 4:
+                                inputArray[positionInArrayAsWeAdd] = new state(states.ShootAtPower, sensorVal, powerVal);
+                                break;
+
+                            case 5:
+                                inputArray[positionInArrayAsWeAdd] = new state(states.TurnLeft, sensorVal, powerVal);
+                                break;
+                            case 6:
+                                inputArray[positionInArrayAsWeAdd] = new state(states.TurnRight, sensorVal, powerVal);
+                                break;
+                            case 7:
+                                inputArray[positionInArrayAsWeAdd] = new state(states.TurnLeftEnc, sensorVal, powerVal);
+                                break;
+                            case 8:
+                                inputArray[positionInArrayAsWeAdd] = new state(states.TurnRightEnc, sensorVal, powerVal);
+                                break;
+                            case 9:
+                                inputArray[positionInArrayAsWeAdd] = new state(states.StrafeLeft, sensorVal, powerVal);
+                                break;
+                            case 10:
+                                inputArray[positionInArrayAsWeAdd] = new state(states.StrafeRight, sensorVal, powerVal);
+                                break;
+                            case 11:
+                                inputArray[positionInArrayAsWeAdd] = new state(states.StrafeToWall, sensorVal, powerVal);
+                                break;
+                            case 12:
+                                inputArray[positionInArrayAsWeAdd] = new state(states.LineSearch, sensorVal, powerVal);
+                                break;
+                            case 13:
+                                inputArray[positionInArrayAsWeAdd] = new state(states.PressBeacon, sensorVal, powerVal);
+                                break;
+                            case 14:
+                                inputArray[positionInArrayAsWeAdd] = new state(states.WaitForTime, sensorVal, powerVal);
+                                break;
+                            case 15:
+                                inputArray[positionInArrayAsWeAdd] = new state(states.Finished, sensorVal, powerVal);
+                                break;
+                        }
+                        positionInArrayAsWeAdd++;
+                    }
+                    inputArray[positionInArrayAsWeAdd + 1] = new state(states.Finished, 0, 0); //automatically ends the autonomoous after all commands have been tried
+                    stateOrder = inputArray;
+                } catch (Exception e){
+                    e.printStackTrace();
+                    telemetry.clear();
+                    telemetry.addLine("Something went wrong within the building of the array");
+                    telemetry.update();
+                    stateOrder = DoNothingArray;
+                }
                 break;
             case "DoNothing":
                 stateOrder = DoNothingArray;
@@ -536,12 +629,15 @@ public class Overall_Autonomous extends LinearOpMode {
             telemetry.update();
         }
 
-        while(gyroSensor.isCalibrating()) {
+        timer = 0;
+        while(gyroSensor.isCalibrating() && timer < 10000) {
             timer++;
-            if(timer % 10 == 0){
+            if(timer % 15 == 0){
                 cycler++;
             }
-            if (cycler == 1) {
+            if (cycler == 0){
+                telemetry.addData("Gyro", " is still Calibrating");
+            } else if (cycler == 1) {
                 telemetry.addData("Gyro", " is still Calibrating.");
             } else if (cycler == 2){
                 telemetry.addData("Gyro", " is still Calibrating..");
@@ -550,11 +646,12 @@ public class Overall_Autonomous extends LinearOpMode {
                 telemetry.addData("Gyro", " is still Calibrating...");
             }
             telemetry.update();
-        } //This silly looking code above animates a "..." sequence in telemetry
+        } //This silly looking code above animates a "..." sequence in telemetry, if the gyroscope is still calibrating
         telemetry.clear();
-        telemetry.addData("Auto Route", autoRouteChosen);
-        if(range.rawUltrasonic() > 0 && colorSensorOnSide.alpha() == 0 && colorSensorLeftBottom.alpha() > 0){
-            telemetry.addData("Sensors", "Good to go");
+        telemetry.addData("Route", Objects.equals(autoRouteChosen, "ReadInput") ? "Custom" : autoRouteChosen);
+        if(range.rawUltrasonic() > 0 && colorSensorOnSide.alpha() == 0 && colorSensorLeftBottom.alpha() > 0 && timer < 10000){
+            //Range Works               //Side not sensing (no light)     //Bottom senses something           //Gyro set up in a reasonable time frame
+            telemetry.addLine("Everything is good to go!");
         } else {
             telemetry.addData("Sensors", "Something Wrong");
         }
@@ -564,6 +661,7 @@ public class Overall_Autonomous extends LinearOpMode {
         colorSensorLeftBottom.enableLed(true); //If you don't set the LED until after the waitForStart(), it doesn't work.
         double cm, ticks, degrees, power, Seconds, Speed, Time;
         int RBPos, RFPos, LBPos, LFPos, Average;
+
 
         waitForStart();
 
@@ -908,6 +1006,13 @@ public class Overall_Autonomous extends LinearOpMode {
                     infeed.setPower(0);
                     CurrentState = updateState();
                     break;
+                case WaitForTime:
+                    time++;
+                    if(time < CurrentState.getSensorValue()){
+                        break;
+                    }
+                    CurrentState = updateState();
+                    break;
                 case Finished:
                     stopDriveMotors();
                     telemetry.clear();
@@ -916,7 +1021,6 @@ public class Overall_Autonomous extends LinearOpMode {
                     super.stop();
                     break;
                 default:
-
                     telemetry.addLine("Uh oh! Couldn't find a case statement for a state " + CurrentState.getState());
                     telemetry.update();
                     super.stop();
@@ -928,9 +1032,8 @@ public class Overall_Autonomous extends LinearOpMode {
             telemetry.addData("Side Color", colorReading);
             telemetry.addData("G", gyroSensor.getHeading());
             telemetry.update();
-            while(1000*1000 > SystemClock.elapsedRealtimeNanos() - lastTime){
-
-            } //guarantees a loop speed of 1000 milliseconds.
+//            while(1000*1000 > SystemClock.elapsedRealtimeNanos() - lastTime){
+//            } //guarantees a loop speed of 1000 milliseconds.
             lastTime = SystemClock.elapsedRealtimeNanos();
             idle();
         }
@@ -938,7 +1041,7 @@ public class Overall_Autonomous extends LinearOpMode {
         dim.setLED(1, false);
     }
 
-    public static boolean resetEncoder(DcMotor m){
+    private static boolean resetEncoder(DcMotor m){
         m.setMode(DcMotor.RunMode.RESET_ENCODERS);
         if(m.getCurrentPosition()!=0){
             return false;
@@ -947,7 +1050,7 @@ public class Overall_Autonomous extends LinearOpMode {
         return true;
     }
 
-    public void stopDriveMotors(){
+    private void stopDriveMotors(){
         leftFrontWheel.setPower(0);
         leftBackWheel.setPower(0);
         rightFrontWheel.setPower(0);
@@ -976,7 +1079,7 @@ public class Overall_Autonomous extends LinearOpMode {
         rightBack.setPower(rightBackVal);
     }
 
-    public boolean initEncoders()  throws InterruptedException {
+    private boolean initEncoders()  throws InterruptedException {
         if(initialized)
             return true;
         if(resetEncoder(leftBackWheel) && resetEncoder(leftFrontWheel) && resetEncoder(rightBackWheel) && resetEncoder(rightFrontWheel)){
@@ -987,14 +1090,14 @@ public class Overall_Autonomous extends LinearOpMode {
         return false;
     }
 
-    public void setDrivePower(double power) {
+    private void setDrivePower(double power) {
         leftBackWheel.setPower(power);
         leftFrontWheel.setPower(power);
         rightBackWheel.setPower(power);
         rightFrontWheel.setPower(power);
     }
 
-    public int getHeading() {
+    private int getHeading() {
 
         int currentHeading = gyroSensor.getHeading();
 
@@ -1007,15 +1110,15 @@ public class Overall_Autonomous extends LinearOpMode {
         return output;
     }
 
-    public void setStrafePower(String Direction, double Speed) {
-        if(Direction == "turnLeft")
+    private void setStrafePower(String Direction, double Speed) {
+        if(Objects.equals(Direction, "turnLeft"))
         {
             rightFrontWheel.setPower(Speed);
             rightBackWheel.setPower(-Speed);
             leftFrontWheel.setPower(-Speed);
             leftBackWheel.setPower(Speed);
         }
-        if(Direction == "turnRight")
+        if(Objects.equals(Direction, "turnRight"))
         {
             rightFrontWheel.setPower(-Speed);
             rightBackWheel.setPower(Speed);
