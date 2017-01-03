@@ -19,7 +19,7 @@ import java.util.Arrays;
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
-@TeleOp(name="Driver Controlled", group="TeleOp")
+@TeleOp(name="Tele Operated", group="TeleOp")
 public class TeleOpFinal extends OpMode {
 
     //TWEAKING VALUES
@@ -228,10 +228,12 @@ public class TeleOpFinal extends OpMode {
         double BIGGERTRIGGER = gamepad1.left_trigger > gamepad1.right_trigger ? gamepad1.left_trigger : gamepad1.right_trigger;
         //Ternary, the larger trigger value is set to the value BIGGERTRIGGER
 
-        if(BIGGERTRIGGER > TRIGGERTHRESHOLD){
-            inputY /= SLOWDOWNVALUE*BIGGERTRIGGER;
-            inputX /= SLOWDOWNVALUE*BIGGERTRIGGER;
-            inputC /= SLOWDOWNVALUE*BIGGERTRIGGER;
+        if(BIGGERTRIGGER > TRIGGERTHRESHOLD){ //If we have enough pressure on a trigger
+            if( (Math.abs(inputY) > Math.abs(inputX)) || (Math.abs(inputY) > Math.abs(inputC)) ){ //and if our forwards motion is the largest motion vector
+                inputY /= SLOWDOWNVALUE*BIGGERTRIGGER; //slow down our power inputs
+                inputX /= SLOWDOWNVALUE*BIGGERTRIGGER; //slow down our power inputs
+                inputC /= SLOWDOWNVALUE*BIGGERTRIGGER; //slow down our power inputs
+            }
         }
         //Use the larger trigger value to scale down the inputs.
 

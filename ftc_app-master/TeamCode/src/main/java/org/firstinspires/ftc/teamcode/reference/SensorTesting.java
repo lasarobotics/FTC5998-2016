@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.reference;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
@@ -15,6 +16,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * Created by Ethan Schaffer on 10/6/2016.
  */
 @Autonomous(name="Sensors", group="Autonomous")
+@Disabled
 public class SensorTesting extends LinearOpMode{
 
     ColorSensor color_bottom, color_bottom2, color_side;
