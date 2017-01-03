@@ -64,7 +64,7 @@ public class TeleOpWithAlteredSlowdown extends OpMode {
     public static final double SLOWDOWNVALUE = 5;
     public static final double TRIGGERTHRESHOLD = .2;
     public static final double ACCEPTINPUTTHRESHOLD = .15;
-    public static final double SHOOTERMAXVALUE = 1;
+    public static final double SHOOTERMAXVALUE = .85;
     public static final double SCALEDPOWER = 1; //Emphasis on current controller reading (vs current motor power) on the drive train
 
     public static final String LEFT1NAME = "l1"; //LX Port 2
