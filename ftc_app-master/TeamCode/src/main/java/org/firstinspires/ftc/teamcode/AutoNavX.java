@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.os.Environment;
-
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -18,17 +16,14 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.navX.ftc.AHRS;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Objects;
-import java.util.Scanner;
 
 /**
  * Created by Ethan Schaffer.
  */
 
-@Autonomous(name="Autonomous", group="Autonomous")
-public class AutoLinear extends LinearOpMode {
+@Autonomous(name="AutoNavX", group="Autonomous")
+public class AutoNavX extends LinearOpMode {
     public void setDrivePower(double power) {
         leftBackWheel.setPower(power);
         leftFrontWheel.setPower(power);
@@ -161,7 +156,7 @@ public class AutoLinear extends LinearOpMode {
 
     //Tolerance in degrees for turning
     //I don't think this actually works, but if it ain't broke...
-    public final double tolerance = -5;
+    public final double tolerance = 5;
 
     //Editing these arrays would change how to auto runs, in it's entirety. If we could change these values from the phone, we could basically do doodle.
     public final state[] BlueShowOff = new state[]{
@@ -280,73 +275,72 @@ public class AutoLinear extends LinearOpMode {
     public final state[] RedShowOff = new state[]{
             //              State         Sensor       Power
             new state(states.ShootAtPower,      0,     0.85),
-            new state(states.Move,            105,     1.00),
+            new state(states.Move,          60,       1.00),
             new state(states.EnableShot,     1500,     1.00),
             new state(states.ShootAtPower,      0,     0.00),
-            new state(states.Move,          45,     - 1.00),
-            new state(states.TurnLeftEnc,   60,       0.35),
-            new state(states.Move,          230,      1.00),
-            new state(states.AlignToWithin, tolerance,0.05),
-            new state(states.StrafeToWall,  10,       0.10),
-            new state(states.AlignToWithin, tolerance,0.05),
+            new state(states.TurnLeft,    - 25,       0.10),
+            new state(states.Move,          240,      1.00),
+            new state(states.AlignToWithin, 5,        0.05),
             new state(states.StrafeToWall,  8.5,      0.10),
-            new state(states.AlignToWithin, tolerance,0.05),
+
+            new state(states.AlignToWithin, 3,        0.05),
+
             new state(states.LineSearch,    2,      - 0.10),
             new state(states.LineSearch,    2,        0.05),
-            new state(states.AlignToWithin, tolerance,0.05),
-            new state(states.PressBeacon, team.Red        ),
-            new state(states.StrafeRight,   5.00,     1.00),
-            new state(states.AlignToWithin, tolerance,0.05),
-            new state(states.Move,          70,       1.00),
-            new state(states.StrafeToWall,  8.5,      0.10),
-            new state(states.AlignToWithin, tolerance,0.05),
+            new state(states.PressBeacon,   team.Red      ),
+            new state(states.StrafeRight,   7.00,     1.00),
+
+            new state(states.AlignToWithin, 3,        0.05),
+
+            new state(states.Move,          110,      1.00),
+            new state(states.StrafeToWall,  9.5,      0.10),
             new state(states.LineSearch,    2,        0.10),
             new state(states.LineSearch,    2,      - 0.05),
-            new state(states.AlignToWithin, tolerance,0.05),
-            new state(states.Move,          1.5,      1.00),
-            new state(states.LineSearch,    2,      - 0.10),
-            new state(states.LineSearch,    2,        0.05),
-            new state(states.PressBeacon, team.Red        ),
-            new state(states.StrafeRight,   5.00,     1.00),
-            new state(states.TurnLeftEnc,   45,       1.00),
-            new state(states.Move,          205,    - 1.00),
+
+            new state(states.AlignToWithin, 3,        0.05),
+            new state(states.StrafeToWall,  8.5,      0.10),
+            new state(states.AlignToWithin, 3,        0.05),
+            new state(states.PressBeacon,   team.Red      ),
+            new state(states.StrafeRight,   15.00,     1.00),
+            new state(states.TurnRightEnc,  45,        1.00),
+            new state(states.Move,          110,     - 1.00),
     };
 
     public final state[] RedTwoBeaconParkArray = new state[]{
             //              State         Sensor       Power
             new state(states.Move,          60,       1.00),
-            new state(states.TurnLeftEnc,   60,       0.35),
-            new state(states.Move,          230,      1.00),
-            new state(states.AlignToWithin, tolerance,0.05),
-            new state(states.StrafeToWall,  10,       0.10),
-            new state(states.AlignToWithin, tolerance,0.05),
+            new state(states.TurnLeft,    - 25,       0.10),
+            new state(states.Move,          240,      1.00),
+            new state(states.AlignToWithin, 5,        0.05),
             new state(states.StrafeToWall,  8.5,      0.10),
-            new state(states.AlignToWithin, tolerance,0.05),
+
+            new state(states.AlignToWithin, 3,        0.05),
+
             new state(states.LineSearch,    2,      - 0.10),
             new state(states.LineSearch,    2,        0.05),
-            new state(states.AlignToWithin, tolerance,0.05),
-            new state(states.PressBeacon, team.Red        ),
-            new state(states.StrafeRight,   5.00,     1.00),
-            new state(states.AlignToWithin, tolerance,0.05),
-            new state(states.Move,          70,       1.00),
-            new state(states.StrafeToWall,  8.5,      0.10),
-            new state(states.AlignToWithin, tolerance,0.05),
+            new state(states.PressBeacon,   team.Red      ),
+            new state(states.StrafeRight,   7.00,     1.00),
+
+            new state(states.AlignToWithin, 3,        0.05),
+
+            new state(states.Move,          110,      1.00),
+            new state(states.StrafeToWall,  9.5,      0.10),
             new state(states.LineSearch,    2,        0.10),
             new state(states.LineSearch,    2,      - 0.05),
-            new state(states.AlignToWithin, tolerance,0.05),
-            new state(states.Move,          1.5,      1.00),
-            new state(states.LineSearch,    2,      - 0.10),
-            new state(states.LineSearch,    2,        0.05),
-            new state(states.PressBeacon, team.Red        ),
-            new state(states.StrafeRight,   5.00,     1.00),
-            new state(states.TurnLeftEnc,   45,       1.00),
-            new state(states.Move,          205,    - 1.00),
+
+            new state(states.AlignToWithin, 3,        0.05),
+            new state(states.StrafeToWall,  8.5,      0.10),
+            new state(states.AlignToWithin, 3,        0.05),
+            new state(states.PressBeacon,   team.Red      ),
+            new state(states.StrafeRight,   15.00,     1.00),
+            new state(states.TurnRightEnc,  45,        1.00),
+            new state(states.Move,          110,     - 1.00),
     };
     public final state[] RedOneBeaconShootWood = new state[]{
             new state(states.Move,          60,       1.00),
-            new state(states.TurnLeftEnc,   60,       0.35),
+            new state(states.TurnLeft,      60,       0.05),
             new state(states.Move,          230,      1.00),
-            new state(states.TurnRight,     15,       0.25),
+            new state(states.TurnRight,     0,        0.05),
             new state(states.AlignToWithin, tolerance,0.05),
             new state(states.StrafeToWall,  10,       0.10),
             new state(states.AlignToWithin, tolerance,0.05),
@@ -364,32 +358,38 @@ public class AutoLinear extends LinearOpMode {
             new state(states.ShootAtPower,  0,        0.00),
             new state(states.Move,          60,       1.00),
     };
+
+
+
     public final state[] RedTwoBeaconsArray = new state[] {
             new state(states.Move,          60,       1.00),
-            new state(states.TurnLeftEnc,   60,       0.35),
-            new state(states.Move,          230,      1.00),
-            new state(states.AlignToWithin, tolerance,0.05),
-            new state(states.StrafeToWall,  10,       0.10),
-            new state(states.AlignToWithin, tolerance,0.05),
+            new state(states.TurnLeft,    - 25,       0.10),
+            new state(states.Move,          240,      1.00),
+            new state(states.AlignToWithin, 5,        0.05),
             new state(states.StrafeToWall,  8.5,      0.10),
-            new state(states.AlignToWithin, tolerance,0.05),
+
+            new state(states.AlignToWithin, 3,        0.05),
+
             new state(states.LineSearch,    2,      - 0.10),
             new state(states.LineSearch,    2,        0.05),
-            new state(states.AlignToWithin, tolerance,0.05),
-            new state(states.PressBeacon, team.Red        ),
-            new state(states.StrafeRight,   5.00,     1.00),
-            new state(states.AlignToWithin, tolerance,0.05),
-            new state(states.Move,          70,       1.00),
-            new state(states.StrafeToWall,  8.5,      0.10),
-            new state(states.AlignToWithin, tolerance,0.05),
+            new state(states.PressBeacon,   team.Red      ),
+            new state(states.StrafeRight,   7.00,     1.00),
+
+            new state(states.AlignToWithin, 3,        0.05),
+
+            new state(states.Move,          110,      1.00),
+            new state(states.StrafeToWall,  9.5,      0.10),
             new state(states.LineSearch,    2,        0.10),
             new state(states.LineSearch,    2,      - 0.05),
-            new state(states.AlignToWithin, tolerance,0.05),
-            new state(states.Move,          1.5,      1.00),
-            new state(states.LineSearch,    2,      - 0.10),
-            new state(states.LineSearch,    2,        0.05),
-            new state(states.PressBeacon, team.Red        ),
+
+            new state(states.AlignToWithin, 3,        0.05),
+            new state(states.StrafeToWall,  8.5,      0.10),
+            new state(states.AlignToWithin, 3,        0.05),
+            new state(states.PressBeacon,   team.Red      ),
     };
+
+
+
 
     public final state[] GenericShootFromFarAngleArray = new state[] {
             new state(states.Move,     180,      .75),
@@ -486,8 +486,6 @@ public class AutoLinear extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        gyroSensor = hardwareMap.get(ModernRoboticsI2cGyro.class, GYRONAME);
-        gyroSensor.calibrate(); //Calibrating Gyro is important! It not only zeroes it, but it also
         leftFrontWheel = hardwareMap.dcMotor.get(LEFT1NAME);
         leftBackWheel = hardwareMap.dcMotor.get(LEFT2NAME);
         rightFrontWheel = hardwareMap.dcMotor.get(RIGHT1NAME);
@@ -517,12 +515,6 @@ public class AutoLinear extends LinearOpMode {
         colorSensorLeftBottom.setI2cAddress(I2cAddr.create8bit(0x4c));
         colorSensorOnSide.setI2cAddress(I2cAddr.create8bit(0x3c));
         dim = hardwareMap.get(DeviceInterfaceModule.class, "Device Interface Module 1");
-/*
-        I2cDevice navXPortGetter = hardwareMap.get(I2cDevice.class, "n");
-        navX = new AHRS(dim, navXPortGetter.getPort(), AHRS.DeviceDataType.kProcessedData, (byte)50);
-*/
-        int timer = 0;
-        int cycler = 0;
 
         //Based on the value of autoRouteChosen, we set the stateOrder array to the correct value
         String autoRouteChosen = "RedBeaconParkRamp";
@@ -680,9 +672,11 @@ public class AutoLinear extends LinearOpMode {
                 break;
         }
 */
-        timer = 0;
-/*
-        while (gyroSensor.isCalibrating()) {
+        navX = new AHRS(dim, 5, AHRS.DeviceDataType.kProcessedData, (byte)50);
+        navX.zeroYaw();
+        int cycler = 0;
+        int timer = 0;
+        while (navX.isCalibrating()) {
             timer++;
             if (timer % 15 == 0) {
                 cycler++;
@@ -699,8 +693,8 @@ public class AutoLinear extends LinearOpMode {
             }
             telemetry.update();
         } //This silly looking code above animates a "..." sequence in telemetry, if the gyroscope is still calibrating
+        telemetry.addData("Gyro", "Done!");
         telemetry.addData("Route", Objects.equals(autoRouteChosen, "ReadInput") ? "Custom" : autoRouteChosen);
-*/
         if (range.rawUltrasonic() > 0 && colorSensorOnSide.alpha() == 0 && colorSensorLeftBottom.alpha() > 0 && timer < 10000) {
             //Range Works               //Side not sensing (no light)     //Bottom senses something           //Gyro set up in a reasonable time frame
             telemetry.addLine("Everything is good to go!");
@@ -708,6 +702,7 @@ public class AutoLinear extends LinearOpMode {
             telemetry.addData("Sensors", "Something Wrong");
         }
         telemetry.update();
+
         CurrentState = updateState(); // Set Current State
         colorSensorLeftBottom.enableLed(true); //If you don't set the LED until after the waitForStart(), it doesn't work.
         colorSensorOnSide.enableLed(false);
@@ -753,12 +748,9 @@ public class AutoLinear extends LinearOpMode {
                 EnableShot(1500, 1.0);
                 ShootAtPower(0, 0.0);
             } else if(CurrentState.getState() == states.AlignToWithin) {
-                TurnRight(-CurrentState.getSensorValue(), CurrentState.getPowerValue());
-                if(CurrentState.getSensorValue() > .04){
-                    TurnLeft(CurrentState.getSensorValue(), CurrentState.getPowerValue()-.01);
-                } else {
-                    TurnLeft(CurrentState.getSensorValue(), CurrentState.getPowerValue());
-                }
+                TurnRight( - CurrentState.getSensorValue(), CurrentState.getPowerValue());
+                TurnLeft(CurrentState.getSensorValue(), CurrentState.getPowerValue());
+                TurnRight( - CurrentState.getSensorValue(), CurrentState.getPowerValue());
             } else {
                 super.stop();
             }
@@ -781,8 +773,9 @@ public class AutoLinear extends LinearOpMode {
             }
             setDrivePower(0);
         }
+
         public void TurnLeft(double sensor, double power){
-            while(gyroSensor.getIntegratedZValue() <= sensor){
+            while(navX.getYaw() >= sensor){
                 rightBackWheel.setPower(power);
                 rightFrontWheel.setPower(power);
                 leftBackWheel.setPower(-power);
@@ -792,7 +785,7 @@ public class AutoLinear extends LinearOpMode {
 
         }
         public void TurnRight(double sensor, double power){
-            while(gyroSensor.getIntegratedZValue() >= sensor){
+            while(navX.getYaw() <= sensor){
                 rightBackWheel.setPower(-power);
                 rightFrontWheel.setPower(-power);
                 leftBackWheel.setPower(power);
@@ -800,6 +793,7 @@ public class AutoLinear extends LinearOpMode {
             }
             setDrivePower(0);
         }
+
         public void TurnLeftEnc(double sensor, double power){
             changeFactor = 90;
             modified = changeFactor + sensor;
@@ -911,6 +905,7 @@ public class AutoLinear extends LinearOpMode {
                 rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
                 leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
             } else {
+                Move(- 2, .10);
                 rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
                 leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
             }

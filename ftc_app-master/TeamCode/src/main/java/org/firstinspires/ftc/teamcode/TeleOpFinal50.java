@@ -19,8 +19,9 @@ import java.util.Arrays;
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
-@TeleOp(name="Tele Operated", group="TeleOp")
-public class TeleOpFinal extends OpMode {
+@TeleOp(name=" * Tele Op 50 *", group="TeleOp")
+public class TeleOpFinal50 extends OpMode {
+    public static final double SHOOTERMAXVALUE = .50;
 
     //TWEAKING VALUES
     public static final double LEFT_SERVO_OFF_VALUE = .3;
@@ -62,7 +63,6 @@ public class TeleOpFinal extends OpMode {
     public static final double SLOWDOWNVALUE = 5;
     public static final double TRIGGERTHRESHOLD = .2;
     public static final double ACCEPTINPUTTHRESHOLD = .15;
-    public static final double SHOOTERMAXVALUE = 1;
     public static final double SCALEDPOWER = 1; //Emphasis on current controller reading (vs current motor power) on the drive train
 
     public static final String LEFT1NAME = "l1"; //LX Port 2
@@ -119,7 +119,6 @@ public class TeleOpFinal extends OpMode {
         colorSensorLeftBottom.setI2cAddress(I2cAddr.create8bit(0x4c));
         colorSensorOnSide.setI2cAddress(I2cAddr.create8bit(0x3c));
         colorSensorRightBottom.setI2cAddress(I2cAddr.create8bit(0x2c));
-        gyroSensor = hardwareMap.get(ModernRoboticsI2cGyro.class, GYRONAME);
         dim = hardwareMap.get(DeviceInterfaceModule.class, "Device Interface Module 1");
         telemetry.addData("raw ultrasonic", range.rawUltrasonic());
         telemetry.update();
@@ -128,8 +127,8 @@ public class TeleOpFinal extends OpMode {
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
         ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
-        shoot1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shoot2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        shoot1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        shoot2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     @Override

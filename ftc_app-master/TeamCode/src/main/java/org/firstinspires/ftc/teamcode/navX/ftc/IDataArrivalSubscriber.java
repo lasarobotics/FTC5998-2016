@@ -74,6 +74,6 @@ package org.firstinspires.ftc.teamcode.navX.ftc;
 
 public interface IDataArrivalSubscriber {
     void untimestampedDataReceived(long system_timestamp, Object kind);
-
+    public void yawReset();
     void timestampedDataReceived(long system_timestamp, long sensor_timestamp, Object kind);
 }

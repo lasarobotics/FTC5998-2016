@@ -1,14 +1,17 @@
 /* ============================================
  NavX-MXP and NavX-Micro source code is placed under the MIT license
  Copyright (c) 2015 Kauai Labs
+
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is
  furnished to do so, subject to the following conditions:
+
  The above copyright notice and this permission notice shall be included in
  all copies or substantial portions of the Software.
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,119 +23,165 @@
  */
 package org.firstinspires.ftc.teamcode.navX.ftc;
 
+import android.util.Log;
+
+import java.security.Timestamp;
+
 /**
  * The navXPIDController implements a timestamped PID controller (designed to deal
  * with the jitter which is typically present in a networked control system scenario).
- * <p/>
+ * <p>
  * The navXPIDController can use any of the various data sources on a navX-Model device
  * as an input (process variable); when instantiating a navXPIDController simply
  * provide an AHRS class instance and specify which navX-Model device variable you
  * wish to use as the input.  Then, configure the navXPIDController's setPoint,
  * outputRange, whether it should operate in continuous mode or not, and the
  * P, I, D and F coefficients which will be used to calculate the output value.
- * <p/>
+ * <p>
  * An example of using the navXPIDController to rotate a FTC robot to a target angle is
  * provided <a href="http://navx-micro.kauailabs.com/examples/rotate-to-angle/">online</a>.
- * <p/>
+ * <p>
  * The general PID algorithm used herein is <a href="https://en.wikipedia.org/wiki/PID_controller">discussed in detail on Wikipedia.</a>
- * <p/>
- * <p/>
+ *
+ * <p>
  * In addition to the P,I,D terms, a FeedForward term is optionally available
  * which may be useful in cases where velocity is being controlled (e.g., to
  * achieve a continuous rotational velocity using a yaw rate gyro).  The FeedForward
  * concept is discussed further <a href="http://www.expertune.com/articles/UG2007/PIDControlsPLCEnviron.pdf">here.</a>
- * <p/>
+ * <p>
  * This algorithm implements two features with respect to the integral gain calculated
  * based on the integral (i) coefficient:
- * <p/>
+ * <p>
  * - Anti-Windup:  Ensures the integral gain doesn't exceed the min/max output range, as discussed
- * <a href="http://www.expertune.com/articles/UG2007/PIDControlsPLCEnviron.pdf">here.</a>
+ *   <a href="http://www.expertune.com/articles/UG2007/PIDControlsPLCEnviron.pdf">here.</a>
  * - Time-Correction:  Adjust the integral gain in cases when timestamps indicate that
- * data samples were lost.
- * <p/>
+ *   data samples were lost.
+ * <p>
  * This algorithm implements this feature with respect to the derivative gain, as discussed
- * <a href="http://www.diva-portal.org/smash/get/diva2:570067/FULLTEXT01.pdf">here.</a>
+ *   <a href="http://www.diva-portal.org/smash/get/diva2:570067/FULLTEXT01.pdf">here.</a>
  */
 
 public class navXPIDController implements IDataArrivalSubscriber {
 
-    /* Coefficients */
-    protected double p;
-    protected double i;
-    protected double d;
-    protected double ff;
-    /* Error statistics */
-    protected double error_current = 0.0;
-    protected double error_previous = 0.0;
-    protected double error_total = 0.0;
-    protected double error_d = 0;
+    public enum TimestampType {SENSOR, SYSTEM};
+
+    /**
+     * The PIDResult class encapsulates the data used by the navXPIDController to
+     * communicate current state to a client of the navXPIDController.  The client
+     * creates the instance of the PIDResult, and continually provides it to the
+     * navxPIDController's waitForNewUpdate() and isNewDataAvailable() methods,
+     * depending upon whether the client wishes to block (wait) for new updates,
+     * or periodically poll to determine when new data is available.
+     */
+
+    static public class PIDResult {
+        public double output;
+        public long timestamp;
+        public boolean on_target;
+        public PIDResult() {
+            output = 0.0;
+            timestamp = 0;
+            on_target = false;
+        }
+        /**
+         * Returns the timestamp of the last data sample processed by the
+         * navXPIDController.
+         */
+        public long    getTimestamp() { return timestamp; }
+        /**
+         * Returns true if the navXPIDController indicated that it is currently
+         * "on target" as defined by the configured tolerances and the most
+         * recent input data sample.
+         */
+        public boolean isOnTarget()   { return on_target; }
+        /**
+         * Returns the output value calculated by the navXPIDController which
+         * corresponds to the most recent input data sample.
+         */
+        public double  getOutput()    { return output; }
+    }
+
+    private Object sync_event = new Object();
+
+    /**
+     * The navXTimestampedDataSources specifies the navX-Model device
+     * sensor data source type used by the navXPIDController as it's input data source.
+     * These data sources are timestamped by the navX-Model device and thus are delivered
+     * with sufficient data (a highly-accurate "sensor timestamp") to allow the
+     * navXPIDController to compensate for any jitter in the transmission from the
+     * navX-Model device to the navXPIDController.
+     */
+    public enum navXTimestampedDataSource {
+        YAW,
+        PITCH,
+        ROLL,
+        COMPASS_HEADING,
+        FUSED_HEADING,
+        ALTITUDE,
+        LINEAR_ACCEL_X,
+        LINEAR_ACCEL_Y,
+        LINEAR_ACCEL_Z
+    }
+
+    /**
+     * The navXUntimestampedDataSources specifies the navX-Model device
+     * sensor data source type used by the navXPIDController as it's input data source.
+     * These data sources are timestamped with the Android "system" timestamp only, and
+     * thus may not have sufficient data to allow the navXPIDController to compensate
+     * for any jitter in the transmission from the navX-Model device to the navXPIDController.
+     */
+    public enum navXUntimestampedDataSource {
+        RAW_GYRO_X,
+        RAW_GYRO_Y,
+        RAW_GYRO_Z,
+        RAW_ACCEL_X,
+        RAW_ACCEL_Y,
+        RAW_ACCEL_Z,
+        RAW_MAG_X,
+        RAW_MAG_Y,
+        RAW_MAG_Z
+    }
+
+    private boolean timestamped = true;
     navXTimestampedDataSource timestamped_src;
     navXUntimestampedDataSource untimestamped_src;
     AHRS navx_device;
     long last_system_timestamp = 0;
     long last_sensor_timestamp = 0;
-    double tolerance_amount;
-    private Object sync_event = new Object();
-    private boolean timestamped = true;
+
+    /* Error statistics */
+    private double error_current    = 0.0;
+    private double error_previous   = 0.0;
+    private double error_total      = 0.0;
+
+    /* Coefficients */
+    private double p;
+    private double i;
+    private double d;
+    private double ff;
+
     /* Input/Output Clamps */
-    private double max_input = 0.0;
-    private double min_input = 0.0;
-    private double max_output = 1;
-    private double min_output = -1.0;
+    private double max_input        = 0.0;
+    private double min_input        = 0.0;
+    private double max_output       = 1.0;
+    private double min_output       = -1.0;
+
+    /**
+     * The ToleranceType enumeration defines the type of tolerance to be used by the
+     * navXPIDController to determine whether the controller is "on_target". */
+    public enum ToleranceType {
+        NONE, PERCENT, ABSOLUTE
+    }
+
     private ToleranceType tolerance_type;
+    double tolerance_amount;
+
     /* Behavior */
-    private boolean continuous = false;
-    private boolean enabled = false;
-    private double setpoint = 0.0;
-    private double result = 0.0;
+    private boolean continuous      = false;
+    private boolean enabled         = false;
 
-    /**
-     * This navXPIDController constructor is used when the PID Controller is to be
-     * driven by a navX-Model device input data source which is accompanied by a
-     * high-accuracy "sensor" timestamp.
-     * <p/>
-     * The data source specified automatically determines the navXPIDController's
-     * input data range.
-     **/
-    public navXPIDController(AHRS navx_device, navXTimestampedDataSource src) {
-        this.navx_device = navx_device;
-        this.timestamped = true;
-        this.timestamped_src = src;
-        switch (src) {
-            case YAW:
-                this.setInputRange(-180.0, 180.0);
-                break;
-            case PITCH:
-            case ROLL:
-                this.setInputRange(-90.0, 90.0);
-                break;
-            case COMPASS_HEADING:
-            case FUSED_HEADING:
-                this.setInputRange(0.0, 360.0);
-                break;
-            case LINEAR_ACCEL_X:
-            case LINEAR_ACCEL_Y:
-            case LINEAR_ACCEL_Z:
-                this.setInputRange(-2.0, 2.0);
-                break;
-        }
-        navx_device.registerCallback(this);
-    }
-
-    /**
-     * This navXPIDController constructor is used when the PID Controller is to be
-     * driven by a navX-Model device input data source which is not accompanied by a
-     * high-accuracy "sensor" timestamp.
-     * <p/>
-     * The data source specified automatically determines the navXPIDController's
-     * input data range.
-     **/
-    public navXPIDController(AHRS navx_device, navXUntimestampedDataSource src) {
-        this.navx_device = navx_device;
-        this.timestamped = false;
-        this.untimestamped_src = src;
-        navx_device.registerCallback(this);
-    }
+    private double setpoint         = 0.0;
+    private double result           = 0.0;
 
     @Override
     public void untimestampedDataReceived(long curr_system_timestamp, Object kind) {
@@ -220,6 +269,77 @@ public class navXPIDController implements IDataArrivalSubscriber {
         }
     }
 
+    /* If the yaw was just reset, this forms a potential discontinuity in the
+       yaw sample stream.  It's possible that if isNewUpdateAvailable() is
+       invoked after the yaw is reset but before the next post yaw-reset sample
+       has been received, that the PID Controller will indicate TRUE.  Thus,
+       when the yaw is reset, set the last sensor timestamp to 0, which
+       effecitively causes isNewUpdateAvailable() to return FALSE until
+       the next (post yaw-reset) sample is received.
+
+       Additionally, the error terms and the output result are also reset,
+       and will be recalculated when the next (post yaw-reset) sample arrives.
+     */
+
+    @Override
+    public void yawReset() {
+        if (timestamped && (timestamped_src == navXTimestampedDataSource.YAW)) {
+            this.last_sensor_timestamp = 0;
+            error_current = 0.0;
+            error_previous = 0.0;
+            error_total = 0.0;
+            result = 0.0;
+        }
+    }
+
+    /**
+     * This navXPIDController constructor is used when the PID Controller is to be
+     * driven by a navX-Model device input data source which is accompanied by a
+     * high-accuracy "sensor" timestamp.
+     * <p>
+     * The data source specified automatically determines the navXPIDController's
+     * input data range.
+     **/
+    public navXPIDController(AHRS navx_device, navXTimestampedDataSource src) {
+        this.navx_device = navx_device;
+        this.timestamped = true;
+        this.timestamped_src = src;
+        switch ( src ) {
+            case YAW:
+                this.setInputRange( -180.0, 180.0 );
+                break;
+            case PITCH:
+            case ROLL:
+                this.setInputRange( -90.0, 90.0 );
+                break;
+            case COMPASS_HEADING:
+            case FUSED_HEADING:
+                this.setInputRange( 0.0, 360.0 );
+                break;
+            case LINEAR_ACCEL_X:
+            case LINEAR_ACCEL_Y:
+            case LINEAR_ACCEL_Z:
+                this.setInputRange (-2.0, 2.0 );
+                break;
+        }
+        navx_device.registerCallback(this);
+    }
+
+    /**
+     * This navXPIDController constructor is used when the PID Controller is to be
+     * driven by a navX-Model device input data source which is not accompanied by a
+     * high-accuracy "sensor" timestamp.
+     * <p>
+     * The data source specified automatically determines the navXPIDController's
+     * input data range.
+     **/
+    public navXPIDController(AHRS navx_device, navXUntimestampedDataSource src) {
+        this.navx_device = navx_device;
+        this.timestamped = false;
+        this.untimestamped_src = src;
+        navx_device.registerCallback(this);
+    }
+
     public void close() {
         enable(false);
         navx_device.deregisterCallback(this);
@@ -230,8 +350,7 @@ public class navXPIDController implements IDataArrivalSubscriber {
      * which need to "poll" to determine whether new navX-Model device data has
      * been received.  Whether or not new data has been received, this method
      * returns immediately and does not block.
-     * <p/>
-     *
+     * <p>
      * @return Returns true if new data has been received since the last time
      * this function was called, otherwise returns false.  If true, the result
      * will updated to reflect the newly-calculated controller values.
@@ -261,8 +380,7 @@ public class navXPIDController implements IDataArrivalSubscriber {
      * This method will return immediately only if new data has been received
      * since the last time it was called; otherwise, it will block and not return
      * until new data has been received, or a specified timeout period has passed.
-     * <p/>
-     *
+     * <p>
      * @return Returns true when new data has been received.  If false is returned,
      * this indicates a timeout has occurred while waiting for new data.
      */
@@ -338,8 +456,8 @@ public class navXPIDController implements IDataArrivalSubscriber {
             /* modify the error to ensure the output doesn't change     */
             /* direction, but processed onward until error is zero.     */
             if (continuous) {
-                double range = max_input - min_input;
-                if (Math.abs(error_current) > (range / 2)) {
+                double range = max_input - min_input ;
+                if (Math.abs(error_current) > (range / 2))  {
                     if (error_current > 0)
                         error_current -= range;
                     else
@@ -351,7 +469,7 @@ public class navXPIDController implements IDataArrivalSubscriber {
             /* by the total number of samples since the last update. */
             /* For more discussion on this topic, see:               */
             /* http://www.diva-portal.org/smash/get/diva2:570067/FULLTEXT01.pdf */
-            if (num_missed_samples > 0) {
+            if ( num_missed_samples > 0 ) {
                 i_adj = i / (1 + num_missed_samples);
             } else {
                 i_adj = i;
@@ -375,18 +493,17 @@ public class navXPIDController implements IDataArrivalSubscriber {
 
             /* If samples were missed, reduce the d gain by dividing */
             /* by the total number of samples since the last update. */
-            if (num_missed_samples > 0) {
+            if ( num_missed_samples > 0 ) {
                 d_adj = d / (1 + num_missed_samples);
             } else {
                 d_adj = d;
             }
 
             /* Calculate result w/P, I, D & F terms */
-            error_d = error_current - error_previous;
-            result = p * error_current +
-                    i_adj * error_total +
-                    d_adj * (error_current - error_previous) +
-                    ff * setpoint;
+            result = p     * error_current +
+                    i_adj  * error_total +
+                    d_adj  * (error_current - error_previous) +
+                    ff     * setpoint;
             error_previous = error_current;
 
             /* Clamp result to output range */
@@ -426,12 +543,12 @@ public class navXPIDController implements IDataArrivalSubscriber {
 
     /**
      * setContinuous() is used to enable/disable the continuous mode of operation.
-     * <p/>
+     *
      * When continuous mode is disabled, the min/max input range values are used as
      * two separate points at the ends of the range of possible input values.  This
      * mode of operation is typically used for reaching a position within a linear
      * range.
-     * <p/>
+     *
      * When continuous mode is enabled, the min/max input range are considered to
      * represent the sampe point.  This mode of operation is typically used for reaching
      * a position within a circular range, and allows the navXPIDController to determine
@@ -457,11 +574,11 @@ public class navXPIDController implements IDataArrivalSubscriber {
 
     /**
      * Defines the range of output values calculated by the navXPIDController.
-     * <p/>
+     *
      * For example, when the navXPIDController is used to calculate an output value to be
      * sent to a motor controller whose valid range is -1 to 1, the output range should be
      * sent to -1, 1.
-     * <p/>
+     *
      * Note that the units of the output range are not necessarily the same as the units
      * of the input range.
      */
@@ -477,7 +594,7 @@ public class navXPIDController implements IDataArrivalSubscriber {
      * Defines the range of possible input values received from the currently-selected
      * navX-Model device data source.  For example, if YAW is the data source, the
      * input range would be -180.0, 180.0.
-     * <p/>
+     *
      * Note that the navXPIDController constructor automatically sets the input range
      * based upon the data source specified to the constructor.
      */
@@ -487,13 +604,6 @@ public class navXPIDController implements IDataArrivalSubscriber {
             this.max_input = max_input;
             setSetpoint(setpoint);
         }
-    }
-
-    /**
-     * Returns the currently configured setpoint.
-     */
-    public synchronized double getSetpoint() {
-        return setpoint;
     }
 
     /**
@@ -517,13 +627,20 @@ public class navXPIDController implements IDataArrivalSubscriber {
     }
 
     /**
+     * Returns the currently configured setpoint.
+     */
+    public synchronized double getSetpoint() {
+        return setpoint;
+    }
+
+    /**
      * Enables/disables the PID controller.  By default, the navXPIDController is
      * disabled, thus this method must be invoked before attempting to
      * use the navXPIDController's output values.
      */
     public synchronized void enable(boolean enabled) {
         this.enabled = enabled;
-        if (!enabled) {
+        if ( !enabled ) {
             reset();
         }
     }
@@ -547,100 +664,5 @@ public class navXPIDController implements IDataArrivalSubscriber {
         error_previous = 0.0;
         error_total = 0.0;
         result = 0.0;
-    }
-
-    public enum TimestampType {SENSOR, SYSTEM}
-
-    /**
-     * The navXTimestampedDataSources specifies the navX-Model device
-     * sensor data source type used by the navXPIDController as it's input data source.
-     * These data sources are timestamped by the navX-Model device and thus are delivered
-     * with sufficient data (a highly-accurate "sensor timestamp") to allow the
-     * navXPIDController to compensate for any jitter in the transmission from the
-     * navX-Model device to the navXPIDController.
-     */
-    public enum navXTimestampedDataSource {
-        YAW,
-        PITCH,
-        ROLL,
-        COMPASS_HEADING,
-        FUSED_HEADING,
-        ALTITUDE,
-        LINEAR_ACCEL_X,
-        LINEAR_ACCEL_Y,
-        LINEAR_ACCEL_Z
-    }
-
-    /**
-     * The navXUntimestampedDataSources specifies the navX-Model device
-     * sensor data source type used by the navXPIDController as it's input data source.
-     * These data sources are timestamped with the Android "system" timestamp only, and
-     * thus may not have sufficient data to allow the navXPIDController to compensate
-     * for any jitter in the transmission from the navX-Model device to the navXPIDController.
-     */
-    public enum navXUntimestampedDataSource {
-        RAW_GYRO_X,
-        RAW_GYRO_Y,
-        RAW_GYRO_Z,
-        RAW_ACCEL_X,
-        RAW_ACCEL_Y,
-        RAW_ACCEL_Z,
-        RAW_MAG_X,
-        RAW_MAG_Y,
-        RAW_MAG_Z
-    }
-
-    /**
-     * The ToleranceType enumeration defines the type of tolerance to be used by the
-     * navXPIDController to determine whether the controller is "on_target".
-     */
-    public enum ToleranceType {
-        NONE, PERCENT, ABSOLUTE
-    }
-
-    /**
-     * The PIDResult class encapsulates the data used by the navXPIDController to
-     * communicate current states to a client of the navXPIDController.  The client
-     * creates the instance of the PIDResult, and continually provides it to the
-     * navxPIDController's waitForNewUpdate() and isNewDataAvailable() methods,
-     * depending upon whether the client wishes to block (wait) for new updates,
-     * or periodically poll to determine when new data is available.
-     */
-
-    static public class PIDResult {
-        public double output;
-        public long timestamp;
-        public boolean on_target;
-
-        public PIDResult() {
-            output = 0.0;
-            timestamp = 0;
-            on_target = false;
-        }
-
-        /**
-         * Returns the timestamp of the last data sample processed by the
-         * navXPIDController.
-         */
-        public long getTimestamp() {
-            return timestamp;
-        }
-
-        /**
-         * Returns true if the navXPIDController indicated that it is currently
-         * "on target" as defined by the configured tolerances and the most
-         * recent input data sample.
-         */
-        public boolean isOnTarget() {
-            return on_target;
-        }
-
-        /**
-         * Returns the output value calculated by the navXPIDController which
-         * corresponds to the most recent input data sample.
-         */
-        public double getOutput() {
-            return output;
-        }
     }
 }

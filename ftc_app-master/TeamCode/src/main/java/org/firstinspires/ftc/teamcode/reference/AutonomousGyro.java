@@ -13,7 +13,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  * Created by Ethan Schaffer on 9/24/2016.
  */
 @Autonomous(name = "MR: Gyro", group = "Autonomous")
-//@Disabled   // comment out or remove this line to enable this opmode
+@Disabled   // comment out or remove this line to enable this opmode
 public class AutonomousGyro extends LinearOpMode {
     ModernRoboticsI2cGyro gyroSensor;
     @Override
