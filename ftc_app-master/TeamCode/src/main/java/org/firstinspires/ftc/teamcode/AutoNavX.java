@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.os.Environment;
+
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -16,7 +18,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.navX.ftc.AHRS;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Objects;
+import java.util.Scanner;
 
 /**
  * Created by Ethan Schaffer.
@@ -161,120 +166,114 @@ public class AutoNavX extends LinearOpMode {
     //Editing these arrays would change how to auto runs, in it's entirety. If we could change these values from the phone, we could basically do doodle.
     public final state[] BlueShowOff = new state[]{
             //              State         Sensor       Power
-            new state(states.Move,          60,      - 1.00),
-            new state(states.TurnRightEnc,   60,       0.35),
-            new state(states.Move,          230,     - 1.00),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.StrafeToWall,  10,        0.10),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.StrafeToWall,  8.5,       0.10),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.LineSearch,    2,         0.10),
-            new state(states.LineSearch,    2,       - 0.05),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.PressBeacon, team.Red         ),
-            new state(states.StrafeRight,   5.00,      1.00),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.Move,          70,      - 1.00),
-            new state(states.StrafeToWall,  8.5,       0.10),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.LineSearch,    2,       - 0.10),
-            new state(states.LineSearch,    2,         0.05),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.Move,          1.5,     - 1.00),
-            new state(states.LineSearch,    2,         0.10),
-            new state(states.LineSearch,    2,       - 0.05),
-            new state(states.PressBeacon, team.Red         ),
-            new state(states.StrafeRight,   5.00,      1.00),
+            new state(states.Move,          60,       1.00),
+            new state(states.TurnRight,      25,      0.10),
+            new state(states.Move,          240,    - 1.00),
+            new state(states.AlignToWithin, 5,        0.05),
+            new state(states.StrafeToWall,  8.5,      0.10),
+            new state(states.AlignToWithin, 3,        0.05),
+            new state(states.LineSearch,    2,        0.10),
+            new state(states.LineSearch,    2,      - 0.05),
+            new state(states.PressBeacon,   team.Blue     ),
+            new state(states.StrafeRight,   7.00,     1.00),
+            new state(states.AlignToWithin, 3,        0.05),
+            new state(states.Move,          110,    - 1.00),
+            new state(states.StrafeToWall,  9.5,      0.10),
+            new state(states.LineSearch,    2,      - 0.10),
+            new state(states.LineSearch,    2,        0.05),
+            new state(states.AlignToWithin, 3,        0.05),
+            new state(states.StrafeToWall,  8.5,      0.10),
+            new state(states.AlignToWithin, 3,        0.05),
+            new state(states.PressBeacon,   team.Red      ),
+            new state(states.StrafeRight,   15.00,     1.00),
             new state(states.TurnRightEnc,  45,        1.00),
-            new state(states.ShootAtPower,  0,         0.85),
-            new state(states.Move,          145,       1.00),
-            new state(states.EnableShot,    1500,      1.00),
-            new state(states.ShootAtPower,  0,         0.00),
-            new state(states.Move,          60,        1.00),
+            new state(states.ShootAtPower,  0,        0.85),
+            new state(states.Move,          50,       1.00),
+            new state(states.EnableShot,    1500,     1.00),
+            new state(states.ShootAtPower,  0,        0.00),
+            new state(states.Move,          60,       1.00),
     };
 
     public final state[] BlueTwoBeaconParkArray = new state[]{
             //              State         Sensor       Power
-            new state(states.Move,          60,      - 1.00),
-            new state(states.TurnRightEnc,   60,       0.35),
-            new state(states.Move,          230,     - 1.00),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.StrafeToWall,  10,        0.10),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.StrafeToWall,  8.5,       0.10),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.LineSearch,    2,         0.10),
-            new state(states.LineSearch,    2,       - 0.05),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.PressBeacon, team.Red         ),
-            new state(states.StrafeRight,   5.00,      1.00),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.Move,          70,      - 1.00),
-            new state(states.StrafeToWall,  8.5,       0.10),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.LineSearch,    2,       - 0.10),
-            new state(states.LineSearch,    2,         0.05),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.Move,          1.5,     - 1.00),
-            new state(states.LineSearch,    2,         0.10),
-            new state(states.LineSearch,    2,       - 0.05),
-            new state(states.PressBeacon, team.Red         ),
-            new state(states.StrafeRight,   5.00,      1.00),
-            new state(states.TurnRightEnc,  45,        1.00),
-            new state(states.Move,          205,       1.00),
-    };
-    public final state[] BlueOneBeaconShootWood = new state[]{
-            new state(states.Move,          60,      - 1.00),
-            new state(states.TurnRightEnc,   60,       0.35),
-            new state(states.Move,          230,     - 1.00),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.StrafeToWall,  10,        0.10),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.StrafeToWall,  8.5,       0.10),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.LineSearch,    2,         0.10),
-            new state(states.LineSearch,    2,       - 0.05),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.PressBeacon, team.Red         ),
-            new state(states.ShootAtPower,  0,         0.85),
-            new state(states.StrafeRight,   1.0,       1.00), //Away from wall
-            new state(states.TurnRightEnc,  180,       1.00),
-            new state(states.Move,          90,        1.00),
-            new state(states.EnableShot,    1500,      1.00),
-            new state(states.ShootAtPower,  0,         0.00),
-            new state(states.Move,          60,        1.00),
-    };
-    public final state[] BlueTwoBeaconsArray = new state[] {
-            new state(states.Move,          60,      - 1.00),
-            new state(states.TurnRightEnc,   60,       0.35),
-            new state(states.Move,          230,     - 1.00),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.StrafeToWall,  10,        0.10),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.StrafeToWall,  8.5,       0.10),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.LineSearch,    2,         0.10),
-            new state(states.LineSearch,    2,       - 0.05),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.PressBeacon, team.Red         ),
-            new state(states.StrafeRight,   5.00,      1.00),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.Move,          70,      - 1.00),
-            new state(states.StrafeToWall,  8.5,       0.10),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.LineSearch,    2,       - 0.10),
-            new state(states.LineSearch,    2,         0.05),
-            new state(states.AlignToWithin, tolerance, 0.05),
-            new state(states.Move,          1.5,    - 1.00),
+            new state(states.Move,          60,       1.00),
+            new state(states.TurnRight,      25,      0.10),
+            new state(states.Move,          240,    - 1.00),
+            new state(states.AlignToWithin, 5,        0.05),
+            new state(states.StrafeToWall,  8.5,      0.10),
+
+            new state(states.AlignToWithin, 3,        0.05),
+
             new state(states.LineSearch,    2,        0.10),
             new state(states.LineSearch,    2,      - 0.05),
-            new state(states.PressBeacon, team.Red       ),
+            new state(states.PressBeacon,   team.Blue     ),
+            new state(states.StrafeRight,   7.00,     1.00),
+
+            new state(states.AlignToWithin, 3,        0.05),
+
+            new state(states.Move,          110,    - 1.00),
+            new state(states.StrafeToWall,  9.5,      0.10),
+            new state(states.LineSearch,    2,      - 0.10),
+            new state(states.LineSearch,    2,        0.05),
+
+            new state(states.AlignToWithin, 3,        0.05),
+            new state(states.StrafeToWall,  8.5,      0.10),
+            new state(states.AlignToWithin, 3,        0.05),
+            new state(states.PressBeacon,   team.Red      ),
+            new state(states.StrafeRight,   15.00,     1.00),
+            new state(states.TurnRightEnc,  45,        1.00),
+            new state(states.Move,          110,       1.00),
     };
+    public final state[] BlueOneBeaconShootWood = new state[]{
+            //              State         Sensor       Power
+            new state(states.Move,          60,       1.00),
+            new state(states.TurnRight,      25,      0.10),
+            new state(states.Move,          240,    - 1.00),
+            new state(states.AlignToWithin, 5,        0.05),
+            new state(states.StrafeToWall,  8.5,      0.10),
+            new state(states.AlignToWithin, 3,        0.05),
+            new state(states.LineSearch,    2,        0.10),
+            new state(states.LineSearch,    2,      - 0.05),
+            new state(states.PressBeacon,   team.Blue     ),
+
+            new state(states.StrafeRight,   7.00,     1.00),
+            new state(states.TurnRight,     90,       1.00),
+            new state(states.ShootAtPower,  0,        0.85),
+            new state(states.Move,          35,       1.00),
+            new state(states.EnableShot,    1500,     1.00),
+            new state(states.ShootAtPower,  0,        0.00),
+            new state(states.Move,          60,       1.00),
+    };
+
+
+
+    public final state[] BlueTwoBeaconsArray = new state[] {
+            //              State         Sensor       Power
+            new state(states.Move,          60,       1.00),
+            new state(states.TurnRight,      25,      0.10),
+            new state(states.Move,          240,    - 1.00),
+            new state(states.AlignToWithin, 5,        0.05),
+            new state(states.StrafeToWall,  8.5,      0.10),
+            new state(states.AlignToWithin, 3,        0.05),
+            new state(states.LineSearch,    2,        0.10),
+            new state(states.LineSearch,    2,      - 0.05),
+            new state(states.PressBeacon,   team.Blue     ),
+            new state(states.StrafeRight,   7.00,     1.00),
+            new state(states.AlignToWithin, 3,        0.05),
+            new state(states.Move,          110,    - 1.00),
+            new state(states.StrafeToWall,  9.5,      0.10),
+            new state(states.LineSearch,    2,      - 0.10),
+            new state(states.LineSearch,    2,        0.05),
+            new state(states.AlignToWithin, 3,        0.05),
+            new state(states.StrafeToWall,  8.5,      0.10),
+            new state(states.AlignToWithin, 3,        0.05),
+            new state(states.PressBeacon,   team.Red      ),
+    };
+
 
     public final state[] RedShowOff = new state[]{
             //              State         Sensor       Power
-            new state(states.ShootAtPower,      0,     0.85),
+            new state(states.ShootAtPower,      0,     0.50),
             new state(states.Move,          60,       1.00),
             new state(states.EnableShot,     1500,     1.00),
             new state(states.ShootAtPower,      0,     0.00),
@@ -313,21 +312,16 @@ public class AutoNavX extends LinearOpMode {
             new state(states.Move,          240,      1.00),
             new state(states.AlignToWithin, 5,        0.05),
             new state(states.StrafeToWall,  8.5,      0.10),
-
             new state(states.AlignToWithin, 3,        0.05),
-
             new state(states.LineSearch,    2,      - 0.10),
             new state(states.LineSearch,    2,        0.05),
             new state(states.PressBeacon,   team.Red      ),
             new state(states.StrafeRight,   7.00,     1.00),
-
             new state(states.AlignToWithin, 3,        0.05),
-
             new state(states.Move,          110,      1.00),
             new state(states.StrafeToWall,  9.5,      0.10),
             new state(states.LineSearch,    2,        0.10),
             new state(states.LineSearch,    2,      - 0.05),
-
             new state(states.AlignToWithin, 3,        0.05),
             new state(states.StrafeToWall,  8.5,      0.10),
             new state(states.AlignToWithin, 3,        0.05),
@@ -337,26 +331,23 @@ public class AutoNavX extends LinearOpMode {
             new state(states.Move,          110,     - 1.00),
     };
     public final state[] RedOneBeaconShootWood = new state[]{
+            //              State         Sensor       Power
             new state(states.Move,          60,       1.00),
-            new state(states.TurnLeft,      60,       0.05),
-            new state(states.Move,          230,      1.00),
-            new state(states.TurnRight,     0,        0.05),
-            new state(states.AlignToWithin, tolerance,0.05),
-            new state(states.StrafeToWall,  10,       0.10),
-            new state(states.AlignToWithin, tolerance,0.05),
+            new state(states.TurnLeft,    - 25,       0.10),
+            new state(states.Move,          240,      1.00),
+            new state(states.AlignToWithin, 5,        0.05),
             new state(states.StrafeToWall,  8.5,      0.10),
-            new state(states.AlignToWithin, tolerance,0.05),
+            new state(states.AlignToWithin, 3,        0.05),
             new state(states.LineSearch,    2,      - 0.10),
             new state(states.LineSearch,    2,        0.05),
-            new state(states.AlignToWithin, tolerance,0.05),
-            new state(states.PressBeacon, team.Red        ),
+            new state(states.PressBeacon,   team.Red      ),
+            new state(states.StrafeRight,   7.00,     1.00),
+            new state(states.AlignToWithin, 3,        0.05),
             new state(states.ShootAtPower,  0,        0.85),
-            new state(states.StrafeRight,   1.0,      1.00), //Away from wall
-            new state(states.TurnRightEnc,  180,      1.00),
-            new state(states.Move,          90,       1.00),
+            new state(states.TurnRight,     90,       0.05),
+            new state(states.Move,          240,      1.00),
             new state(states.EnableShot,    1500,     1.00),
             new state(states.ShootAtPower,  0,        0.00),
-            new state(states.Move,          60,       1.00),
     };
 
 
@@ -367,21 +358,16 @@ public class AutoNavX extends LinearOpMode {
             new state(states.Move,          240,      1.00),
             new state(states.AlignToWithin, 5,        0.05),
             new state(states.StrafeToWall,  8.5,      0.10),
-
             new state(states.AlignToWithin, 3,        0.05),
-
             new state(states.LineSearch,    2,      - 0.10),
             new state(states.LineSearch,    2,        0.05),
             new state(states.PressBeacon,   team.Red      ),
             new state(states.StrafeRight,   7.00,     1.00),
-
             new state(states.AlignToWithin, 3,        0.05),
-
             new state(states.Move,          110,      1.00),
             new state(states.StrafeToWall,  9.5,      0.10),
             new state(states.LineSearch,    2,        0.10),
             new state(states.LineSearch,    2,      - 0.05),
-
             new state(states.AlignToWithin, 3,        0.05),
             new state(states.StrafeToWall,  8.5,      0.10),
             new state(states.AlignToWithin, 3,        0.05),
@@ -394,15 +380,11 @@ public class AutoNavX extends LinearOpMode {
     public final state[] GenericShootFromFarAngleArray = new state[] {
             new state(states.Move,     180,      .75),
             new state(states.Shoot,      0,        0),
-            new state(states.Move,      60,       .5),
-            new state(states.Move,      60,     - .5),
             new state(states.Move,      60,      1.0),
     };
     public final state[] GenericShootFromNextToRampArray = new state[] {
             new state(states.Move,     105,      .75),
             new state(states.Shoot,      0,        0),
-            new state(states.Move,      60,       .5),
-            new state(states.Move,      60,     - .5),
             new state(states.Move,      60,      1.0),
     };
 
@@ -410,14 +392,14 @@ public class AutoNavX extends LinearOpMode {
             new state(states.Finished,0,0)
         };
     route [] RouteArray = {
-            new route("Blue Show Off", BlueShowOff),
             new route("Blue 1 Beacon Shoot", BlueOneBeaconShootWood),
-            new route("Blue 2 Beacon Park", BlueTwoBeaconParkArray),
             new route("Blue 2 Beacon", BlueTwoBeaconsArray),
+            new route("Blue 2 Beacon Park", BlueTwoBeaconParkArray),
+            new route("Blue Show Off", BlueShowOff),
             new route("Red Show Off", RedShowOff),
-            new route("Red 1 Beacon Shoot", RedOneBeaconShootWood),
             new route("Red 2 Beacon Park", RedTwoBeaconParkArray),
             new route("Red 2 Beacon", RedTwoBeaconsArray),
+            new route("Red 1 Beacon Shoot", RedOneBeaconShootWood),
             new route("Shoot Far Angle", GenericShootFromFarAngleArray),
             new route("Shoot Near", GenericShootFromNextToRampArray),
     };
@@ -519,16 +501,6 @@ public class AutoNavX extends LinearOpMode {
         //Based on the value of autoRouteChosen, we set the stateOrder array to the correct value
         String autoRouteChosen = "RedBeaconParkRamp";
         int pos = 3;
-        String[] routes = {
-                "GenericShootFromNextToRamp",
-                "RedOneBeaconShootWood",
-                "RedTwoBeacons",
-                "RedTwoBeaconPark",  //position starts here
-                "BlueTwoBeaconPark",
-                "BlueOneBeaconShootWood",
-                "BlueTwoBeacons",
-                "GenericShootFromFarAngle",
-        };
         boolean prevX = false, prevB = false;
         while (!gamepad1.y) {
             if (gamepad1.x && !prevX) {
@@ -549,129 +521,85 @@ public class AutoNavX extends LinearOpMode {
             telemetry.update();
         }
         stateOrder = RouteArray[pos].getArr();
-/*
-        stateOrder = DoNothingArray;
-        switch (autoRouteChosen) {
-            case "RedOneBeaconShootWood":
-                stateOrder = RedOneBeaconShootWood;
-                break;
-            case "RedTwoBeacons":
-                stateOrder = RedTwoBeaconsArray;
-                break;
-            case "RedTwoBeaconPark":
-                stateOrder = RedTwoBeaconParkArray;
-                break;
-            case "BlueOneBeaconShootWood":
-                stateOrder = BlueOneBeaconShootWood;
-                break;
-            case "BlueTwoBeacons":
-                stateOrder = BlueTwoBeaconsArray;
-                break;
-            case "BlueTwoBeaconPark":
-                stateOrder = BlueTwoBeaconParkArray;
-                break;
-            case "GenericShootFromFarAngle":
-                stateOrder = GenericShootFromFarAngleArray;
-                break;
-            case "GenericShootFromNextToRamp":
-                stateOrder = GenericShootFromNextToRampArray;
-                break;
-            //Currently, there are 10 choices for autonomous routes: 4 per alliance color, and two reserve options
-            //We can also use ReadInput to have an infinite number of finely tweaked routes
-            case "ReadInput":
-                String FILE_DIR = "/InputFiles/";
-                File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + FILE_DIR, "input_no_color");
-                Scanner s = null;
-                try {
-                    s = new Scanner(file);
-                } catch (FileNotFoundException e) {
-                    stateOrder = DoNothingArray;
-                    e.printStackTrace();
-                    break;
-                }
-                try {
-                    state[] inputArray = new state[100]; //make the array large enough to never have issues
-                    int positionInArrayAsWeAdd = 0;
-                    while (s.hasNextDouble()) {
-                        double stateVal;
-                        double powerVal;
-                        double sensorVal;
-                        stateVal = s.nextDouble();
-                        powerVal = s.nextDouble();
-                        sensorVal = s.nextDouble();
-                        switch ((int) stateVal) {
-                            case 1:
-                                inputArray[positionInArrayAsWeAdd] = new state(states.Move, sensorVal, powerVal);
-                                break;
-                            case 2:
-                                inputArray[positionInArrayAsWeAdd] = new state(states.Shoot, sensorVal, powerVal);
-                                break;
-                            case 3:
-                                inputArray[positionInArrayAsWeAdd] = new state(states.EnableShot, sensorVal, powerVal);
-                                break;
-                            case 4:
-                                inputArray[positionInArrayAsWeAdd] = new state(states.ShootAtPower, sensorVal, powerVal);
-                                break;
-
-                            case 5:
-                                inputArray[positionInArrayAsWeAdd] = new state(states.TurnLeft, sensorVal, powerVal);
-                                break;
-                            case 6:
-                                inputArray[positionInArrayAsWeAdd] = new state(states.TurnRight, sensorVal, powerVal);
-                                break;
-                            case 7:
-                                inputArray[positionInArrayAsWeAdd] = new state(states.TurnLeftEnc, sensorVal, powerVal);
-                                break;
-                            case 8:
-                                inputArray[positionInArrayAsWeAdd] = new state(states.TurnRightEnc, sensorVal, powerVal);
-                                break;
-                            case 9:
-                                inputArray[positionInArrayAsWeAdd] = new state(states.StrafeLeft, sensorVal, powerVal);
-                                break;
-                            case 10:
-                                inputArray[positionInArrayAsWeAdd] = new state(states.StrafeRight, sensorVal, powerVal);
-                                break;
-                            case 11:
-                                inputArray[positionInArrayAsWeAdd] = new state(states.StrafeToWall, sensorVal, powerVal);
-                                break;
-                            case 12:
-                                inputArray[positionInArrayAsWeAdd] = new state(states.LineSearch, sensorVal, powerVal);
-                                break;
-                            case 13:
-                                inputArray[positionInArrayAsWeAdd] = new state(states.PressBeacon, sensorVal, powerVal);
-                                break;
-                            case 14:
-                                inputArray[positionInArrayAsWeAdd] = new state(states.WaitForTime, sensorVal, powerVal);
-                                break;
-                            case 15:
-                                inputArray[positionInArrayAsWeAdd] = new state(states.Finished, sensorVal, powerVal);
-                                break;
-                            case 16:
-                                inputArray[positionInArrayAsWeAdd] = new state(states.AlignToWithin, sensorVal, powerVal);
-                                break;
-                        }
-                        positionInArrayAsWeAdd++;
+        if(RouteArray[pos].getName() == "ReadInput"){
+            String FILE_DIR = "/";
+            File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + FILE_DIR, "input_no_color");
+            Scanner s = null;
+            try {
+                s = new Scanner(file);
+                state[] inputArray = new state[100]; //make the array large enough to never have issues
+                int positionInArrayAsWeAdd = 0;
+                while (s.hasNextDouble()) {
+                    double stateVal;
+                    double powerVal;
+                    double sensorVal;
+                    stateVal = s.nextDouble();
+                    powerVal = s.nextDouble();
+                    sensorVal = s.nextDouble();
+                    switch ((int) stateVal) {
+                        case 1:
+                            inputArray[positionInArrayAsWeAdd] = new state(states.Move, sensorVal, powerVal);
+                            break;
+                        case 2:
+                            inputArray[positionInArrayAsWeAdd] = new state(states.Shoot, sensorVal, powerVal);
+                            break;
+                        case 3:
+                            inputArray[positionInArrayAsWeAdd] = new state(states.EnableShot, sensorVal, powerVal);
+                            break;
+                        case 4:
+                            inputArray[positionInArrayAsWeAdd] = new state(states.ShootAtPower, sensorVal, powerVal);
+                            break;
+                        case 5:
+                            inputArray[positionInArrayAsWeAdd] = new state(states.TurnLeft, sensorVal, powerVal);
+                            break;
+                        case 6:
+                            inputArray[positionInArrayAsWeAdd] = new state(states.TurnRight, sensorVal, powerVal);
+                            break;
+                        case 7:
+                            inputArray[positionInArrayAsWeAdd] = new state(states.TurnLeftEnc, sensorVal, powerVal);
+                            break;
+                        case 8:
+                            inputArray[positionInArrayAsWeAdd] = new state(states.TurnRightEnc, sensorVal, powerVal);
+                            break;
+                        case 9:
+                            inputArray[positionInArrayAsWeAdd] = new state(states.StrafeLeft, sensorVal, powerVal);
+                            break;
+                        case 10:
+                            inputArray[positionInArrayAsWeAdd] = new state(states.StrafeRight, sensorVal, powerVal);
+                            break;
+                        case 11:
+                            inputArray[positionInArrayAsWeAdd] = new state(states.StrafeToWall, sensorVal, powerVal);
+                            break;
+                        case 12:
+                            inputArray[positionInArrayAsWeAdd] = new state(states.LineSearch, sensorVal, powerVal);
+                            break;
+                        case 13:
+                            inputArray[positionInArrayAsWeAdd] = new state(states.PressBeacon, sensorVal, powerVal);
+                            break;
+                        case 14:
+                            inputArray[positionInArrayAsWeAdd] = new state(states.WaitForTime, sensorVal, powerVal);
+                            break;
+                        case 15:
+                            inputArray[positionInArrayAsWeAdd] = new state(states.Finished, sensorVal, powerVal);
+                            break;
+                        case 16:
+                            inputArray[positionInArrayAsWeAdd] = new state(states.AlignToWithin, sensorVal, powerVal);
+                            break;
                     }
-                    inputArray[positionInArrayAsWeAdd + 1] = new state(states.Finished, 0, 0); //automatically ends the autonomoous after all commands have been tried
-                    stateOrder = inputArray;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    telemetry.clear();
-                    telemetry.addLine("Something went wrong within the building of the array");
-                    telemetry.update();
-                    stateOrder = DoNothingArray;
+                    positionInArrayAsWeAdd++;
                 }
-                break;
-            case "DoNothing":
-                stateOrder = DoNothingArray;
-                break;
-            default:
-                telemetry.addData("Huh", "This is strange");
+                inputArray[positionInArrayAsWeAdd + 1] = new state(states.Finished, 0, 0); //automatically ends the autonomoous after all commands have been tried
+                stateOrder = inputArray;
+            } catch (Exception e) {
+                e.printStackTrace();
+                telemetry.clear();
+                telemetry.addLine("Something went wrong within the building of the array");
                 telemetry.update();
-                stateOrder = DoNothingArray;
-                break;
+                stateOrder = new state[] {
+                    new state (states.Finished, 0, 0)
+                };
+            }
         }
-*/
         navX = new AHRS(dim, 5, AHRS.DeviceDataType.kProcessedData, (byte)50);
         navX.zeroYaw();
         int cycler = 0;
