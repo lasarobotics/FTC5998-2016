@@ -19,7 +19,7 @@ import java.util.Arrays;
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
-@TeleOp(name="Tele Operated 40", group="TeleOp")
+@TeleOp(name=" * Tele Op 40 *", group="TeleOp")
 public class TeleOpFinal40 extends OpMode {
     public static final double SHOOTERMAXVALUE = .40;
 
@@ -228,10 +228,20 @@ public class TeleOpFinal40 extends OpMode {
         //Ternary, the larger trigger value is set to the value BIGGERTRIGGER
 
         if(BIGGERTRIGGER > TRIGGERTHRESHOLD){ //If we have enough pressure on a trigger
-            if( (Math.abs(inputY) > Math.abs(inputX)) || (Math.abs(inputY) > Math.abs(inputC)) ){ //and if our forwards motion is the largest motion vector
-                inputY /= SLOWDOWNVALUE*BIGGERTRIGGER; //slow down our power inputs
-                inputX /= SLOWDOWNVALUE*BIGGERTRIGGER; //slow down our power inputs
-                inputC /= SLOWDOWNVALUE*BIGGERTRIGGER; //slow down our power inputs
+            if( (Math.abs(inputY) > Math.abs(inputX)) && (Math.abs(inputY) > Math.abs(inputC)) ){ //If our forwards motion is the largest motion vector
+                inputY /= 5*BIGGERTRIGGER; //slow down our power inputs
+                inputX /= 5*BIGGERTRIGGER; //slow down our power inputs
+                inputC /= 5*BIGGERTRIGGER; //slow down our power inputs
+            }
+            if( (Math.abs(inputC) > Math.abs(inputX)) && (Math.abs(inputC) > Math.abs(inputY)) ){ //and if our turing motion is the largest motion vector
+                inputY /= 4*BIGGERTRIGGER; //slow down our power inputs
+                inputX /= 4*BIGGERTRIGGER; //slow down our power inputs
+                inputC /= 4*BIGGERTRIGGER; //slow down our power inputs
+            }
+            if( (Math.abs(inputX) > Math.abs(inputY)) && (Math.abs(inputX) > Math.abs(inputC)) ){ //and if our strafing motion is the largest motion vector
+                inputY /= 3*BIGGERTRIGGER; //slow down our power inputs
+                inputX /= 3*BIGGERTRIGGER; //slow down our power inputs
+                inputC /= 3*BIGGERTRIGGER; //slow down our power inputs
             }
         }
         //Use the larger trigger value to scale down the inputs.
