@@ -28,6 +28,7 @@ import java.util.Scanner;
  */
 
 @Autonomous(name="AutoNavX", group="Autonomous")
+@Disabled
 public class AutoNavX extends LinearOpMode {
     public void setDrivePower(double power) {
         leftBackWheel.setPower(power);

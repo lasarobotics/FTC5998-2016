@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.reference;
+package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
@@ -74,12 +74,10 @@ public class AutoShoot extends LinearOpMode
         rightButtonPusher.setPosition(0);
         ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
         ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
-        colorSensorLeftBottom.enableLed(false);
+        colorSensorLeftBottom.enableLed(true);
 
 
         waitForStart();
-
-        colorSensorLeftBottom.enableLed(true);
 
         sleep(1000*10);
         move(180, .5);
