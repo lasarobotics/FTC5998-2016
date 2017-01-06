@@ -439,8 +439,8 @@ public class AutoShootClose extends LinearOpMode
     {
         initEncoders();
 
-        shoot1.setPower(.5);
-        shoot2.setPower(.5);
+        shoot1.setPower(.65);
+        shoot2.setPower(.65);
         ballBlockRight.setPosition(0);
         ballBlockLeft.setPosition(1);
         Thread.sleep(1000);
