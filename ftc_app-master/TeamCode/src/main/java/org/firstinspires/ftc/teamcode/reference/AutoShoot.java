@@ -14,7 +14,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="SHOOT!", group="Autonomous")
-@Disabled
 public class AutoShoot extends LinearOpMode
 {
     DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed;
@@ -111,25 +110,25 @@ public class AutoShoot extends LinearOpMode
         leftBackWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightFrontWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftFrontWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        shoot1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        shoot2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        infeed.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //shoot1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //shoot2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //infeed.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         rightBackWheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftBackWheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightFrontWheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftFrontWheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shoot1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shoot2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        infeed.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //shoot1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //shoot2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //infeed.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         rightFrontWheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftFrontWheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBackWheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBackWheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        shoot1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        shoot2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        infeed.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //shoot1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //shoot2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //infeed.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public void setDrivePower(double power)
@@ -443,8 +442,8 @@ public class AutoShoot extends LinearOpMode
     {
         initEncoders();
 
-        shoot1.setPower(1);
-        shoot2.setPower(1);
+        shoot1.setPower(.5);
+        shoot2.setPower(.5);
         ballBlockRight.setPosition(0);
         ballBlockLeft.setPosition(1);
         Thread.sleep(1000);
