@@ -27,7 +27,7 @@ import java.util.Scanner;
  * Created by Ethan Schaffer.
  */
 
-@Autonomous(name="RedShowOff", group="Autonomous")
+@Autonomous(name="Red Show Off", group="Autonomous")
 public class RedShowOff extends LinearOpMode {
     public void setDrivePower(double power) {
         leftBackWheel.setPower(power);

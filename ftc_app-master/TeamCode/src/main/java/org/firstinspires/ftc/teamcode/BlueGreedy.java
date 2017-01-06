@@ -20,7 +20,7 @@ import java.util.Objects;
  * Created by Ethan Schaffer.
  */
 
-@Autonomous(name="BlueGreedy", group="Autonomous")
+@Autonomous(name="Blue (greedy) Show Off", group="Autonomous")
 public class BlueGreedy extends LinearOpMode {
     public void setDrivePower(double power) {
         leftBackWheel.setPower(power);
@@ -204,15 +204,15 @@ public class BlueGreedy extends LinearOpMode {
 
         waitForStart();
 
-        Move(80, - 1.00); //Move to shoot position
+        Move(80, - 1.00); //Move to turn position
         TurnRight(30, 0.11); //Turn to face Left Wall
         Move(225,- 1.00); //Move to left wall
         AlignToWithin(3, 0.05); //Line up
-        StrafeToWall(23, 0.50); //Strafe to the wall
+        StrafeToWall(23, 0.20); //Strafe to the wall
         AlignToWithin(3, 0.05); //Line up
         LineSearch(2, 0.10); //Backwards to line
         StrafeToWall(10, 0.10); //Get to the right
-        LineSearch(2, - 0.11); //Forwards to line
+        LineSearch(2, - 0.10); //Forwards to line
         LineSearch(2, 0.05); //Backwards to line again, slower to get better accuracy
         StrafeToWall(8, 0.10); //Get to the right
         PressBeacon(team.Blue ); //Press red button
@@ -232,10 +232,10 @@ public class BlueGreedy extends LinearOpMode {
         StrafeFromWall(13, 1.00); //From wall to 20 cm away
         TurnRightEnc(40, 1.00);
         ShootAtPower(0, 0.65); //Turn on shooter
-        Move(105, 1.00);
+        Move(110, 1.00);
         EnableShot(750, 1.00); //Run infeed and open shooter servo
         ShootAtPower(0, 0.00); //Turn off shooter
-        Move(50, 1.00);
+        Move(60, 1.00);
     }
     public void AlignToWithin(double sensor, double power){
         TurnRight( - sensor, power);

@@ -20,7 +20,7 @@ import java.util.Objects;
  * Created by Ethan Schaffer.
  */
 
-@Autonomous(name="BlueShowOff", group="Autonomous")
+@Autonomous(name="Blue (slow) Show Off", group="Autonomous")
 public class BlueShowOff extends LinearOpMode {
     public void setDrivePower(double power) {
         leftBackWheel.setPower(power);
