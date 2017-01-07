@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="Shoot Close to Ramp", group="Autonomous")
+@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="Shoot Close to Ramp", group="Shoot")
 public class AutoShootClose extends LinearOpMode
 {
     DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed;

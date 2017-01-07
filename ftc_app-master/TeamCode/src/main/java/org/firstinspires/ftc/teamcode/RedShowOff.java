@@ -377,30 +377,43 @@ public class RedShowOff extends LinearOpMode {
         } while(avg < ticks && opModeIsActive());
         setDrivePower(0);
     }
+    public double getRange(double previous){
+        double c = range.getDistance(DistanceUnit.CM);
+        if(c == 255){
+            return previous;
+        } else {
+            return c;
+        }
+    }
     public void StrafeToWall(double sensor, double power){
+        double pastRange = 254;
         if(!opModeIsActive())
             super.stop();
-        while(range.getDistance(DistanceUnit.CM) > sensor && opModeIsActive()){
+        while(pastRange > sensor && opModeIsActive()){
+            pastRange = getRange(pastRange);
             setStrafePower("Left", power);
             telemetry.addData("Distance", range.getDistance(DistanceUnit.CM));
             telemetry.addData("Light", range.getLightDetected());
             telemetry.update();
         }
+        if(range.getDistance(DistanceUnit.CM) == 255){
+            StrafeToWall(sensor, power);
+        }
         setDrivePower(0);
     }
     public void StrafeFromWall(double sensor, double power){
+        double pastRange = 254;
         if(!opModeIsActive())
             super.stop();
-        if(sensor != (int) sensor){
-            sensor++;
-        }
-        while(range.getDistance(DistanceUnit.CM) < sensor && opModeIsActive()){
-            setStrafePower("Right", power);
+        while(pastRange < sensor && opModeIsActive()){
+            pastRange = getRange(pastRange);
+            setStrafePower("Left", power);
             telemetry.addData("Distance", range.getDistance(DistanceUnit.CM));
+            telemetry.addData("Light", range.getLightDetected());
             telemetry.update();
         }
-        if(sensor != (int) sensor){ // if is half input
-            StrafeRight(sensor -(int)sensor, power);
+        if(range.getDistance(DistanceUnit.CM) == 255){
+            StrafeToWall(sensor, power);
         }
         setDrivePower(0);
     }

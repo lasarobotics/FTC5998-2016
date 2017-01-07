@@ -1,27 +1,171 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.reference;
+
+import android.content.Context;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.navX.ftc.AHRS;
 
 import java.util.Objects;
 
 /**
- * Created by Ethan Schaffer.
+ * Created by Ethan Schaffer on 1/6/2017.
  */
 
-@Autonomous(name="B Show Off (Greedy)", group="Blue")
-public class BlueGreedy extends LinearOpMode {
+class Robot extends LinearOpMode{
+    public static final double LEFT_SERVO_OFF_VALUE = .20;
+    public static final double LEFT_SERVO_ON_VALUE = 1;
+    public static final double RIGHT_SERVO_ON_VALUE = 1;
+    public static final double RIGHT_SERVO_OFF_VALUE = .20;
+    public static final double BALLBLOCKLEFTOPEN = 1;
+    public static final double BALLBLOCKLEFTCLOSED = 0;
+    public static final double BALLBLOCKRIGHTOPEN = 0;
+    public static final double BALLBLOCKRIGHTCLOSED = 1;
+    final double ticksPerRev = 7;
+    final double gearBoxOne = 40.0;
+    final double gearBoxTwo = 24.0 / 16.0;
+    final double gearBoxThree = 1.0;
+    final double wheelDiameter = 4.0 * Math.PI;
+    final double cmPerInch = 2.54;
+    final double width = 31.75;
+    final double ticksToStrafeDistance = 2000/(172*cmPerInch);
+    final double cmPerTick = (wheelDiameter / (ticksPerRev * gearBoxOne * gearBoxTwo * gearBoxThree)) * cmPerInch; //Allows us to drive our roobt with accuracy to the centiment
+
+    @Override
+    public void runOpMode() throws InterruptedException {
+
+    }
+
+    enum team {
+        Red, Blue, NotSensed
+    }
+
+    DcMotor leftFrontWheel;
+    DcMotor leftBackWheel;
+    DcMotor rightFrontWheel;
+    DcMotor rightBackWheel;
+    DcMotor shoot1;
+    DcMotor shoot2;
+    DcMotor infeed;
+    Servo leftButtonPusher;
+    Servo rightButtonPusher;
+    Servo ballBlockRight;
+    Servo ballBlockLeft;
+    ColorSensor colorSensorLeftBottom;
+    ColorSensor colorSensorOnSide;
+    ModernRoboticsI2cRangeSensor range;
+    ModernRoboticsI2cGyro gyroSensor;
+    DeviceInterfaceModule dim;
+    Telemetry telemetry;
+    AHRS navX;
+
+    Robot(HardwareMap hardwareMap){
+        final String LEFT1NAME = "l1"; //LX Port 2
+        final String LEFT2NAME = "l2"; //LX Port 1
+        final String RIGHT1NAME = "r1";//0A Port 1
+        final String RIGHT2NAME = "r2";//0A Port 2
+        final String SHOOT1NAME = "sh1";//PN Port 1
+        final String SHOOT2NAME = "sh2";//PN Port 2
+        final String INFEEDNAME = "in"; //2S Port 2
+        final String BALLBLOCKLEFTNAME = "bl";
+        final String BALLBLOCKRIGHTNAME = "br"; //MO Ports 3+4
+        final String LEFTPUSHNAME = "lp";//MO Port 1
+        final String RIGHTPUSHNAME = "rp";//MO Port 2
+        final String GYRONAME = "g"; //Port 4
+        final String RANGENAME = "r"; //Port 0
+        final String COLORSIDENAME = "cs"; //Port 2
+        final String COLORLEFTBOTTOMNAME = "cb";//Port 3
+        final String COLORRIGHTBOTTOMNAME = "cb2"; //Port 4
+
+        final double LEFT_SERVO_OFF_VALUE = .20;
+        final double LEFT_SERVO_ON_VALUE = 1;
+        final double RIGHT_SERVO_ON_VALUE = 1;
+        final double RIGHT_SERVO_OFF_VALUE = .20;
+        final double BALLBLOCKLEFTOPEN = 1;
+        final double BALLBLOCKLEFTCLOSED = 0;
+        final double BALLBLOCKRIGHTOPEN = 0;
+        final double BALLBLOCKRIGHTCLOSED = 1;
+
+        //The Above Values lets us convert encoder ticks to centimeters per travelled, as shown below.
+        //By declaring certain values here and not within our case statements, we avoid declaring them multiple times.
+        leftFrontWheel = hardwareMap.dcMotor.get(LEFT1NAME);
+        leftBackWheel = hardwareMap.dcMotor.get(LEFT2NAME);
+        rightFrontWheel = hardwareMap.dcMotor.get(RIGHT1NAME);
+        rightBackWheel = hardwareMap.dcMotor.get(RIGHT2NAME);
+        rightBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        shoot1 = hardwareMap.dcMotor.get(SHOOT1NAME);
+        shoot1.setDirection(DcMotorSimple.Direction.REVERSE);
+        shoot2 = hardwareMap.dcMotor.get(SHOOT2NAME);
+        infeed = hardwareMap.dcMotor.get(INFEEDNAME);
+        infeed.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        ballBlockRight = hardwareMap.servo.get(BALLBLOCKRIGHTNAME);
+        ballBlockLeft = hardwareMap.servo.get(BALLBLOCKLEFTNAME);
+        leftButtonPusher = hardwareMap.servo.get(LEFTPUSHNAME);
+        rightButtonPusher = hardwareMap.servo.get(RIGHTPUSHNAME);
+
+        leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+        rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+        ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
+        ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
+
+        range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGENAME);
+        colorSensorLeftBottom = hardwareMap.colorSensor.get(COLORLEFTBOTTOMNAME);
+        colorSensorOnSide = hardwareMap.colorSensor.get(COLORSIDENAME);
+        colorSensorLeftBottom.setI2cAddress(I2cAddr.create8bit(0x4c));
+        colorSensorOnSide.setI2cAddress(I2cAddr.create8bit(0x3c));
+        dim = hardwareMap.get(DeviceInterfaceModule.class, "Device Interface Module 1");
+
+        //Based on the value of autoRouteChosen, we set the stateOrder array to the correct value
+        navX = new AHRS(dim, 5, AHRS.DeviceDataType.kProcessedData, (byte)50);
+    }
+    public void initialize(Telemetry t){
+        telemetry = t;
+        navX.zeroYaw();
+        int cycler = 0;
+        int timer = 0;
+        while (navX.isCalibrating()) {
+            timer++;
+            if (timer % 15 == 0) {
+                cycler++;
+            }
+            if (cycler == 0) {
+                telemetry.addData("Gyro", " is still Calibrating");
+            } else if (cycler == 1) {
+                telemetry.addData("Gyro", " is still Calibrating.");
+            } else if (cycler == 2) {
+                telemetry.addData("Gyro", " is still Calibrating..");
+            } else {
+                cycler = 0;
+                telemetry.addData("Gyro", " is still Calibrating...");
+            }
+            telemetry.update();
+        } //This silly looking code above animates a "..." sequence in telemetry, if the gyroscope is still calibrating
+        telemetry.addData("Gyro", "Done!");
+        telemetry.addData("Yaw", navX.getYaw());
+        if(!navX.isConnected()){
+            telemetry.addData("NavX", "DISCONNECTED!");
+        } else {
+            telemetry.addData("NavX", "Connected!");}
+        telemetry.update();
+
+        colorSensorLeftBottom.enableLed(true); //If you don't set the LED until after the waitForStart(); it doesn't work.
+        colorSensorOnSide.enableLed(false);
+    }
     public void setDrivePower(double power) {
         leftBackWheel.setPower(power);
         leftFrontWheel.setPower(power);
@@ -60,184 +204,6 @@ public class BlueGreedy extends LinearOpMode {
         }
     }
 
-    public static final String LEFT1NAME = "l1"; //LX Port 2
-    public static final String LEFT2NAME = "l2"; //LX Port 1
-    public static final String RIGHT1NAME = "r1";//0A Port 1
-    public static final String RIGHT2NAME = "r2";//0A Port 2
-    public static final String SHOOT1NAME = "sh1";//PN Port 1
-    public static final String SHOOT2NAME = "sh2";//PN Port 2
-    public static final String INFEEDNAME = "in"; //2S Port 2
-    public static final String BALLBLOCKLEFTNAME = "bl";
-    public static final String BALLBLOCKRIGHTNAME = "br"; //MO Ports 3+4
-    public static final String LEFTPUSHNAME = "lp";//MO Port 1
-    public static final String RIGHTPUSHNAME = "rp";//MO Port 2
-    public static final String GYRONAME = "g"; //Port 4
-    public static final String RANGENAME = "r"; //Port 0
-    public static final String COLORSIDENAME = "cs"; //Port 2
-    public static final String COLORLEFTBOTTOMNAME = "cb";//Port 3
-    public static final String COLORRIGHTBOTTOMNAME = "cb2"; //Port 4
-
-    public static final double LEFT_SERVO_OFF_VALUE = .20;
-    public static final double LEFT_SERVO_ON_VALUE = 1;
-    public static final double RIGHT_SERVO_ON_VALUE = 1;
-    public static final double RIGHT_SERVO_OFF_VALUE = .20;
-    public static final double BALLBLOCKLEFTOPEN = 1;
-    public static final double BALLBLOCKLEFTCLOSED = 0;
-    public static final double BALLBLOCKRIGHTOPEN = 0;
-    public static final double BALLBLOCKRIGHTCLOSED = 1;
-
-    public final double ticksPerRev = 7;
-    public final double gearBoxOne = 40.0;
-    public final double gearBoxTwo = 24.0 / 16.0;
-    public final double gearBoxThree = 1.0;
-    public final double wheelDiameter = 4.0 * Math.PI;
-    public final double cmPerInch = 2.54;
-    public final double width = 31.75;
-    public final double ticksToStrafeDistance = 2000/(172*cmPerInch);
-    //The Above Values lets us convert encoder ticks to centimeters per travelled, as shown below.
-
-    public final double cmPerTick = (wheelDiameter / (ticksPerRev * gearBoxOne * gearBoxTwo * gearBoxThree)) * cmPerInch; //Allows us to drive our roobt with accuracy to the centiment
-    //NotSensed is for the Color Sensor while we are pushing the beacon.
-    public enum team {
-        Red, Blue, NotSensed
-    }
-
-    //Declaration of the Robot itself
-    public DcMotor leftFrontWheel;
-    public DcMotor leftBackWheel;
-    public DcMotor rightFrontWheel;
-    public DcMotor rightBackWheel;
-    public DcMotor shoot1;
-    public DcMotor shoot2;
-    public DcMotor infeed;
-    public Servo leftButtonPusher;
-    public Servo rightButtonPusher;
-    public Servo ballBlockRight;
-    public Servo ballBlockLeft;
-    public ColorSensor colorSensorLeftBottom;
-    public ColorSensor colorSensorOnSide;
-    public ModernRoboticsI2cRangeSensor range;
-    public ModernRoboticsI2cGyro gyroSensor;
-    public DeviceInterfaceModule dim;
-    public AHRS navX;
-
-    //Useful variables
-    public long lastTime;
-    public long time;
-    public boolean initialized = false;
-    public boolean movedServo = false;
-    public double circleFrac;
-    public double movement;
-    public double changeFactor;
-    public double modified;
-    public double currentDistance;
-    public team colorReading = team.NotSensed;
-    public int redReading;
-    public int blueReading;
-    //By declaring certain values here and not within our case statements, we avoid declaring them multiple times.
-
-    @Override
-    public void runOpMode() throws InterruptedException {
-        leftFrontWheel = hardwareMap.dcMotor.get(LEFT1NAME);
-        leftBackWheel = hardwareMap.dcMotor.get(LEFT2NAME);
-        rightFrontWheel = hardwareMap.dcMotor.get(RIGHT1NAME);
-        rightBackWheel = hardwareMap.dcMotor.get(RIGHT2NAME);
-        rightBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        shoot1 = hardwareMap.dcMotor.get(SHOOT1NAME);
-        shoot1.setDirection(DcMotorSimple.Direction.REVERSE);
-        shoot2 = hardwareMap.dcMotor.get(SHOOT2NAME);
-        infeed = hardwareMap.dcMotor.get(INFEEDNAME);
-        infeed.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        ballBlockRight = hardwareMap.servo.get(BALLBLOCKRIGHTNAME);
-        ballBlockLeft = hardwareMap.servo.get(BALLBLOCKLEFTNAME);
-        leftButtonPusher = hardwareMap.servo.get(LEFTPUSHNAME);
-        rightButtonPusher = hardwareMap.servo.get(RIGHTPUSHNAME);
-
-        leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
-        rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
-        ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
-        ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
-
-        range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGENAME);
-        colorSensorLeftBottom = hardwareMap.colorSensor.get(COLORLEFTBOTTOMNAME);
-        colorSensorOnSide = hardwareMap.colorSensor.get(COLORSIDENAME);
-        colorSensorLeftBottom.setI2cAddress(I2cAddr.create8bit(0x4c));
-        colorSensorOnSide.setI2cAddress(I2cAddr.create8bit(0x3c));
-        dim = hardwareMap.get(DeviceInterfaceModule.class, "Device Interface Module 1");
-
-        //Based on the value of autoRouteChosen, we set the stateOrder array to the correct value
-        navX = new AHRS(dim, 5, AHRS.DeviceDataType.kProcessedData, (byte)50);
-        navX.zeroYaw();
-        int cycler = 0;
-        int timer = 0;
-
-        while (navX.isCalibrating()) {
-            timer++;
-            if (timer % 15 == 0) {
-                cycler++;
-            }
-            if (cycler == 0) {
-                telemetry.addData("Gyro", " is still Calibrating");
-            } else if (cycler == 1) {
-                telemetry.addData("Gyro", " is still Calibrating.");
-            } else if (cycler == 2) {
-                telemetry.addData("Gyro", " is still Calibrating..");
-            } else {
-                cycler = 0;
-                telemetry.addData("Gyro", " is still Calibrating...");
-            }
-            telemetry.update();
-        } //This silly looking code above animates a "..." sequence in telemetry, if the gyroscope is still calibrating
-        telemetry.addData("Gyro", "Done!");
-        telemetry.addData("Yaw", navX.getYaw());
-        if(!navX.isConnected()){
-            telemetry.addData("NavX", "DISCONNECTED!");
-        } else {
-            telemetry.addData("NavX", "Connected!");}
-        telemetry.update();
-
-        colorSensorLeftBottom.enableLed(true); //If you don't set the LED until after the waitForStart(); it doesn't work.
-        colorSensorOnSide.enableLed(false);
-
-        waitForStart();
-
-        Move(80, - 1.00); //Move to turn position
-        TurnRight(30, 0.11); //Turn to face Left Wall
-        Move(225,- 1.00); //Move to left wall
-        AlignToWithin(3, 0.05); //Line up
-        StrafeToWall(23, 0.20); //Strafe to the wall
-        AlignToWithin(3, 0.05); //Line up
-        LineSearch(2, 0.10); //Backwards to line
-        StrafeToWall(10, 0.10); //Get to the right
-        Move(3, 1.00); //Move to left wall
-        LineSearch(2, - 0.10); //Forwards to line
-        LineSearch(2, 0.05); //Backwards to line again, slower to get better accuracy
-        StrafeToWall(8, 0.10); //Get to the right
-        PressBeacon(team.Blue ); //Press red button
-
-        StrafeFromWall(15, 0.25); //To 20 cm away
-        AlignToWithin(3, 0.05); //line up
-        Move(125, - 1.00); //move towards second beacon
-        AlignToWithin(3, 0.05); //line up to be sure
-        LineSearch(2, - 0.11); //Find line
-        StrafeToWall(10, 0.10); //Back to the wall
-        Move(2.5, 1.00); //Shimmy
-        LineSearch(2, - 0.11); //Forwards
-        LineSearch(2, 0.05); //Precise Backup
-        StrafeToWall(8, 0.10); //Get to the right
-        PressBeacon(team.Blue); //Press button
-
-        StrafeFromWall(13, 1.00); //From wall to 20 cm away
-        TurnRightEnc(40, 1.00);
-        ShootAtPower(0, 0.65); //Turn on shooter
-        Move(110, 1.00);
-        EnableShot(750, 1.00); //Run infeed and open shooter servo
-        ShootAtPower(0, 0.00); //Turn off shooter
-        Move(60, 1.00);
-    }
     public void AlignToWithin(double sensor, double power){
         TurnRight( - sensor, power);
         TurnLeft(sensor, power);
@@ -292,12 +258,12 @@ public class BlueGreedy extends LinearOpMode {
         if(!opModeIsActive())
             super.stop();
         ResetDriveEncoders();
-        changeFactor = 90;
-        modified = changeFactor + sensor;
+        double changeFactor = 90;
+        double modified = changeFactor + sensor;
 
-        circleFrac = modified/360;
+        double circleFrac = modified/360;
         double cm = width * circleFrac * Math.PI * 2;
-        movement = cm / cmPerTick;
+        double movement = cm / cmPerTick;
         double ticks = movement/2;
 
         rightBackWheel.setPower(power);
@@ -319,12 +285,12 @@ public class BlueGreedy extends LinearOpMode {
         if(!opModeIsActive())
             super.stop();
         ResetDriveEncoders();
-        changeFactor = 90;
-        modified = changeFactor + sensor;
+        double changeFactor = 90;
+        double modified = changeFactor + sensor;
 
-        circleFrac = modified/360;
+        double circleFrac = modified/360;
         double cm = width * circleFrac * Math.PI * 2;
-        movement = cm / cmPerTick;
+        double movement = cm / cmPerTick;
         double ticks = movement/2;
 
         rightBackWheel.setPower(-power);
@@ -399,7 +365,7 @@ public class BlueGreedy extends LinearOpMode {
         setDrivePower(0);
     }
     public void StrafeFromWall(double sensor, double power){
-        double pastRange = 1;
+        double pastRange = 254;
         if(!opModeIsActive())
             super.stop();
         while(pastRange < sensor && opModeIsActive()){
@@ -474,4 +440,6 @@ public class BlueGreedy extends LinearOpMode {
         ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
         infeed.setPower(0);
     }
+
+
 }
