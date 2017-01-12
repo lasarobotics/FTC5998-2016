@@ -27,7 +27,7 @@ import java.util.Scanner;
  * Created by Ethan Schaffer.
  */
 
-@Autonomous(name="Red Show Off", group="Autonomous")
+@Autonomous(name="Red Show Off", group="Red")
 public class RedShowOff extends LinearOpMode {
     public void setDrivePower(double power) {
         leftBackWheel.setPower(power);
@@ -210,7 +210,6 @@ public class RedShowOff extends LinearOpMode {
         colorSensorOnSide.enableLed(false);
 
         waitForStart();
-
         ShootAtPower(0, 0.65); //Turn on shooter
         Move(80, 1.00); //Move to shoot position
         EnableShot(750, 1.00); //Run infeed and open shooter servo

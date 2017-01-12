@@ -1,27 +1,149 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.content.Context;
+
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.navX.ftc.AHRS;
 
 import java.util.Objects;
 
 /**
- * Created by Ethan Schaffer.
+ * Created by Ethan Schaffer on 1/11/2017.
  */
 
-@Autonomous(name="No Shoot", group="Red")
-public class RedNoShoot extends LinearOpMode {
+public class Robot {
+    public enum team {
+        Red, Blue, NotSensed
+    }
+    public LinearOpMode l;
+    public final double ticksPerRev = 7;
+    public final double gearBoxOne = 40.0;
+    public final double gearBoxTwo = 24.0 / 16.0;
+    public final double gearBoxThree = 1.0;
+    public final double wheelDiameter = 4.0 * Math.PI;
+    public final double cmPerInch = 2.54;
+    public final double width = 31.75;
+    public final double ticksToStrafeDistance = 2000/(172*cmPerInch);
+    //The Above Values lets us convert encoder ticks to centimeters per travelled, as shown below.
+
+    public final double cmPerTick = (wheelDiameter / (ticksPerRev * gearBoxOne * gearBoxTwo * gearBoxThree)) * cmPerInch; //Allows us to drive our roobt with accuracy to the centiment
+
+    public static final String LEFT1NAME = "l1"; //LX Port 2
+    public static final String LEFT2NAME = "l2"; //LX Port 1
+    public static final String RIGHT1NAME = "r1";//0A Port 1
+    public static final String RIGHT2NAME = "r2";//0A Port 2
+    public static final String BALLBLOCKLEFTNAME = "bl", BALLBLOCKRIGHTNAME = "br"; //MO Ports 3+4
+    public static final double BALLBLOCKLEFTOPEN = 1, BALLBLOCKLEFTCLOSED = 0;
+    public static final double BALLBLOCKRIGHTOPEN = 0, BALLBLOCKRIGHTCLOSED = 1;
+    public static final String SHOOT1NAME = "sh1";//PN Port 1
+    public static final String SHOOT2NAME = "sh2";//PN Port 2
+    public static final String INFEEDNAME = "in"; //2S Port 2
+    public static final String LIFTNAME = "l"; //2S Port 1
+    public static final String LEFTPUSHNAME = "lp";//MO Port 1
+    public static final String RIGHTPUSHNAME = "rp";//MO Port 2
+    public static final String RANGENAME = "r"; //Port 0
+    public static final String COLORSIDENAME = "cs"; //Port 1
+    public static final String COLORLEFTBOTTOMNAME = "cb";//Port 2
+    public static final String COLORRIGHTBOTTOMNAME = "cb2"; //Port 4
+    public static final String GYRONAME = "g"; //Port 4
+
+    DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed, lift;
+    Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlockLeft;
+    ColorSensor colorSensorOnSide, colorSensorLeftBottom, colorSensorRightBottom;
+    ModernRoboticsI2cGyro gyroSensor;
+    DeviceInterfaceModule dim;
+    ModernRoboticsI2cRangeSensor range;
+    AHRS navX;
+    public static final double LEFT_SERVO_OFF_VALUE = .20;
+    public static final double LEFT_SERVO_ON_VALUE = 1;
+    public static final double RIGHT_SERVO_ON_VALUE = 1;
+    public static final double RIGHT_SERVO_OFF_VALUE = .20;
+
+    void initialize(LinearOpMode lInput, HardwareMap hardwareMap, Telemetry telemetry, boolean navXOn){
+        l = lInput;
+        leftFrontWheel = hardwareMap.dcMotor.get(LEFT1NAME);
+        leftBackWheel = hardwareMap.dcMotor.get(LEFT2NAME);
+        rightFrontWheel = hardwareMap.dcMotor.get(RIGHT1NAME);
+        rightBackWheel = hardwareMap.dcMotor.get(RIGHT2NAME);
+        rightBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        shoot1 = hardwareMap.dcMotor.get(SHOOT1NAME);
+        shoot1.setDirection(DcMotorSimple.Direction.REVERSE);
+        shoot2 = hardwareMap.dcMotor.get(SHOOT2NAME);
+        infeed = hardwareMap.dcMotor.get(INFEEDNAME);
+        infeed.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        ballBlockRight = hardwareMap.servo.get(BALLBLOCKRIGHTNAME);
+        ballBlockLeft = hardwareMap.servo.get(BALLBLOCKLEFTNAME);
+        leftButtonPusher = hardwareMap.servo.get(LEFTPUSHNAME);
+        rightButtonPusher = hardwareMap.servo.get(RIGHTPUSHNAME);
+
+        leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+        rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+        ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
+        ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
+
+        range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGENAME);
+        colorSensorLeftBottom = hardwareMap.colorSensor.get(COLORLEFTBOTTOMNAME);
+        colorSensorOnSide = hardwareMap.colorSensor.get(COLORSIDENAME);
+        colorSensorLeftBottom.setI2cAddress(I2cAddr.create8bit(0x4c));
+        colorSensorOnSide.setI2cAddress(I2cAddr.create8bit(0x3c));
+        dim = hardwareMap.get(DeviceInterfaceModule.class, "Device Interface Module 1");
+
+        //Based on the value of autoRouteChosen, we set the stateOrder array to the correct value
+        if(navXOn){
+            navX = new AHRS(dim, 5, AHRS.DeviceDataType.kProcessedData, (byte)50);
+            navX.zeroYaw();
+            int cycler = 0;
+            int timer = 0;
+            while (navX.isCalibrating()) {
+                timer++;
+                if (timer % 15 == 0) {
+                    cycler++;
+                }
+                if (cycler == 0) {
+                    telemetry.addData("Gyro", " is still Calibrating");
+                } else if (cycler == 1) {
+                    telemetry.addData("Gyro", " is still Calibrating.");
+                } else if (cycler == 2) {
+                    telemetry.addData("Gyro", " is still Calibrating..");
+                } else {
+                    cycler = 0;
+                    telemetry.addData("Gyro", " is still Calibrating...");
+                }
+                telemetry.update();
+            } //This silly looking code above animates a "..." sequence in telemetry, if the gyroscope is still calibrating
+            telemetry.addData("Gyro", "Done!");
+            telemetry.addData("Yaw", navX.getYaw());
+            if(!navX.isConnected()){
+                telemetry.addData("NavX", "DISCONNECTED!");
+            } else {
+                telemetry.addData("NavX", "Connected!");}
+            telemetry.update();
+        } else {
+            telemetry.addData("NavX", "None");
+        }
+
+        colorSensorLeftBottom.enableLed(true); //If you don't set the LED until after the waitForStart(); it doesn't work.
+        colorSensorOnSide.enableLed(false);
+
+    }
+
+
+
     public void setDrivePower(double power) {
         leftBackWheel.setPower(power);
         leftFrontWheel.setPower(power);
@@ -60,185 +182,14 @@ public class RedNoShoot extends LinearOpMode {
         }
     }
 
-    public static final String LEFT1NAME = "l1"; //LX Port 2
-    public static final String LEFT2NAME = "l2"; //LX Port 1
-    public static final String RIGHT1NAME = "r1";//0A Port 1
-    public static final String RIGHT2NAME = "r2";//0A Port 2
-    public static final String SHOOT1NAME = "sh1";//PN Port 1
-    public static final String SHOOT2NAME = "sh2";//PN Port 2
-    public static final String INFEEDNAME = "in"; //2S Port 2
-    public static final String BALLBLOCKLEFTNAME = "bl";
-    public static final String BALLBLOCKRIGHTNAME = "br"; //MO Ports 3+4
-    public static final String LEFTPUSHNAME = "lp";//MO Port 1
-    public static final String RIGHTPUSHNAME = "rp";//MO Port 2
-    public static final String GYRONAME = "g"; //Port 4
-    public static final String RANGENAME = "r";//Port 0
-    public static final String COLORSIDENAME = "cs"; //Port 2
-    public static final String COLORLEFTBOTTOMNAME = "cb";//Port 3
-    public static final String COLORRIGHTBOTTOMNAME = "cb2"; //Port 4
-
-    public static final double LEFT_SERVO_OFF_VALUE = .20;
-    public static final double LEFT_SERVO_ON_VALUE = 1;
-    public static final double RIGHT_SERVO_ON_VALUE = 1;
-    public static final double RIGHT_SERVO_OFF_VALUE = .20;
-    public static final double BALLBLOCKLEFTOPEN = 1;
-    public static final double BALLBLOCKLEFTCLOSED = 0;
-    public static final double BALLBLOCKRIGHTOPEN = 0;
-    public static final double BALLBLOCKRIGHTCLOSED = 1;
-
-    public final double ticksPerRev = 7;
-    public final double gearBoxOne = 40.0;
-    public final double gearBoxTwo = 24.0 / 16.0;
-    public final double gearBoxThree = 1.0;
-    public final double wheelDiameter = 4.0 * Math.PI;
-    public final double cmPerInch = 2.54;
-    public final double width = 31.75;
-    public final double ticksToStrafeDistance = 2000/(172*cmPerInch);
-    //The Above Values lets us convert encoder ticks to centimeters per travelled, as shown below.
-
-    public final double cmPerTick = (wheelDiameter / (ticksPerRev * gearBoxOne * gearBoxTwo * gearBoxThree)) * cmPerInch; //Allows us to drive our roobt with accuracy to the centiment
-    //NotSensed is for the Color Sensor while we are pushing the beacon.
-    public enum team {
-        Red, Blue, NotSensed
-    }
-
-    //Declaration of the Robot itself
-    public DcMotor leftFrontWheel;
-    public DcMotor leftBackWheel;
-    public DcMotor rightFrontWheel;
-    public DcMotor rightBackWheel;
-    public DcMotor shoot1;
-    public DcMotor shoot2;
-    public DcMotor infeed;
-    public Servo leftButtonPusher;
-    public Servo rightButtonPusher;
-    public Servo ballBlockRight;
-    public Servo ballBlockLeft;
-    public ColorSensor colorSensorLeftBottom;
-    public ColorSensor colorSensorOnSide;
-    public ModernRoboticsI2cRangeSensor range;
-    public ModernRoboticsI2cGyro gyroSensor;
-    public DeviceInterfaceModule dim;
-    public AHRS navX;
-
-    //Useful variables
-    public long lastTime;
-    public long time;
-    public boolean initialized = false;
-    public boolean movedServo = false;
-    public double circleFrac;
-    public double movement;
-    public double changeFactor;
-    public double modified;
-    public double currentDistance;
-    public team colorReading = team.NotSensed;
-    public int redReading;
-    public int blueReading;
-    //By declaring certain values here and not within our case statements, we avoid declaring them multiple times.
-
-    @Override
-    public void runOpMode() throws InterruptedException {
-        leftFrontWheel = hardwareMap.dcMotor.get(LEFT1NAME);
-        leftBackWheel = hardwareMap.dcMotor.get(LEFT2NAME);
-        rightFrontWheel = hardwareMap.dcMotor.get(RIGHT1NAME);
-        rightBackWheel = hardwareMap.dcMotor.get(RIGHT2NAME);
-        rightBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        shoot1 = hardwareMap.dcMotor.get(SHOOT1NAME);
-        shoot1.setDirection(DcMotorSimple.Direction.REVERSE);
-        shoot2 = hardwareMap.dcMotor.get(SHOOT2NAME);
-        infeed = hardwareMap.dcMotor.get(INFEEDNAME);
-        infeed.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        ballBlockRight = hardwareMap.servo.get(BALLBLOCKRIGHTNAME);
-        ballBlockLeft = hardwareMap.servo.get(BALLBLOCKLEFTNAME);
-        leftButtonPusher = hardwareMap.servo.get(LEFTPUSHNAME);
-        rightButtonPusher = hardwareMap.servo.get(RIGHTPUSHNAME);
-
-        leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
-        rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
-        ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
-        ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
-
-        range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGENAME);
-        colorSensorLeftBottom = hardwareMap.colorSensor.get(COLORLEFTBOTTOMNAME);
-        colorSensorOnSide = hardwareMap.colorSensor.get(COLORSIDENAME);
-        colorSensorLeftBottom.setI2cAddress(I2cAddr.create8bit(0x4c));
-        colorSensorOnSide.setI2cAddress(I2cAddr.create8bit(0x3c));
-        dim = hardwareMap.get(DeviceInterfaceModule.class, "Device Interface Module 1");
-
-        //Based on the value of autoRouteChosen, we set the stateOrder array to the correct value
-        navX = new AHRS(dim, 5, AHRS.DeviceDataType.kProcessedData, (byte)50);
-        navX.zeroYaw();
-        int cycler = 0;
-        int timer = 0;
-
-        while (navX.isCalibrating()) {
-            timer++;
-            if (timer % 15 == 0) {
-                cycler++;
-            }
-            if (cycler == 0) {
-                telemetry.addData("Gyro", " is still Calibrating");
-            } else if (cycler == 1) {
-                telemetry.addData("Gyro", " is still Calibrating.");
-            } else if (cycler == 2) {
-                telemetry.addData("Gyro", " is still Calibrating..");
-            } else {
-                cycler = 0;
-                telemetry.addData("Gyro", " is still Calibrating...");
-            }
-            telemetry.update();
-        } //This silly looking code above animates a "..." sequence in telemetry, if the gyroscope is still calibrating
-        telemetry.addData("Gyro", "Done!");
-        telemetry.addData("Yaw", navX.getYaw());
-        if(!navX.isConnected()){
-            telemetry.addData("NavX", "DISCONNECTED!");
-        } else {
-            telemetry.addData("NavX", "Connected!");}
-        telemetry.update();
-
-        colorSensorLeftBottom.enableLed(true); //If you don't set the LED until after the waitForStart(); it doesn't work.
-        colorSensorOnSide.enableLed(false);
-
-        waitForStart();
-
-        Move(80, 1.00); //Move to shoot position
-        TurnLeft(- 30, 0.10); //Turn to face Left Wall
-        Move(225, 1.00); //Move to left wall
-        AlignToWithin(3, 0.05); //Line up
-        StrafeToWall(23, 0.15); //Strafe to the wall
-        AlignToWithin(3, 0.05); //Line up
-        LineSearch(2, - 0.10); //Backwards to line
-        StrafeToWall(10, 0.10); //Get to the right
-        LineSearch(2, 0.10); //Forwards to line
-        LineSearch(2, - 0.05); //Backwards to line again, slower to get better accuracy
-        StrafeToWall(8, 0.10); //Get to the right
-        PressBeacon(team.Red ); //Press red button
-
-        StrafeFromWall(20, 0.45); //To 20 cm away
-        AlignToWithin(3, 0.05); //line up
-        Move(125, 1.00); //move towards second beacon
-        AlignToWithin(3, 0.05); //line up to be sure
-        LineSearch(2, 0.11); //Find line
-        StrafeToWall(10, 0.10); //Back to the wall
-        Move(2.5, - 1.00); //Shimmy
-        LineSearch(2, 0.10); //Forwards
-        LineSearch(2, - 0.05); //Precise Backup
-        StrafeToWall(8, 0.10); //Get to the right
-        PressBeacon(team.Red ); //Press button
-
-        StrafeFromWall(13, 1.00); //From wall to 20 cm away
-    }
     public void AlignToWithin(double sensor, double power){
-        TurnRight( - sensor, power);
+        TurnRight(- sensor, power);
         TurnLeft(sensor, power);
-        TurnRight( - sensor, power);
+        TurnRight(- sensor, power);
     }
     public void Move(double sensor, double power) {
-        if(!opModeIsActive())
-            super.stop();
+        if(!l.opModeIsActive())
+            l.stop();
         ResetDriveEncoders();
         double ticks = sensor / cmPerTick;
         int RBPos = Math.abs(rightBackWheel.getCurrentPosition());
@@ -246,7 +197,7 @@ public class RedNoShoot extends LinearOpMode {
         int LBPos = Math.abs(leftBackWheel.getCurrentPosition());
         int LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
         double avg = (RBPos + LBPos + RFPos + LFPos)/4;
-        while(avg < ticks && opModeIsActive()) {
+        while(avg < ticks && l.opModeIsActive()) {
             setDrivePower(power);
             RBPos = Math.abs(rightBackWheel.getCurrentPosition());
             RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
@@ -257,10 +208,10 @@ public class RedNoShoot extends LinearOpMode {
         setDrivePower(0);
     }
 
-    public void TurnLeft(double sensor, double power){
-        if(!opModeIsActive())
-            super.stop();
-        while(navX.getYaw() >= sensor && opModeIsActive()){
+    public void TurnLeftAbsolute(double sensor, double power){
+        if(!l.opModeIsActive())
+            l.stop();
+        while(navX.getYaw() >= sensor && l.opModeIsActive()){
             rightBackWheel.setPower(power);
             rightFrontWheel.setPower(power);
             leftBackWheel.setPower(-power);
@@ -269,28 +220,43 @@ public class RedNoShoot extends LinearOpMode {
         setDrivePower(0);
 
     }
-    public void TurnRight(double sensor, double power){
-        if(!opModeIsActive())
-            super.stop();
-        while(navX.getYaw() <= sensor && opModeIsActive()){
-            rightBackWheel.setPower(-power);
-            rightFrontWheel.setPower(-power);
-            leftBackWheel.setPower(power);
-            leftFrontWheel.setPower(power);
+    public void TurnLeftRelative(double sensor, double power){
+        if(!l.opModeIsActive())
+            l.stop();
+        double yaw = navX.getYaw();
+        while(Math.abs(yaw - navX.getYaw()) < sensor && l.opModeIsActive()){
+            rightBackWheel.setPower(power);
+            rightFrontWheel.setPower(power);
+            leftBackWheel.setPower(-power);
+            leftFrontWheel.setPower(-power);
         }
         setDrivePower(0);
+
+    }
+    public void TurnLeft(double sensor, double power){
+        if(!l.opModeIsActive())
+            l.stop();
+        sensor = - Math.abs(sensor);
+        while(navX.getYaw() >= sensor && l.opModeIsActive()){
+            rightBackWheel.setPower(power);
+            rightFrontWheel.setPower(power);
+            leftBackWheel.setPower(-power);
+            leftFrontWheel.setPower(-power);
+        }
+        setDrivePower(0);
+
     }
 
     public void TurnLeftEnc(double sensor, double power){
-        if(!opModeIsActive())
-            super.stop();
+        if(!l.opModeIsActive())
+            l.stop();
         ResetDriveEncoders();
-        changeFactor = 90;
-        modified = changeFactor + sensor;
+        double changeFactor = 90;
+        double modified = changeFactor + sensor;
 
-        circleFrac = modified/360;
+        double circleFrac = modified/360;
         double cm = width * circleFrac * Math.PI * 2;
-        movement = cm / cmPerTick;
+        double movement = cm / cmPerTick;
         double ticks = movement/2;
 
         rightBackWheel.setPower(power);
@@ -305,19 +271,56 @@ public class RedNoShoot extends LinearOpMode {
             int LBPos = Math.abs(leftBackWheel.getCurrentPosition());
             int LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
             avg = (RBPos + RFPos + LBPos + LFPos)/4;
-        } while(avg < ticks && opModeIsActive());
+        } while(avg < ticks && l.opModeIsActive());
         setDrivePower(0);
     }
-    public void TurnRightEnc(double sensor, double power){
-        if(!opModeIsActive())
-            super.stop();
-        ResetDriveEncoders();
-        changeFactor = 90;
-        modified = changeFactor + sensor;
 
-        circleFrac = modified/360;
+    public void TurnRightAbsolute(double sensor, double power){
+        if(!l.opModeIsActive())
+            l.stop();
+        while(navX.getYaw() <= sensor && l.opModeIsActive()){
+            rightBackWheel.setPower(-power);
+            rightFrontWheel.setPower(-power);
+            leftBackWheel.setPower(power);
+            leftFrontWheel.setPower(power);
+        }
+        setDrivePower(0);
+    }
+    public void TurnRight(double sensor, double power){
+        if(!l.opModeIsActive())
+            l.stop();
+        sensor = Math.abs(sensor);
+        while(navX.getYaw() <= sensor && l.opModeIsActive()){
+            rightBackWheel.setPower(-power);
+            rightFrontWheel.setPower(-power);
+            leftBackWheel.setPower(power);
+            leftFrontWheel.setPower(power);
+        }
+        setDrivePower(0);
+    }
+    public void TurnRightRelative(double sensor, double power){
+        if(!l.opModeIsActive())
+            l.stop();
+        double yaw = navX.getYaw();
+        while(Math.abs(yaw - navX.getYaw()) < sensor && l.opModeIsActive()){
+            rightBackWheel.setPower(-power);
+            rightFrontWheel.setPower(-power);
+            leftBackWheel.setPower(power);
+            leftFrontWheel.setPower(power);
+        }
+        setDrivePower(0);
+    }
+
+    public void TurnRightEnc(double sensor, double power){
+        if(!l.opModeIsActive())
+            l.stop();
+        ResetDriveEncoders();
+        double changeFactor = 90;
+        double modified = changeFactor + sensor;
+
+        double circleFrac = modified/360;
         double cm = width * circleFrac * Math.PI * 2;
-        movement = cm / cmPerTick;
+        double movement = cm / cmPerTick;
         double ticks = movement/2;
 
         rightBackWheel.setPower(-power);
@@ -332,12 +335,12 @@ public class RedNoShoot extends LinearOpMode {
             int LBPos = Math.abs(leftBackWheel.getCurrentPosition());
             int LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
             avg = (RBPos + RFPos + LBPos + LFPos)/4;
-        } while(avg < ticks && opModeIsActive());
+        } while(avg < ticks && l.opModeIsActive());
         setDrivePower(0);
     }
     public void StrafeLeft(double sensor, double power){
-        if(!opModeIsActive())
-            super.stop();
+        if(!l.opModeIsActive())
+            l.stop();
         double ticks = sensor / cmPerTick;
         ticks *= ticksToStrafeDistance;
         int avg = 0;
@@ -348,12 +351,12 @@ public class RedNoShoot extends LinearOpMode {
             int LBPos = Math.abs(leftBackWheel.getCurrentPosition());
             int LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
             avg = (RBPos + RFPos + LBPos + LFPos)/4;
-        } while(avg < ticks && opModeIsActive());
+        } while(avg < ticks && l.opModeIsActive());
         setDrivePower(0);
     }
     public void StrafeRight(double sensor, double power){
-        if(!opModeIsActive())
-            super.stop();
+        if(!l.opModeIsActive())
+            l.stop();
         double ticks = sensor / cmPerTick;
         ticks *= ticksToStrafeDistance;
         int avg = 0;
@@ -364,7 +367,7 @@ public class RedNoShoot extends LinearOpMode {
             int LBPos = Math.abs(leftBackWheel.getCurrentPosition());
             int LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
             avg = (RBPos + RFPos + LBPos + LFPos)/4;
-        } while(avg < ticks && opModeIsActive());
+        } while(avg < ticks && l.opModeIsActive());
         setDrivePower(0);
     }
     public double getRange(double previous){
@@ -377,14 +380,11 @@ public class RedNoShoot extends LinearOpMode {
     }
     public void StrafeToWall(double sensor, double power){
         double pastRange = 254;
-        if(!opModeIsActive())
-            super.stop();
-        while(pastRange > sensor && opModeIsActive()){
+        if(!l.opModeIsActive())
+            l.stop();
+        while(pastRange > sensor && l.opModeIsActive()){
             pastRange = getRange(pastRange);
             setStrafePower("Left", power);
-            telemetry.addData("Distance", range.getDistance(DistanceUnit.CM));
-            telemetry.addData("Light", range.getLightDetected());
-            telemetry.update();
         }
         if(range.getDistance(DistanceUnit.CM) == 255){
             StrafeToWall(sensor, power);
@@ -393,32 +393,29 @@ public class RedNoShoot extends LinearOpMode {
     }
     public void StrafeFromWall(double sensor, double power){
         double pastRange = 254;
-        if(!opModeIsActive())
-            super.stop();
-        while(pastRange < sensor && opModeIsActive()){
+        if(!l.opModeIsActive())
+            l.stop();
+        while(pastRange < sensor && l.opModeIsActive()){
             pastRange = getRange(pastRange);
             setStrafePower("Left", power);
-            telemetry.addData("Distance", range.getDistance(DistanceUnit.CM));
-            telemetry.addData("Light", range.getLightDetected());
-            telemetry.update();
         }
         if(range.getDistance(DistanceUnit.CM) == 255){
-            StrafeToWall(sensor, power);
+            StrafeFromWall(sensor, power);
         }
         setDrivePower(0);
     }
 
     public void LineSearch(double sensor, double power){
-        if(!opModeIsActive())
-            super.stop();
-        while(colorSensorLeftBottom.red() < sensor && colorSensorLeftBottom.blue() < sensor && colorSensorLeftBottom.alpha() < sensor && opModeIsActive()){
+        if(!l.opModeIsActive())
+            l.stop();
+        while(colorSensorLeftBottom.red() < sensor && colorSensorLeftBottom.blue() < sensor && colorSensorLeftBottom.alpha() < sensor && l.opModeIsActive()){
             setDrivePower(power);
         }
         setDrivePower(0);
     }
     public void PressBeacon(team t){
-        if(!opModeIsActive())
-            super.stop();
+        if(!l.opModeIsActive())
+            l.stop();
         team colorReading;
         if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
             colorReading = team.Red;
@@ -447,14 +444,14 @@ public class RedNoShoot extends LinearOpMode {
         }
     }
     public void ShootAtPower(double sensor, double power){
-        if(!opModeIsActive())
-            super.stop();
+        if(!l.opModeIsActive())
+            l.stop();
         shoot1.setPower(power);
         shoot2.setPower(power);
     }
     public void EnableShot(double sensor, double power){
-        if(!opModeIsActive())
-            super.stop();
+        if(!l.opModeIsActive())
+            l.stop();
         ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
         ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
         infeed.setPower(power);
@@ -467,4 +464,5 @@ public class RedNoShoot extends LinearOpMode {
         ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
         infeed.setPower(0);
     }
+
 }
