@@ -183,9 +183,9 @@ public class Robot {
     }
 
     public void AlignToWithin(double sensor, double power){
-        TurnRight(sensor, power);
-        TurnLeft(sensor, power);
-        TurnRight(sensor, power);
+        TurnRightAbsolute(- sensor, power);
+        TurnLeftAbsolute(sensor, power);
+        TurnRightAbsolute(- sensor, power);
     }
     public void Move(double sensor, double power) {
         if(!l.opModeIsActive())

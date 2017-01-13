@@ -44,9 +44,9 @@ public class BlueDoItAll extends LinearOpMode {
         robot.StrafeFromWall(13, 1.00);
         robot.TurnRightEnc(45, 1.00);
         robot.ShootAtPower(0, 0.65);
-        robot.Move(80, 1.00);
+        robot.Move(110, 1.00);
         robot.EnableShot(750, 1.00);
         robot.ShootAtPower(0, 0.00);
-
+        robot.Move(40, 1.00);
     }
 }
