@@ -16,32 +16,44 @@ public class RedDoItAll  extends LinearOpMode{
         robot.initialize(RedDoItAll.this, hardwareMap, telemetry, true);
         waitForStart();
 
+        robot.ShootAtPower(1, .80);
         robot.Move(80, 1.00);
-        robot.TurnLeft(- 30, 0.10);
-        robot.Move(225, 1.00);
+        robot.EnableShot(750, 1.00);
+        robot.infeed.setPower(0);
+        robot.shoot1.setPower(0);
+        robot.shoot2.setPower(0);
+        robot.TurnLeft(35, 0.15);
+        robot.Move(240, 1.00);
         robot.AlignToWithin(3, 0.05);
+        //Line up with the wall
+        robot.StrafeToWall(15, 0.10);
 
-        robot.StrafeToWall(23, 0.15);
-        robot.AlignToWithin(3, 0.05);
+        robot.AlignToWithin(2.5, 0.05);
+        robot.AlignToWithin(2.5, 0.05);
         robot.LineSearch(2, - 0.10);
-        robot.StrafeToWall(10, 0.10);
-        robot.LineSearch(2, 0.10);
-        robot.LineSearch(2, - 0.05);
-        robot.StrafeToWall(8, 0.10);
-        robot.PressBeacon(Robot.team.Red);
+        robot.LineSearch(2,   0.05);
+        robot.AlignToWithin(2.5, 0.05);
+        robot.AlignToWithin(2.5, 0.05);
+        robot.StrafeToWall(9, 0.10);
 
-        robot.StrafeFromWall(20, 0.45);
-        robot.AlignToWithin(3, 0.05);
-        robot.Move(125, 1.00);
-        robot.AlignToWithin(3, 0.05);
+        robot.PressBeacon(Robot.team.Red );
+        //Press the first beacon
+
+        robot.StrafeFromWall(15, 1.0);
+        robot.AlignToWithin(2, 0.05);
+        robot.Move(140, 1.00);
+        robot.AlignToWithin(2.5, 0.05);
         robot.LineSearch(2, 0.11);
-        robot.StrafeToWall(10, 0.10);
-        robot.Move(2.5, - 1.00);
+        robot.AlignToWithin(2.5, 0.05);
+        robot.StrafeToWall(8, 0.10);
+        robot.AlignToWithin(2.5, 0.05);
         robot.LineSearch(2, 0.10);
         robot.LineSearch(2, - 0.05);
-        robot.StrafeToWall(8, 0.10);
         robot.PressBeacon(Robot.team.Red);
+        //Press the second beacon
 
         robot.StrafeFromWall(13, 1.00);
+        robot.TurnLeftEnc(30, 1.00);
+        robot.Move(205, -1.00);
     }
 }

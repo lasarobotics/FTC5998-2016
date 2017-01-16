@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Neutral;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.Robot;
@@ -7,7 +8,7 @@ import org.firstinspires.ftc.teamcode.Robot;
 /**
  * Created by Ethan Schaffer on 1/12/2017.
  */
-
+@Autonomous(group = "Neutral", name = "CloseNoPark")
 public class ShootCloseNoPark extends LinearOpMode {
     Robot robot = new Robot();
     @Override

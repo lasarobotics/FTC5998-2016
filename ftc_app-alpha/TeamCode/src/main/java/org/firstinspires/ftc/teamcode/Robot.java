@@ -38,7 +38,8 @@ public class Robot {
     public final double ticksToStrafeDistance = 2000/(172*cmPerInch);
     //The Above Values lets us convert encoder ticks to centimeters per travelled, as shown below.
 
-    public final double cmPerTick = (wheelDiameter / (ticksPerRev * gearBoxOne * gearBoxTwo * gearBoxThree)) * cmPerInch; //Allows us to drive our roobt with accuracy to the centiment
+    public final double cmPerTick = (wheelDiameter / (ticksPerRev * gearBoxOne * gearBoxTwo * gearBoxThree)) * cmPerInch;
+    //Allows us to drive our roobt with accuracy to the centiment
 
     public static final String LEFT1NAME = "l1"; //LX Port 2
     public static final String LEFT2NAME = "l2"; //LX Port 1
@@ -59,13 +60,13 @@ public class Robot {
     public static final String COLORRIGHTBOTTOMNAME = "cb2"; //Port 4
     public static final String GYRONAME = "g"; //Port 4
 
-    DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed, lift;
-    Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlockLeft;
-    ColorSensor colorSensorOnSide, colorSensorLeftBottom, colorSensorRightBottom;
-    ModernRoboticsI2cGyro gyroSensor;
-    DeviceInterfaceModule dim;
-    ModernRoboticsI2cRangeSensor range;
-    AHRS navX;
+    public DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed, lift;
+    public Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlockLeft;
+    public ColorSensor colorSensorOnSide, colorSensorLeftBottom, colorSensorRightBottom;
+    public ModernRoboticsI2cGyro gyroSensor;
+    public DeviceInterfaceModule dim;
+    public ModernRoboticsI2cRangeSensor range;
+    public AHRS navX;
     public static final double LEFT_SERVO_OFF_VALUE = .20;
     public static final double LEFT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_ON_VALUE = 1;
@@ -437,11 +438,6 @@ public class Robot {
         }
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
-        try {
-            Thread.sleep(250);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
     public void ShootAtPower(double sensor, double power){
         if(!l.opModeIsActive())
@@ -455,10 +451,15 @@ public class Robot {
         ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
         ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
         infeed.setPower(power);
-        try{
-            Thread.sleep((long)sensor);
-        } catch (InterruptedException e){
-            e.printStackTrace();
+        double time = 0;
+        while(l.opModeIsActive() && time < sensor)
+        {
+            time++;
+            try{
+                Thread.sleep(1);
+            } catch (InterruptedException e){
+                e.printStackTrace();
+            }
         }
         ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
         ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
