@@ -5,7 +5,6 @@ https://ftcprogramming.wordpress.com/2015/11/30/building-ftc_app-wirelessly/
 package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -20,12 +19,8 @@ import java.util.Arrays;
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
-@TeleOp(name=" Tele Op 40", group="TeleOp")
-@Disabled
-public class TeleOpFinal40 extends OpMode {
-    public static final double SHOOTERMAXVALUE = .40;
-
-    //TWEAKING VALUES
+@TeleOp(name="Tele Op", group="TeleOp")
+public class TeleOpFinalVoltageSensor extends OpMode {
     public static final double LEFT_SERVO_OFF_VALUE = .3;
     public static final double LEFT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_ON_VALUE = 1;
@@ -92,6 +87,7 @@ public class TeleOpFinal40 extends OpMode {
     ModernRoboticsI2cGyro gyroSensor;
     DeviceInterfaceModule dim;
     ModernRoboticsI2cRangeSensor range;
+    public double SHOOTERMAXVALUE = 1;
 
     @Override
     public void init() {
@@ -129,8 +125,20 @@ public class TeleOpFinal40 extends OpMode {
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
         ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
-//        shoot1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        shoot2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        double volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
+        if(volts > 13.3){
+            SHOOTERMAXVALUE = .50;
+        } else if(volts > 13.1){
+            SHOOTERMAXVALUE = .60;
+        } else if(volts > 12.9){
+            SHOOTERMAXVALUE = .70;
+        } else if(volts > 12.6){
+            SHOOTERMAXVALUE = .80;
+        } else {
+            SHOOTERMAXVALUE = 1.00;
+        }
+
     }
 
     @Override

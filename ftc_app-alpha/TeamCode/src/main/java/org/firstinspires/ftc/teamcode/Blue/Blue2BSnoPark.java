@@ -7,13 +7,13 @@ import org.firstinspires.ftc.teamcode.Robot;
 /**
  * Created by Ethan Schaffer on 1/11/2017.
  */
-@Autonomous(group = "Blue", name = "B_DIA")
-public class BlueDoItAll extends LinearOpMode {
+@Autonomous(group = "Blue", name = "B_2BS (No Park)")
+public class Blue2BSnoPark extends LinearOpMode {
     Robot robot = new Robot();
 
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(BlueDoItAll.this, hardwareMap, telemetry, true);
+        robot.initialize(Blue2BSnoPark.this, hardwareMap, telemetry, true);
         waitForStart();
         robot.Move(40, - 1.00);
         robot.TurnRight(35, 0.15);
@@ -57,7 +57,5 @@ public class BlueDoItAll extends LinearOpMode {
         robot.EnableShot(750, 1.00);
         //Shoot the particles into the vortex
         robot.ShootAtPower(0, 0.00);
-        robot.Move(60, 1.00);
-        //Go park on the wooden part of the field
     }
 }

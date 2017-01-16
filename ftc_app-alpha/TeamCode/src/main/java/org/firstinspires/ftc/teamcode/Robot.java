@@ -188,6 +188,12 @@ public class Robot {
         TurnLeftAbsolute(sensor, power);
         TurnRightAbsolute(- sensor, power);
     }
+    public void AlignToWithinOf(double sensor, double reading, double power){
+        TurnRightAbsolute(reading - sensor, power);
+        TurnLeftAbsolute(reading + sensor, power);
+        TurnRightAbsolute(reading - sensor, power);
+    }
+
     public void Move(double sensor, double power) {
         if(!l.opModeIsActive())
             l.stop();
@@ -345,7 +351,10 @@ public class Robot {
         double ticks = sensor / cmPerTick;
         ticks *= ticksToStrafeDistance;
         int avg = 0;
-        setStrafePower("Left", power);
+        rightFrontWheel.setPower(power);
+        rightBackWheel.setPower(-power);
+        leftFrontWheel.setPower(-power);
+        leftBackWheel.setPower(power);
         do {
             int RBPos = Math.abs(rightBackWheel.getCurrentPosition());
             int RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
@@ -427,6 +436,34 @@ public class Robot {
             Move(1, - .25);
             rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
             leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+        } else if(colorReading != team.NotSensed){
+            rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+            leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
+        } else {
+            return;
+        }
+        try {
+            Thread.sleep(1250);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+        leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+    }
+    public void PressBeaconSmart(team t){
+        if(!l.opModeIsActive())
+            l.stop();
+        Move(.25, 0.25);
+        team colorReading;
+        if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
+            colorReading = team.Red;
+        } else {
+            colorReading = team.Blue;
+        }
+        Move(.25, - 0.25);
+        if(colorReading == t){
+            rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
+            leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
         } else {
             rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
             leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
@@ -439,6 +476,7 @@ public class Robot {
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
     }
+
     public void ShootAtPower(double sensor, double power){
         if(!l.opModeIsActive())
             l.stop();

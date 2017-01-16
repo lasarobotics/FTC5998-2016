@@ -8,35 +8,41 @@ import org.firstinspires.ftc.teamcode.Robot;
 /**
  * Created by Ethan Schaffer on 1/11/2017.
  */
-@Autonomous(group = "Red", name = "R_S1B")
-public class Red1BeaconShoot extends LinearOpMode{
+@Autonomous(group = "Red", name = "R_1B Shoot")
+public class Red1BeaconShoot  extends LinearOpMode{
     Robot robot = new Robot();
     @Override
     public void runOpMode() throws InterruptedException {
         robot.initialize(Red1BeaconShoot.this, hardwareMap, telemetry, true);
         waitForStart();
 
-        robot.ShootAtPower(0, 0.65);
+        robot.ShootAtPower(1, .80);
         robot.Move(80, 1.00);
         robot.EnableShot(750, 1.00);
-        robot.ShootAtPower(0, 0.00);
-        robot.TurnLeft(- 30, 0.10);
-        robot.Move(225, 1.00);
+        robot.infeed.setPower(0);
+        robot.shoot1.setPower(0);
+        robot.shoot2.setPower(0);
+        robot.TurnLeft(35, 0.15);
+        robot.Move(240, 1.00);
         robot.AlignToWithin(3, 0.05);
+        //Line up with the wall
+        robot.StrafeToWall(15, 0.10);
 
-        robot.StrafeToWall(23, 0.15);
-        robot.AlignToWithin(3, 0.05);
+        robot.AlignToWithin(2.5, 0.05);
+        robot.AlignToWithin(2.5, 0.05);
         robot.LineSearch(2, - 0.10);
-        robot.StrafeToWall(10, 0.10);
-        robot.LineSearch(2, 0.10);
-        robot.LineSearch(2, - 0.05);
-        robot.StrafeToWall(8, 0.10);
-        robot.PressBeacon(Robot.team.Red);
+        robot.LineSearch(2,   0.05);
+        robot.StrafeToWall(9, 0.10);
 
-        robot.StrafeFromWall(20, 0.45);
-        robot.TurnRight(90, 0.10);
-        robot.Move(105, 1.0);
-        robot.Move(15, -0.5);
-        robot.Move(15, 1.0);
+        robot.LineSearch(2,   0.10);
+        robot.LineSearch(2, - 0.05);
+
+        robot.PressBeacon(Robot.team.Red );
+        //Press the first beacon
+        robot.StrafeFromWall(15, 1.0);
+        robot.TurnLeft(45, .05);
+        robot.Move(70, -1.0);
+        robot.TurnRight(45, .05);
+        robot.Move(70, -0.25);
     }
 }
