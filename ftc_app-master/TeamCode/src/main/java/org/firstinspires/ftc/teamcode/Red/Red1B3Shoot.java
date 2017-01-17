@@ -3,18 +3,17 @@ package org.firstinspires.ftc.teamcode.Red;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Robot;
 
 /**
  * Created by Ethan Schaffer on 1/11/2017.
  */
-@Autonomous(group = "Red", name = "R_Extra")
-public class RedExtraBall extends LinearOpMode{
+@Autonomous(group = "Red", name = "R_1B Shoot 3")
+public class Red1B3Shoot extends LinearOpMode{
     Robot robot = new Robot();
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(RedExtraBall.this, hardwareMap, telemetry, true);
+        robot.initialize(Red1B3Shoot.this, hardwareMap, telemetry, true);
         waitForStart();
 
         robot.infeed.setPower(1);
@@ -48,21 +47,10 @@ public class RedExtraBall extends LinearOpMode{
         robot.PressBeacon(Robot.team.Red );
         //Press the first beacon
         robot.StrafeFromWall(15, 1.0);
-        robot.AlignToWithinOf(2.5, - 90, .05);
-        robot.AlignToWithinOf(2.5, - 90, .05);
-        robot.Move(140, 1.00);
-        robot.AlignToWithinOf(2.5, - 90, .05);
-        robot.LineSearch(2, 0.11);
-        robot.AlignToWithinOf(2.5, - 90, .05);
-        robot.StrafeToWall(9, 0.10);
-        robot.AlignToWithinOf(2.5, - 90, .05);
-        robot.LineSearch(2,   0.10);
-        robot.LineSearch(2, - 0.05);
-        robot.PressBeacon(Robot.team.Red);
-        //Press the second beacon
+        robot.TurnLeftRelative(45, .05);
+        robot.Move(70, -1.0);
+        robot.TurnRightRelative(45, .05);
+        robot.Move(70, -1.0);
 
-        robot.StrafeFromWall(13, 1.00);
-        robot.TurnLeftEnc(35, 1.00);
-        robot.Move(215, -1.00);
     }
 }

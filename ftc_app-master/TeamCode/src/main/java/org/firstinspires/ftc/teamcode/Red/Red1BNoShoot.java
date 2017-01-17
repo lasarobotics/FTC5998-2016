@@ -8,12 +8,12 @@ import org.firstinspires.ftc.teamcode.Robot;
 /**
  * Created by Ethan Schaffer on 1/11/2017.
  */
-@Autonomous(group = "Red", name = "R_NS1B")
-public class RedJust1Beacon extends LinearOpMode{
+@Autonomous(group = "Red", name = "R_1B No Shoot")
+public class Red1BNoShoot extends LinearOpMode{
     Robot robot = new Robot();
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(RedJust1Beacon.this, hardwareMap, telemetry, true);
+        robot.initialize(Red1BNoShoot.this, hardwareMap, telemetry, true);
         waitForStart();
 
         robot.Move(80, 1.00);

@@ -8,19 +8,19 @@ import org.firstinspires.ftc.teamcode.Robot;
 /**
  * Created by Ethan Schaffer on 1/11/2017.
  */
-@Autonomous(group = "Red", name = "R_S2B (No Park Spin)")
-public class RedS2BNoParkSpin extends LinearOpMode{
+@Autonomous(group = "Red", name = "R_S2B (No Park)")
+public class Red2BSNoParkSpin extends LinearOpMode{
     Robot robot = new Robot();
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(RedS2BNoParkSpin.this, hardwareMap, telemetry, true);
+        robot.initialize(Red2BSNoParkSpin.this, hardwareMap, telemetry, true);
         waitForStart();
 
         robot.ShootSmart();
         robot.Move(80, 1.00);
         robot.EnableShot(750, 1.00);
         robot.infeed.setPower(0);
-        robot.StopShooter();
+        robot.ShootSmart();
         robot.TurnLeft(35, 0.15);
         robot.Move(240, 1.00);
         robot.AlignToWithin(3, 0.05);
@@ -52,11 +52,6 @@ public class RedS2BNoParkSpin extends LinearOpMode{
         //Press the second beacon
 
         robot.StrafeFromWall(20, 1.00);
-        robot.shoot1.setPower(1);
-        robot.shoot2.setPower(1);
         robot.TurnLeftEnc(180, 1.00);
-        robot.shoot1.setPower(0);
-        robot.shoot2.setPower(0);
-
     }
 }

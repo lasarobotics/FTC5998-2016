@@ -8,12 +8,12 @@ import org.firstinspires.ftc.teamcode.Robot;
 /**
  * Created by Ethan Schaffer on 1/11/2017.
  */
-@Autonomous(group = "Red", name = "R_DIA")
-public class RedDoItAll  extends LinearOpMode{
+@Autonomous(group = "Red", name = "R_S2B (No Park Spin)")
+public class Red2BShootNoParkSpin extends LinearOpMode{
     Robot robot = new Robot();
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(RedDoItAll.this, hardwareMap, telemetry, true);
+        robot.initialize(Red2BShootNoParkSpin.this, hardwareMap, telemetry, true);
         waitForStart();
 
         robot.ShootSmart();
@@ -51,8 +51,12 @@ public class RedDoItAll  extends LinearOpMode{
         robot.PressBeacon(Robot.team.Red);
         //Press the second beacon
 
-        robot.StrafeFromWall(13, 1.00);
-        robot.TurnLeftEnc(35, 1.00);
-        robot.Move(215, -1.00);
+        robot.StrafeFromWall(20, 1.00);
+        robot.shoot1.setPower(1);
+        robot.shoot2.setPower(1);
+        robot.TurnLeftEnc(180, 1.00);
+        robot.shoot1.setPower(0);
+        robot.shoot2.setPower(0);
+
     }
 }

@@ -233,6 +233,7 @@ public class Robot {
         if(!l.opModeIsActive())
             l.stop();
         double yaw = navX.getYaw();
+        sensor = -Math.abs(sensor);
         while(Math.abs(yaw - navX.getYaw()) < sensor && l.opModeIsActive()){
             rightBackWheel.setPower(power);
             rightFrontWheel.setPower(power);

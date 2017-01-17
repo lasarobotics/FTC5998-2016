@@ -8,14 +8,19 @@ import org.firstinspires.ftc.teamcode.Robot;
 /**
  * Created by Ethan Schaffer on 1/11/2017.
  */
-@Autonomous(group = "Red", name = "R_2B (No Shoot)")
-public class Red2BeaconNoShoot  extends LinearOpMode{
+@Autonomous(group = "Red", name = "R_S2B (Defend)")
+public class Red2BSDefend extends LinearOpMode{
     Robot robot = new Robot();
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(Red2BeaconNoShoot.this, hardwareMap, telemetry, true);
+        robot.initialize(Red2BSDefend.this, hardwareMap, telemetry, true);
         waitForStart();
+
+        robot.ShootSmart();
         robot.Move(80, 1.00);
+        robot.EnableShot(750, 1.00);
+        robot.infeed.setPower(0);
+        robot.StopShooter();
         robot.TurnLeft(35, 0.15);
         robot.Move(240, 1.00);
         robot.AlignToWithin(3, 0.05);
@@ -47,7 +52,7 @@ public class Red2BeaconNoShoot  extends LinearOpMode{
         //Press the second beacon
 
         robot.StrafeFromWall(13, 1.00);
-        robot.TurnLeftEnc(35, 1.00);
-        robot.Move(215, -1.00);
+        robot.TurnRightEnc(35, 1.00);
+        robot.Move(70, 1.00);
     }
 }

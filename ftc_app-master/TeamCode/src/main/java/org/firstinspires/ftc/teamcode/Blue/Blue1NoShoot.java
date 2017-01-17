@@ -7,13 +7,13 @@ import org.firstinspires.ftc.teamcode.Robot;
 /**
  * Created by Ethan Schaffer on 1/11/2017.
  */
-@Autonomous(group = "Blue", name = "B_1 Beacon Shoot")
-public class Blue1BeaconShoot extends LinearOpMode {
+@Autonomous(group = "Blue", name = "B_1B (No Shoot)")
+public class Blue1NoShoot extends LinearOpMode {
     Robot robot = new Robot();
 
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(Blue1BeaconShoot.this, hardwareMap, telemetry, true);
+        robot.initialize(Blue1NoShoot.this, hardwareMap, telemetry, true);
         waitForStart();
         robot.Move(40, - 1.00);
         robot.TurnRight(35, 0.15);
@@ -31,15 +31,7 @@ public class Blue1BeaconShoot extends LinearOpMode {
         robot.StrafeToWall(9, 0.10);
 
         robot.PressBeacon(Robot.team.Blue );
-
-        robot.StrafeFromWall(15, 1.0);
-        robot.TurnRight(45, .05);
-        robot.Move(70, 1.0);
-        robot.TurnLeft(45, .05);
-        robot.ShootSmart();
-        robot.EnableShot(1000, 1);
-        robot.ShootAtPower(0);
-        robot.Move(60, -.25);
+        //Press the first beacon
 
     }
 }

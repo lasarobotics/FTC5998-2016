@@ -8,12 +8,12 @@ import org.firstinspires.ftc.teamcode.Robot;
  * Created by Ethan Schaffer on 1/11/2017.
  */
 @Autonomous(group = "Blue", name = "B_2BS (No Park Spin)")
-public class Blue2BSnoParkShowOff extends LinearOpMode {
+public class Blue2BSNoParkSpin extends LinearOpMode {
     Robot robot = new Robot();
 
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(Blue2BSnoParkShowOff.this, hardwareMap, telemetry, true);
+        robot.initialize(Blue2BSNoParkSpin.this, hardwareMap, telemetry, true);
         waitForStart();
         robot.Move(40, - 1.00);
         robot.TurnRight(35, 0.15);

@@ -8,12 +8,12 @@ import org.firstinspires.ftc.teamcode.Robot;
 /**
  * Created by Ethan Schaffer on 1/11/2017.
  */
-@Autonomous(group = "Red", name = "R_S2B (Defend)")
-public class RedShoot2BDefend extends LinearOpMode{
+@Autonomous(group = "Red", name = "R_DIA")
+public class Red2BShoot extends LinearOpMode{
     Robot robot = new Robot();
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(RedShoot2BDefend.this, hardwareMap, telemetry, true);
+        robot.initialize(Red2BShoot.this, hardwareMap, telemetry, true);
         waitForStart();
 
         robot.ShootSmart();
@@ -52,7 +52,7 @@ public class RedShoot2BDefend extends LinearOpMode{
         //Press the second beacon
 
         robot.StrafeFromWall(13, 1.00);
-        robot.TurnRightEnc(35, 1.00);
-        robot.Move(70, 1.00);
+        robot.TurnLeftEnc(35, 1.00);
+        robot.Move(215, -1.00);
     }
 }
