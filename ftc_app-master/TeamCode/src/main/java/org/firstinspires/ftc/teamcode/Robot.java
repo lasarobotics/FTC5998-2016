@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -59,6 +60,7 @@ public class Robot {
     public static final String COLORLEFTBOTTOMNAME = "cb";//Port 2
     public static final String COLORRIGHTBOTTOMNAME = "cb2"; //Port 4
     public static final String GYRONAME = "g"; //Port 4
+    public VoltageSensor voltageGetter;
 
     public DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed, lift;
     public Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlockLeft;
@@ -96,7 +98,7 @@ public class Robot {
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
         ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
-
+        voltageGetter = hardwareMap.voltageSensor.get("Motor Controller 1");
         range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGENAME);
         colorSensorLeftBottom = hardwareMap.colorSensor.get(COLORLEFTBOTTOMNAME);
         colorSensorOnSide = hardwareMap.colorSensor.get(COLORSIDENAME);
@@ -388,6 +390,29 @@ public class Robot {
             return c;
         }
     }
+    public void ShootSmart(){
+        double volts = voltageGetter.getVoltage();
+        double power = 1.00;
+        if(volts > 13.3){
+            power = 0.50;
+        } else if(volts > 13.1){
+            power = 0.60;
+        } else if(volts > 12.9){
+            power = 0.70;
+        } else if(volts > 12.6){
+            power = 0.80;
+        } else if(volts > 12.3) {
+            power = 0.90;
+        }else {
+            power = 1.00;
+        }
+        shoot1.setPower(power);
+        shoot2.setPower(power);
+    }
+    public void StopShooter(){
+        shoot1.setPower(0);
+        shoot2.setPower(0);
+    }
     public void StrafeToWall(double sensor, double power){
         double pastRange = 254;
         if(!l.opModeIsActive())
@@ -477,7 +502,7 @@ public class Robot {
         leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
     }
 
-    public void ShootAtPower(double sensor, double power){
+    public void ShootAtPower(double power){
         if(!l.opModeIsActive())
             l.stop();
         shoot1.setPower(power);

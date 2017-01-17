@@ -9,20 +9,19 @@ import org.firstinspires.ftc.teamcode.Robot;
  * Created by Ethan Schaffer on 1/12/2017.
  */
 
-@Autonomous(group = "ZNeutral", name = "FarNoPark")
-public class ShootFarNoPark extends LinearOpMode {
+@Autonomous(group = "ZNeutral", name = "FarParkRamp (Blue)")
+public class ShootFarParkRampB extends LinearOpMode {
     Robot robot = new Robot();
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(ShootFarNoPark.this, hardwareMap, telemetry, true);
+        robot.initialize(ShootFarParkRampB.this, hardwareMap, telemetry, true);
         waitForStart();
         sleep(1000*10);
         robot.Move(180, .5);
         robot.ShootSmart();
-        robot.EnableShot(2000, 1.0);
+        robot.EnableShot(2000, 1.00);
         robot.StopShooter();
-        robot.Move(60, .5);
-        sleep(1000);
-        robot.Move(30, -.5);
+        robot.TurnRight(45, .05);
+        robot.Move(90, .5);
     }
 }

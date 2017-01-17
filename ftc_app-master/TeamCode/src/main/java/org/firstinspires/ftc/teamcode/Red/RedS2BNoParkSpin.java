@@ -8,12 +8,12 @@ import org.firstinspires.ftc.teamcode.Robot;
 /**
  * Created by Ethan Schaffer on 1/11/2017.
  */
-@Autonomous(group = "Red", name = "R_1B Shoot")
-public class Red1BeaconShoot  extends LinearOpMode{
+@Autonomous(group = "Red", name = "R_S2B (No Park Spin)")
+public class RedS2BNoParkSpin extends LinearOpMode{
     Robot robot = new Robot();
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(Red1BeaconShoot.this, hardwareMap, telemetry, true);
+        robot.initialize(RedS2BNoParkSpin.this, hardwareMap, telemetry, true);
         waitForStart();
 
         robot.ShootSmart();
@@ -39,9 +39,24 @@ public class Red1BeaconShoot  extends LinearOpMode{
         robot.PressBeacon(Robot.team.Red );
         //Press the first beacon
         robot.StrafeFromWall(15, 1.0);
-        robot.TurnLeft(45, .05);
-        robot.Move(70, -1.0);
-        robot.TurnRight(45, .05);
-        robot.Move(70, -0.25);
+        robot.AlignToWithin(2, 0.05);
+        robot.Move(140, 1.00);
+        robot.AlignToWithin(2.5, 0.05);
+        robot.LineSearch(2, 0.11);
+        robot.AlignToWithin(2.5, 0.05);
+        robot.StrafeToWall(9, 0.10);
+        robot.AlignToWithin(2.5, 0.05);
+        robot.LineSearch(2,   0.10);
+        robot.LineSearch(2, - 0.05);
+        robot.PressBeacon(Robot.team.Red);
+        //Press the second beacon
+
+        robot.StrafeFromWall(20, 1.00);
+        robot.shoot1.setPower(1);
+        robot.shoot2.setPower(1);
+        robot.TurnLeftEnc(180, 1.00);
+        robot.shoot1.setPower(0);
+        robot.shoot2.setPower(0);
+
     }
 }

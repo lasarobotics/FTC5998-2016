@@ -16,12 +16,11 @@ public class RedDoItAll  extends LinearOpMode{
         robot.initialize(RedDoItAll.this, hardwareMap, telemetry, true);
         waitForStart();
 
-        robot.ShootAtPower(1, .80);
+        robot.ShootSmart();
         robot.Move(80, 1.00);
         robot.EnableShot(750, 1.00);
         robot.infeed.setPower(0);
-        robot.shoot1.setPower(0);
-        robot.shoot2.setPower(0);
+        robot.StopShooter();
         robot.TurnLeft(35, 0.15);
         robot.Move(240, 1.00);
         robot.AlignToWithin(3, 0.05);

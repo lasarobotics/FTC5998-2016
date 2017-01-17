@@ -50,12 +50,13 @@ public class Blue2BSnoPark extends LinearOpMode {
         //Press the second beacon
 
         robot.StrafeFromWall(13, 1.00);
-        robot.ShootAtPower(0, 0.80); //Turn on the shooter so it can speed up without wasting time
+        robot.ShootSmart();
+//        robot.ShootAtPower(0, 0.80); //Turn on the shooter so it can speed up without wasting time
         robot.TurnRight(35, 0.10);
         robot.Move(145, 1.00);
         sleep(250);
         robot.EnableShot(750, 1.00);
         //Shoot the particles into the vortex
-        robot.ShootAtPower(0, 0.00);
+        robot.StopShooter();
     }
 }
