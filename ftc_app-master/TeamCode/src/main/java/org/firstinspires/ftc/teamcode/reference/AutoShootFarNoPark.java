@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.reference;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
@@ -13,8 +13,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="Shoot Far from ramp", group="Shoot")
-public class AutoShoot extends LinearOpMode
+@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="Far from ramp (no park)", group="Shoot")
+@Disabled
+public class AutoShootFarNoPark extends LinearOpMode
 {
     DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed;
     Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlockLeft;
@@ -82,11 +83,6 @@ public class AutoShoot extends LinearOpMode
         sleep(1000*10);
         move(180, .5);
         shoot();
-        move(60, .5);
-        sleep(3000);
-        move(30, -.5);
-        sleep(1200);
-        move(30, .5);
     }
 
 

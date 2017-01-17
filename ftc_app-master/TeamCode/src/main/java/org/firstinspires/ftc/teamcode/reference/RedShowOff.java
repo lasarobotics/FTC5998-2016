@@ -1,27 +1,35 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.reference;
+
+import android.os.Environment;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.I2cAddr;
+import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.navX.ftc.AHRS;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Objects;
+import java.util.Scanner;
 
 /**
  * Created by Ethan Schaffer.
  */
 
-@Autonomous(name="No Shoot", group="Red")
-public class RedNoShoot extends LinearOpMode {
+@Autonomous(name="Red Show Off", group="Red")
+@Disabled
+public class RedShowOff extends LinearOpMode {
     public void setDrivePower(double power) {
         leftBackWheel.setPower(power);
         leftFrontWheel.setPower(power);
@@ -72,7 +80,7 @@ public class RedNoShoot extends LinearOpMode {
     public static final String LEFTPUSHNAME = "lp";//MO Port 1
     public static final String RIGHTPUSHNAME = "rp";//MO Port 2
     public static final String GYRONAME = "g"; //Port 4
-    public static final String RANGENAME = "r";//Port 0
+    public static final String RANGENAME = "r"; //Port 0
     public static final String COLORSIDENAME = "cs"; //Port 2
     public static final String COLORLEFTBOTTOMNAME = "cb";//Port 3
     public static final String COLORRIGHTBOTTOMNAME = "cb2"; //Port 4
@@ -203,8 +211,10 @@ public class RedNoShoot extends LinearOpMode {
         colorSensorOnSide.enableLed(false);
 
         waitForStart();
-
+        ShootAtPower(0, 0.65); //Turn on shooter
         Move(80, 1.00); //Move to shoot position
+        EnableShot(750, 1.00); //Run infeed and open shooter servo
+        ShootAtPower(0, 0.00); //Turn off shooter
         TurnLeft(- 30, 0.10); //Turn to face Left Wall
         Move(225, 1.00); //Move to left wall
         AlignToWithin(3, 0.05); //Line up

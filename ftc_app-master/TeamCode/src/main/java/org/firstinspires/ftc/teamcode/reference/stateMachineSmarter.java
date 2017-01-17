@@ -636,12 +636,8 @@ public class stateMachineSmarter extends LinearOpMode {
     }
 
     public void waitForMS(long ms){
-        try {
-            sleep(0);
+        sleep(0);
 //            sleep(ms); //Commented out because sleep statements are evil
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     public static boolean resetEncoder(DcMotor m){

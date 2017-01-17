@@ -20,10 +20,10 @@ import java.util.Arrays;
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
-@TeleOp(name=" Tele Op 40", group="TeleOp")
+@TeleOp(name=" Single Driver ", group="TeleOp")
 @Disabled
-public class TeleOpFinal40 extends OpMode {
-    public static final double SHOOTERMAXVALUE = .40;
+public class TeleOp60InfeedOn extends OpMode {
+    public static final double SHOOTERMAXVALUE = .60;
 
     //TWEAKING VALUES
     public static final double LEFT_SERVO_OFF_VALUE = .3;
@@ -212,7 +212,7 @@ public class TeleOpFinal40 extends OpMode {
         } else if(gamepad2.dpad_up) {
             infeed.setPower(MAXOUTFEEDPOWER);
         } else {
-            infeed.setPower(0);
+            infeed.setPower(MAXINFEEDPOWER); //THIS IS THE SKETCHY LINE
         }
         /*
               _      _

@@ -1,8 +1,9 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.reference;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -20,8 +21,9 @@ import java.util.Objects;
  * Created by Ethan Schaffer.
  */
 
-@Autonomous(name="B One Beacon", group="Blue")
-public class BlueOneBeacon extends LinearOpMode {
+@Autonomous(name="B Show Off (Greedy)", group="Blue")
+@Disabled
+public class BlueGreedy extends LinearOpMode {
     public void setDrivePower(double power) {
         leftBackWheel.setPower(power);
         leftFrontWheel.setPower(power);
@@ -205,19 +207,38 @@ public class BlueOneBeacon extends LinearOpMode {
         waitForStart();
 
         Move(80, - 1.00); //Move to turn position
-        TurnRight(30, 0.10); //Turn to face Left Wall
+        TurnRight(30, 0.11); //Turn to face Left Wall
         Move(225,- 1.00); //Move to left wall
         AlignToWithin(3, 0.05); //Line up
         StrafeToWall(23, 0.20); //Strafe to the wall
         AlignToWithin(3, 0.05); //Line up
         LineSearch(2, 0.10); //Backwards to line
         StrafeToWall(10, 0.10); //Get to the right
-        Move(5, 1.00); //Move to left wall
+        Move(3, 1.00); //Move to left wall
         LineSearch(2, - 0.10); //Forwards to line
         LineSearch(2, 0.05); //Backwards to line again, slower to get better accuracy
         StrafeToWall(8, 0.10); //Get to the right
         PressBeacon(team.Blue ); //Press red button
 
+        StrafeFromWall(15, 0.25); //To 20 cm away
+        AlignToWithin(3, 0.05); //line up
+        Move(125, - 1.00); //move towards second beacon
+        AlignToWithin(3, 0.05); //line up to be sure
+        LineSearch(2, - 0.11); //Find line
+        StrafeToWall(10, 0.10); //Back to the wall
+        Move(2.5, 1.00); //Shimmy
+        LineSearch(2, - 0.11); //Forwards
+        LineSearch(2, 0.05); //Precise Backup
+        StrafeToWall(8, 0.10); //Get to the right
+        PressBeacon(team.Blue); //Press button
+
+        StrafeFromWall(13, 1.00); //From wall to 20 cm away
+        TurnRightEnc(40, 1.00);
+        ShootAtPower(0, 0.65); //Turn on shooter
+        Move(110, 1.00);
+        EnableShot(750, 1.00); //Run infeed and open shooter servo
+        ShootAtPower(0, 0.00); //Turn off shooter
+        Move(60, 1.00);
     }
     public void AlignToWithin(double sensor, double power){
         TurnRight( - sensor, power);

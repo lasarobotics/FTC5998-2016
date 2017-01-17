@@ -1,6 +1,4 @@
-package org.firstinspires.ftc.teamcode;
-
-import android.os.Environment;
+package org.firstinspires.ftc.teamcode.reference;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
@@ -12,23 +10,20 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.I2cAddr;
-import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.navX.ftc.AHRS;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Objects;
-import java.util.Scanner;
 
 /**
  * Created by Ethan Schaffer.
  */
 
-@Autonomous(name="Red Show Off", group="Red")
-public class RedShowOff extends LinearOpMode {
+@Autonomous(name="One Beacon", group="Red")
+@Disabled
+public class RedOneBeacon extends LinearOpMode {
     public void setDrivePower(double power) {
         leftBackWheel.setPower(power);
         leftFrontWheel.setPower(power);
@@ -210,6 +205,7 @@ public class RedShowOff extends LinearOpMode {
         colorSensorOnSide.enableLed(false);
 
         waitForStart();
+
         ShootAtPower(0, 0.65); //Turn on shooter
         Move(80, 1.00); //Move to shoot position
         EnableShot(750, 1.00); //Run infeed and open shooter servo
@@ -225,20 +221,6 @@ public class RedShowOff extends LinearOpMode {
         LineSearch(2, - 0.05); //Backwards to line again, slower to get better accuracy
         StrafeToWall(8, 0.10); //Get to the right
         PressBeacon(team.Red ); //Press red button
-
-        StrafeFromWall(20, 0.45); //To 20 cm away
-        AlignToWithin(3, 0.05); //line up
-        Move(125, 1.00); //move towards second beacon
-        AlignToWithin(3, 0.05); //line up to be sure
-        LineSearch(2, 0.11); //Find line
-        StrafeToWall(10, 0.10); //Back to the wall
-        Move(2.5, - 1.00); //Shimmy
-        LineSearch(2, 0.10); //Forwards
-        LineSearch(2, - 0.05); //Precise Backup
-        StrafeToWall(8, 0.10); //Get to the right
-        PressBeacon(team.Red ); //Press button
-
-        StrafeFromWall(13, 1.00); //From wall to 20 cm away
     }
     public void AlignToWithin(double sensor, double power){
         TurnRight( - sensor, power);
@@ -416,7 +398,6 @@ public class RedShowOff extends LinearOpMode {
         }
         setDrivePower(0);
     }
-
     public void LineSearch(double sensor, double power){
         if(!opModeIsActive())
             super.stop();

@@ -501,12 +501,8 @@ public class stateMachineBigLoop extends LinearOpMode {
     }
 
     public void waitForMS(long ms){
-        try {
-            sleep(0);
+        sleep(ms);
 //            sleep(ms); //Commented out because sleep statements are evil
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     public static boolean resetEncoder(DcMotor m){

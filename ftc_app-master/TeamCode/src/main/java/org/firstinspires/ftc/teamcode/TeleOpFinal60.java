@@ -5,6 +5,7 @@ https://ftcprogramming.wordpress.com/2015/11/30/building-ftc_app-wirelessly/
 package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -20,6 +21,7 @@ import java.util.Arrays;
  * Created by Ethan Schaffer on 10/31/2016.
  */
 @TeleOp(name=" * Tele Op 60 *", group="TeleOp")
+@Disabled
 public class TeleOpFinal60 extends OpMode {
     public static final double SHOOTERMAXVALUE = .60;
 

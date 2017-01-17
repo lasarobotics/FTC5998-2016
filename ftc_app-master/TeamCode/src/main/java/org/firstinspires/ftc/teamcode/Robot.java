@@ -38,7 +38,8 @@ public class Robot {
     public final double ticksToStrafeDistance = 2000/(172*cmPerInch);
     //The Above Values lets us convert encoder ticks to centimeters per travelled, as shown below.
 
-    public final double cmPerTick = (wheelDiameter / (ticksPerRev * gearBoxOne * gearBoxTwo * gearBoxThree)) * cmPerInch; //Allows us to drive our roobt with accuracy to the centiment
+    public final double cmPerTick = (wheelDiameter / (ticksPerRev * gearBoxOne * gearBoxTwo * gearBoxThree)) * cmPerInch;
+    //Allows us to drive our roobt with accuracy to the centiment
 
     public static final String LEFT1NAME = "l1"; //LX Port 2
     public static final String LEFT2NAME = "l2"; //LX Port 1
@@ -59,19 +60,19 @@ public class Robot {
     public static final String COLORRIGHTBOTTOMNAME = "cb2"; //Port 4
     public static final String GYRONAME = "g"; //Port 4
 
-    DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed, lift;
-    Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlockLeft;
-    ColorSensor colorSensorOnSide, colorSensorLeftBottom, colorSensorRightBottom;
-    ModernRoboticsI2cGyro gyroSensor;
-    DeviceInterfaceModule dim;
-    ModernRoboticsI2cRangeSensor range;
-    AHRS navX;
+    public DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed, lift;
+    public Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlockLeft;
+    public ColorSensor colorSensorOnSide, colorSensorLeftBottom, colorSensorRightBottom;
+    public ModernRoboticsI2cGyro gyroSensor;
+    public DeviceInterfaceModule dim;
+    public ModernRoboticsI2cRangeSensor range;
+    public AHRS navX;
     public static final double LEFT_SERVO_OFF_VALUE = .20;
     public static final double LEFT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_OFF_VALUE = .20;
 
-    void initialize(LinearOpMode lInput, HardwareMap hardwareMap, Telemetry telemetry, boolean navXOn){
+    public void initialize(LinearOpMode lInput, HardwareMap hardwareMap, Telemetry telemetry, boolean navXOn){
         l = lInput;
         leftFrontWheel = hardwareMap.dcMotor.get(LEFT1NAME);
         leftBackWheel = hardwareMap.dcMotor.get(LEFT2NAME);
@@ -183,10 +184,16 @@ public class Robot {
     }
 
     public void AlignToWithin(double sensor, double power){
-        TurnRight(- sensor, power);
-        TurnLeft(sensor, power);
-        TurnRight(- sensor, power);
+        TurnRightAbsolute(- sensor, power);
+        TurnLeftAbsolute(sensor, power);
+        TurnRightAbsolute(- sensor, power);
     }
+    public void AlignToWithinOf(double sensor, double reading, double power){
+        TurnRightAbsolute(reading - sensor, power);
+        TurnLeftAbsolute(reading + sensor, power);
+        TurnRightAbsolute(reading - sensor, power);
+    }
+
     public void Move(double sensor, double power) {
         if(!l.opModeIsActive())
             l.stop();
@@ -344,7 +351,10 @@ public class Robot {
         double ticks = sensor / cmPerTick;
         ticks *= ticksToStrafeDistance;
         int avg = 0;
-        setStrafePower("Left", power);
+        rightFrontWheel.setPower(power);
+        rightBackWheel.setPower(-power);
+        leftFrontWheel.setPower(-power);
+        leftBackWheel.setPower(power);
         do {
             int RBPos = Math.abs(rightBackWheel.getCurrentPosition());
             int RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
@@ -392,12 +402,12 @@ public class Robot {
         setDrivePower(0);
     }
     public void StrafeFromWall(double sensor, double power){
-        double pastRange = 254;
+        double pastRange = 0;
         if(!l.opModeIsActive())
             l.stop();
         while(pastRange < sensor && l.opModeIsActive()){
             pastRange = getRange(pastRange);
-            setStrafePower("Left", power);
+            setStrafePower("Right", power);
         }
         if(range.getDistance(DistanceUnit.CM) == 255){
             StrafeFromWall(sensor, power);
@@ -426,6 +436,34 @@ public class Robot {
             Move(1, - .25);
             rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
             leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+        } else if(colorReading != team.NotSensed){
+            rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+            leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
+        } else {
+            return;
+        }
+        try {
+            Thread.sleep(1250);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+        leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+    }
+    public void PressBeaconSmart(team t){
+        if(!l.opModeIsActive())
+            l.stop();
+        Move(.25, 0.25);
+        team colorReading;
+        if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
+            colorReading = team.Red;
+        } else {
+            colorReading = team.Blue;
+        }
+        Move(.25, - 0.25);
+        if(colorReading == t){
+            rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
+            leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
         } else {
             rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
             leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
@@ -437,12 +475,8 @@ public class Robot {
         }
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
-        try {
-            Thread.sleep(250);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
+
     public void ShootAtPower(double sensor, double power){
         if(!l.opModeIsActive())
             l.stop();
@@ -455,10 +489,15 @@ public class Robot {
         ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
         ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
         infeed.setPower(power);
-        try{
-            Thread.sleep((long)sensor);
-        } catch (InterruptedException e){
-            e.printStackTrace();
+        double time = 0;
+        while(l.opModeIsActive() && time < sensor)
+        {
+            time++;
+            try{
+                Thread.sleep(1);
+            } catch (InterruptedException e){
+                e.printStackTrace();
+            }
         }
         ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
         ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);

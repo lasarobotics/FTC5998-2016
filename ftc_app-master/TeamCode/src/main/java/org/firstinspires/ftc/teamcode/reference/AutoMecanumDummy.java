@@ -44,8 +44,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.I2cDevice;
 
-import org.firstinspires.ftc.robotcontroller.internal.testcode.MatrixControllerDemo;
-import org.firstinspires.ftc.robotcontroller.internal.testcode.TestColorSensors;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.navX.ftc.AHRS;
 

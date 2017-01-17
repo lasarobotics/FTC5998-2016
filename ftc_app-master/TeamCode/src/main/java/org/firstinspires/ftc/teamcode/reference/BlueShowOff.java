@@ -1,8 +1,9 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.reference;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -20,14 +21,14 @@ import java.util.Objects;
  * Created by Ethan Schaffer.
  */
 
-@Autonomous(name="One Beacon", group="Red")
-public class RedOneBeacon extends LinearOpMode {
-    public void setDrivePower(double power) {
-        leftBackWheel.setPower(power);
-        leftFrontWheel.setPower(power);
-        rightBackWheel.setPower(power);
-        rightFrontWheel.setPower(power);
-    }
+@Autonomous(name="(Slow) Show Off", group="Blue")
+@Disabled
+public class BlueShowOff extends LinearOpMode {    public void setDrivePower(double power) {
+    leftBackWheel.setPower(power);
+    leftFrontWheel.setPower(power);
+    rightBackWheel.setPower(power);
+    rightFrontWheel.setPower(power);
+}
 
     public void ResetDriveEncoders(){
         leftBackWheel.setMode(DcMotor.RunMode.RESET_ENCODERS);
@@ -59,6 +60,7 @@ public class RedOneBeacon extends LinearOpMode {
             leftBackWheel.setPower(-Speed);
         }
     }
+
 
     public static final String LEFT1NAME = "l1"; //LX Port 2
     public static final String LEFT2NAME = "l2"; //LX Port 1
@@ -204,21 +206,37 @@ public class RedOneBeacon extends LinearOpMode {
 
         waitForStart();
 
-        ShootAtPower(0, 0.65); //Turn on shooter
-        Move(80, 1.00); //Move to shoot position
-        EnableShot(750, 1.00); //Run infeed and open shooter servo
-        ShootAtPower(0, 0.00); //Turn off shooter
-        TurnLeft(- 30, 0.10); //Turn to face Left Wall
-        Move(225, 1.00); //Move to left wall
+        Move(80, - 1.00); //Move to shoot position
+        TurnRight(30, 0.10); //Turn to face Left Wall
+        Move(225,- 1.00); //Move to left wall
         AlignToWithin(3, 0.05); //Line up
         StrafeToWall(23, 0.15); //Strafe to the wall
         AlignToWithin(3, 0.05); //Line up
-        LineSearch(2, - 0.10); //Backwards to line
+        LineSearch(2, 0.10); //Backwards to line
         StrafeToWall(10, 0.10); //Get to the right
-        LineSearch(2, 0.10); //Forwards to line
-        LineSearch(2, - 0.05); //Backwards to line again, slower to get better accuracy
+        LineSearch(2, - 0.10); //Forwards to line
+        LineSearch(2, 0.05); //Backwards to line again, slower to get better accuracy
         StrafeToWall(8, 0.10); //Get to the right
-        PressBeacon(team.Red ); //Press red button
+        PressBeacon(team.Blue ); //Press red button
+
+        StrafeFromWall(20, 0.45); //To 20 cm away
+        AlignToWithin(3, 0.05); //line up
+        Move(125, - 1.00); //move towards second beacon
+        AlignToWithin(3, 0.05); //line up to be sure
+        LineSearch(2, - 0.11); //Find line
+        StrafeToWall(10, 0.10); //Back to the wall
+        Move(2.5, 1.00); //Shimmy
+        LineSearch(2, - 0.10); //Forwards
+        LineSearch(2, 0.05); //Precise Backup
+        StrafeToWall(8, 0.10); //Get to the right
+        PressBeacon(team.Blue); //Press button
+
+        StrafeFromWall(13, 1.00); //From wall to 20 cm away
+        TurnRightEnc(45, 1.00);
+        ShootAtPower(0, 0.65); //Turn on shooter
+        Move(80, 1.00);
+        EnableShot(750, 1.00); //Run infeed and open shooter servo
+        ShootAtPower(0, 0.00); //Turn off shooter
     }
     public void AlignToWithin(double sensor, double power){
         TurnRight( - sensor, power);
@@ -396,6 +414,7 @@ public class RedOneBeacon extends LinearOpMode {
         }
         setDrivePower(0);
     }
+
     public void LineSearch(double sensor, double power){
         if(!opModeIsActive())
             super.stop();
