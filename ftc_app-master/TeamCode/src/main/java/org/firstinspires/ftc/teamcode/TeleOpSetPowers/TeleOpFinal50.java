@@ -2,7 +2,7 @@
 ADB guide can be found at:
 https://ftcprogramming.wordpress.com/2015/11/30/building-ftc_app-wirelessly/
 */
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.TeleOpSetPowers;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -20,10 +20,10 @@ import java.util.Arrays;
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
-@TeleOp(name=" Tele Op 40", group="TeleOp")
+@TeleOp(name="Tele Op 50", group="TeleOp")
 @Disabled
-public class TeleOpFinal40 extends OpMode {
-    public static final double SHOOTERMAXVALUE = .40;
+public class TeleOpFinal50 extends OpMode {
+    public static final double SHOOTERMAXVALUE = .50;
 
     //TWEAKING VALUES
     public static final double LEFT_SERVO_OFF_VALUE = .3;

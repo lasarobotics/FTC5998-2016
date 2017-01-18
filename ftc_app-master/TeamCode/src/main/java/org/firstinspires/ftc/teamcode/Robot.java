@@ -113,11 +113,14 @@ public class Robot {
             navX.zeroYaw();
             int cycler = 0;
             int timer = 0;
-            while (navX.isCalibrating()) {
+            while ( navX.isCalibrating() && !l.isStopRequested() ) {
                 timer++;
-                if (timer % 15 == 0) {
-                    cycler++;
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
+                cycler++;
                 if (cycler == 0) {
                     telemetry.addData("Gyro", " is still Calibrating");
                 } else if (cycler == 1) {

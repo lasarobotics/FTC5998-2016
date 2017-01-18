@@ -2,7 +2,7 @@
 ADB guide can be found at:
 https://ftcprogramming.wordpress.com/2015/11/30/building-ftc_app-wirelessly/
 */
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.TeleOpSetPowers;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -20,10 +20,10 @@ import java.util.Arrays;
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
-@TeleOp(name=" Single Driver ", group="TeleOp")
+@TeleOp(name="Tele Op 70", group="TeleOp")
 @Disabled
-public class TeleOp60InfeedOn extends OpMode {
-    public static final double SHOOTERMAXVALUE = .60;
+public class TeleOpFinal70 extends OpMode {
+    public static final double SHOOTERMAXVALUE = .70;
 
     //TWEAKING VALUES
     public static final double LEFT_SERVO_OFF_VALUE = .3;
@@ -212,7 +212,7 @@ public class TeleOp60InfeedOn extends OpMode {
         } else if(gamepad2.dpad_up) {
             infeed.setPower(MAXOUTFEEDPOWER);
         } else {
-            infeed.setPower(MAXINFEEDPOWER); //THIS IS THE SKETCHY LINE
+            infeed.setPower(0);
         }
         /*
               _      _

@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.Robot;
 /**
  * Created by Ethan Schaffer on 1/11/2017.
  */
-@Autonomous(group = "Blue", name = "B_1B Shoot")
+@Autonomous(group = "Less", name = "B_1B Shoot")
 public class Blue1BShoot extends LinearOpMode {
     Robot robot = new Robot();
 

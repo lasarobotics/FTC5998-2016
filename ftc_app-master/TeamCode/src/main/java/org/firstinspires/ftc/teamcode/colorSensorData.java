@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.I2cAddr;
 /**
  * Created by Ethan Schaffer on 10/6/2016.
  */
-@Autonomous(name="ColorSensor (3)", group="Autonomous")
+@Autonomous(name="ColorSensor (3)", group="aSensor Testing")
 public class colorSensorData extends LinearOpMode{
 
     ColorSensor color_bottom, color_bottom2, color_side;
