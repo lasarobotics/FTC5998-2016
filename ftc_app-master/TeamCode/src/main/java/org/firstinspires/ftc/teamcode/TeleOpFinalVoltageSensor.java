@@ -127,17 +127,23 @@ public class TeleOpFinalVoltageSensor extends OpMode {
         ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
 
         double volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
+        double power = 1.0;
         if(volts > 13.3){
-            SHOOTERMAXVALUE = .50;
+            power = 0.50;
         } else if(volts > 13.1){
-            SHOOTERMAXVALUE = .60;
+            power = 0.60;
         } else if(volts > 12.9){
-            SHOOTERMAXVALUE = .70;
+            power = 0.65;
         } else if(volts > 12.6){
-            SHOOTERMAXVALUE = .80;
+            power = 0.70;
+        } else if(volts > 12.3) {
+            power = 0.80;
+        } else if(volts > 12.0) {
+            power = 0.90;
         } else {
-            SHOOTERMAXVALUE = 1.00;
+            power = 1.00;
         }
+        SHOOTERMAXVALUE = power;
 
     }
 

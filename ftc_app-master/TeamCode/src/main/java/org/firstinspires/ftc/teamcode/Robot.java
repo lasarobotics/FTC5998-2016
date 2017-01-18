@@ -29,6 +29,7 @@ public class Robot {
         Red, Blue, NotSensed
     }
     public LinearOpMode l;
+    private boolean infeedOn = false, shooterOn = false;
     public final double ticksPerRev = 7;
     public final double gearBoxOne = 40.0;
     public final double gearBoxTwo = 24.0 / 16.0;
@@ -145,8 +146,6 @@ public class Robot {
 
     }
 
-
-
     public void setDrivePower(double power) {
         leftBackWheel.setPower(power);
         leftFrontWheel.setPower(power);
@@ -197,6 +196,17 @@ public class Robot {
     }
 
     public void Move(double sensor, double power) {
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
         if(!l.opModeIsActive())
             l.stop();
         ResetDriveEncoders();
@@ -218,6 +228,17 @@ public class Robot {
     }
 
     public void TurnLeftAbsolute(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
         if(!l.opModeIsActive())
             l.stop();
         while(navX.getYaw() >= sensor && l.opModeIsActive()){
@@ -230,6 +251,17 @@ public class Robot {
 
     }
     public void TurnLeftRelative(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
         if(!l.opModeIsActive())
             l.stop();
         double yaw = navX.getYaw();
@@ -244,6 +276,17 @@ public class Robot {
 
     }
     public void TurnLeft(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
         if(!l.opModeIsActive())
             l.stop();
         sensor = - Math.abs(sensor);
@@ -258,6 +301,17 @@ public class Robot {
     }
 
     public void TurnLeftEnc(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
         if(!l.opModeIsActive())
             l.stop();
         ResetDriveEncoders();
@@ -286,6 +340,17 @@ public class Robot {
     }
 
     public void TurnRightAbsolute(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
         if(!l.opModeIsActive())
             l.stop();
         while(navX.getYaw() <= sensor && l.opModeIsActive()){
@@ -297,6 +362,17 @@ public class Robot {
         setDrivePower(0);
     }
     public void TurnRight(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
         if(!l.opModeIsActive())
             l.stop();
         sensor = Math.abs(sensor);
@@ -309,6 +385,17 @@ public class Robot {
         setDrivePower(0);
     }
     public void TurnRightRelative(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
         if(!l.opModeIsActive())
             l.stop();
         double yaw = navX.getYaw();
@@ -322,6 +409,17 @@ public class Robot {
     }
 
     public void TurnRightEnc(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
         if(!l.opModeIsActive())
             l.stop();
         ResetDriveEncoders();
@@ -349,6 +447,17 @@ public class Robot {
         setDrivePower(0);
     }
     public void StrafeLeft(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
         if(!l.opModeIsActive())
             l.stop();
         double ticks = sensor / cmPerTick;
@@ -368,6 +477,17 @@ public class Robot {
         setDrivePower(0);
     }
     public void StrafeRight(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
         if(!l.opModeIsActive())
             l.stop();
         double ticks = sensor / cmPerTick;
@@ -392,6 +512,7 @@ public class Robot {
         }
     }
     public void ShootSmart(){
+        shooterOn = true;
         double volts = voltageGetter.getVoltage();
         double power = 1.00;
         if(volts > 13.3){
@@ -399,12 +520,14 @@ public class Robot {
         } else if(volts > 13.1){
             power = 0.60;
         } else if(volts > 12.9){
-            power = 0.70;
+            power = 0.65;
         } else if(volts > 12.6){
-            power = 0.80;
+            power = 0.70;
         } else if(volts > 12.3) {
+            power = 0.80;
+        } else if(volts > 12.0) {
             power = 0.90;
-        }else {
+        } else {
             power = 1.00;
         }
         shoot1.setPower(power);
@@ -413,8 +536,20 @@ public class Robot {
     public void StopShooter(){
         shoot1.setPower(0);
         shoot2.setPower(0);
+        shooterOn = false;
     }
     public void StrafeToWall(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
         double pastRange = 254;
         if(!l.opModeIsActive())
             l.stop();
@@ -428,6 +563,17 @@ public class Robot {
         setDrivePower(0);
     }
     public void StrafeFromWall(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
         double pastRange = 0;
         if(!l.opModeIsActive())
             l.stop();
@@ -442,6 +588,17 @@ public class Robot {
     }
 
     public void LineSearch(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
         if(!l.opModeIsActive())
             l.stop();
         while(colorSensorLeftBottom.red() < sensor && colorSensorLeftBottom.blue() < sensor && colorSensorLeftBottom.alpha() < sensor && l.opModeIsActive()){
@@ -450,6 +607,17 @@ public class Robot {
         setDrivePower(0);
     }
     public void PressBeacon(team t){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
         if(!l.opModeIsActive())
             l.stop();
         team colorReading;
@@ -477,6 +645,17 @@ public class Robot {
         leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
     }
     public void PressBeaconSmart(team t){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
         if(!l.opModeIsActive())
             l.stop();
         Move(.25, 0.25);
@@ -504,12 +683,14 @@ public class Robot {
     }
 
     public void ShootAtPower(double power){
+        shooterOn = true;
         if(!l.opModeIsActive())
             l.stop();
         shoot1.setPower(power);
         shoot2.setPower(power);
     }
     public void EnableShot(double sensor, double power){
+        infeedOn = true;
         if(!l.opModeIsActive())
             l.stop();
         ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
@@ -528,6 +709,7 @@ public class Robot {
         ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
         ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
         infeed.setPower(0);
+        infeedOn = false;
     }
 
 }

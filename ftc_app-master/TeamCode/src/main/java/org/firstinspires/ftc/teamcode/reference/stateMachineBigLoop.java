@@ -500,8 +500,8 @@ public class stateMachineBigLoop extends LinearOpMode {
         dim.setLED(1, false);
     }
 
-    public void waitForMS(long ms){
-        sleep(ms);
+    public void waitForMS(long ms) throws InterruptedException {
+        Thread.sleep(ms);
 //            sleep(ms); //Commented out because sleep statements are evil
     }
 

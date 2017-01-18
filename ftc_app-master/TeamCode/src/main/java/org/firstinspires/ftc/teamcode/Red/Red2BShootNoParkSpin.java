@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.Robot;
 /**
  * Created by Ethan Schaffer on 1/11/2017.
  */
-@Autonomous(group = "Red", name = "R_S2B (No Park Spin)")
+@Autonomous(group = "Red", name = "R_2B (No Park Spin)")
 public class Red2BShootNoParkSpin extends LinearOpMode{
     Robot robot = new Robot();
     @Override

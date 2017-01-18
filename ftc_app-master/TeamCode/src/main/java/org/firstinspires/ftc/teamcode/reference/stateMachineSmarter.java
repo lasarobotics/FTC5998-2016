@@ -635,7 +635,7 @@ public class stateMachineSmarter extends LinearOpMode {
         dim.setLED(1, false);
     }
 
-    public void waitForMS(long ms){
+    public void waitForMS(long ms) throws InterruptedException {
         sleep(0);
 //            sleep(ms); //Commented out because sleep statements are evil
     }
