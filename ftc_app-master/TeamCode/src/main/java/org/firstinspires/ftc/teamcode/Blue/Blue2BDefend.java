@@ -27,9 +27,11 @@ public class Blue2BDefend extends LinearOpMode {
         robot.LineSearch(2, 0.10);
         robot.LineSearch(2, - 0.05);
         robot.AlignToWithin(2.5, 0.05);
-        robot.AlignToWithin(2.5, 0.05);
+        robot.AlignToWithin(1.0, 0.04);
         robot.StrafeToWall(9, 0.10);
 
+        robot.Move(2, - 1.00);
+        robot.LineSearch(2, 0.05);
         robot.PressBeacon(Robot.team.Blue );
         //Press the first beacon
 
@@ -45,12 +47,13 @@ public class Blue2BDefend extends LinearOpMode {
         robot.LineSearch(2, 0.05);
         robot.AlignToWithin(5, 0.05);
         robot.StrafeToWall(8, 0.10);
-        robot.AlignToWithin(5, 0.05);
+        robot.AlignToWithin(2.5, 0.05);
+        robot.AlignToWithin(1, 0.04);
         robot.PressBeacon(Robot.team.Blue);
         //Press the second beacon
 
         robot.StrafeFromWall(13, 1.00);
-        robot.TurnRight(45, .05);
-        robot.Move(60, -.5);
+        robot.TurnLeftEnc(45, .50);
+        robot.Move(15, -1.0);
     }
 }

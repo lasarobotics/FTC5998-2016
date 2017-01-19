@@ -53,6 +53,6 @@ public class Red2BSDefend extends LinearOpMode{
 
         robot.StrafeFromWall(13, 1.00);
         robot.TurnRightEnc(35, 1.00);
-        robot.Move(70, 1.00);
+        robot.Move(10, 1.00);
     }
 }

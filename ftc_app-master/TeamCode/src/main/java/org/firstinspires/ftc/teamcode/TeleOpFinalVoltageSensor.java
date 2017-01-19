@@ -128,23 +128,6 @@ public class TeleOpFinalVoltageSensor extends OpMode {
 
         double volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
         double power = 1.0;
-        if(volts > 13.3){
-            power = 0.50;
-        } else if(volts > 13.1){
-            power = 0.60;
-        } else if(volts > 12.9){
-            power = 0.65;
-        } else if(volts > 12.6){
-            power = 0.70;
-        } else if(volts > 12.3) {
-            power = 0.80;
-        } else if(volts > 12.0) {
-            power = 0.90;
-        } else {
-            power = 1.00;
-        }
-        SHOOTERMAXVALUE = power;
-
     }
 
     @Override
@@ -166,8 +149,25 @@ public class TeleOpFinalVoltageSensor extends OpMode {
         //Ternary Operations used to toggle SHOOTERSTATUS
         switch(SHOOTERSTATUS){
             case SHOOTING:
-                shoot1.setPower(SHOOTERMAXVALUE);
-                shoot2.setPower(SHOOTERMAXVALUE);
+                double volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
+                double power;
+                if(volts > 13.3){
+                    power = 0.40;
+                } else if(volts > 13.1){
+                    power = 0.50;
+                } else if(volts > 12.9){
+                    power = 0.60;
+                } else if(volts > 12.6){
+                    power = 0.65;
+                } else if(volts > 12.3) {
+                    power = 0.75;
+                } else if(volts > 12.0) {
+                    power = 0.85;
+                } else {
+                    power = 1.00;
+                }
+                shoot1.setPower(power);
+                shoot2.setPower(power);
                 ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
                 ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
                 break;

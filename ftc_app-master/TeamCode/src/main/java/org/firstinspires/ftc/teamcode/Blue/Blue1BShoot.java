@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.Robot;
 /**
  * Created by Ethan Schaffer on 1/11/2017.
  */
-@Autonomous(group = "Less", name = "B_1B Shoot")
+@Autonomous(group = "ZLess", name = "B_1BS")
 public class Blue1BShoot extends LinearOpMode {
     Robot robot = new Robot();
 
@@ -27,19 +27,21 @@ public class Blue1BShoot extends LinearOpMode {
         robot.LineSearch(2, 0.10);
         robot.LineSearch(2, - 0.05);
         robot.AlignToWithin(2.5, 0.05);
-        robot.AlignToWithin(2.5, 0.05);
+        robot.AlignToWithin(1.0, 0.04);
         robot.StrafeToWall(9, 0.10);
 
+        robot.Move(2, - 1.00);
+        robot.LineSearch(2, 0.05);
         robot.PressBeacon(Robot.team.Blue );
 
         robot.StrafeFromWall(15, 1.0);
-        robot.TurnRight(45, .05);
-        robot.Move(70, 1.0);
-        robot.TurnLeft(45, .05);
+        robot.TurnRightRelative(45, .07);
         robot.ShootSmart();
+        robot.Move(90, 1.0);
+        robot.TurnRightRelative(90, .07);
         robot.EnableShot(1000, 1);
-        robot.ShootAtPower(0);
-        robot.Move(60, -.25);
+        robot.StopShooter();
+        robot.Move(80, -.50);
 
     }
 }

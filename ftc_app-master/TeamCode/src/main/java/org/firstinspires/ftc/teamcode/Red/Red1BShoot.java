@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.Robot;
 /**
  * Created by Ethan Schaffer on 1/11/2017.
  */
-@Autonomous(group = "Less", name = "R_1BS")
+@Autonomous(group = "ZLess", name = "R_1BS")
 public class Red1BShoot extends LinearOpMode{
     Robot robot = new Robot();
     @Override
@@ -39,9 +39,9 @@ public class Red1BShoot extends LinearOpMode{
         robot.PressBeacon(Robot.team.Red );
         //Press the first beacon
         robot.StrafeFromWall(15, 1.0);
-        robot.TurnLeft(45, .05);
-        robot.Move(70, -1.0);
-        robot.TurnRight(45, .05);
-        robot.Move(70, -0.25);
+        robot.TurnLeftRelative(45, .07);
+        robot.Move(90, - 1.0);
+        robot.TurnRightEnc(90, .50);
+        robot.Move(80, -.50);
     }
 }

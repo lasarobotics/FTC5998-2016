@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.Robot;
 /**
  * Created by Ethan Schaffer on 1/11/2017.
  */
-@Autonomous(group = "Blue", name = "B_2BS")
+@Autonomous(group = "Blue", name = "2BS (B)  ")
 public class Blue2BShoot extends LinearOpMode {
     Robot robot = new Robot();
 
@@ -27,9 +27,11 @@ public class Blue2BShoot extends LinearOpMode {
         robot.LineSearch(2, 0.10);
         robot.LineSearch(2, - 0.05);
         robot.AlignToWithin(2.5, 0.05);
-        robot.AlignToWithin(2.5, 0.05);
+        robot.AlignToWithin(1.0, 0.04);
         robot.StrafeToWall(9, 0.10);
 
+        robot.Move(2, - 1.00);
+        robot.LineSearch(2, 0.05);
         robot.PressBeacon(Robot.team.Blue );
         //Press the first beacon
 
@@ -45,7 +47,8 @@ public class Blue2BShoot extends LinearOpMode {
         robot.LineSearch(2, 0.05);
         robot.AlignToWithin(5, 0.05);
         robot.StrafeToWall(8, 0.10);
-        robot.AlignToWithin(5, 0.05);
+        robot.AlignToWithin(2.5, 0.05);
+        robot.AlignToWithin(1, 0.04);
         robot.PressBeacon(Robot.team.Blue);
         //Press the second beacon
 
@@ -55,7 +58,7 @@ public class Blue2BShoot extends LinearOpMode {
         robot.TurnRight(35, 0.10);
         robot.Move(145, 1.00);
         sleep(250);
-        robot.EnableShot(750, 1.00);
+        robot.EnableShot(850, 1.00);
         //Shoot the particles into the vortex
         robot.StopShooter();
 //        robot.ShootAtPower(0, 0.00);

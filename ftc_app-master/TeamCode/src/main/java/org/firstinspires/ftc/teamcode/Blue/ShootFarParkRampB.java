@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.Robot;
  * Created by Ethan Schaffer on 1/12/2017.
  */
 
-@Autonomous(group = "Neutral", name = "B_FarParkRamp")
+@Autonomous(group = "YNeutral", name = "B_FarParkRamp")
 public class ShootFarParkRampB extends LinearOpMode {
     Robot robot = new Robot();
     @Override
@@ -23,5 +23,7 @@ public class ShootFarParkRampB extends LinearOpMode {
         robot.StopShooter();
         robot.TurnRight(45, .05);
         robot.Move(90, .5);
+        robot.TurnRightRelative(20, .05);
+        robot.Move(50, .5);
     }
 }

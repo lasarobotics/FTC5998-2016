@@ -111,26 +111,8 @@ public class Robot {
         if(navXOn){
             navX = new AHRS(dim, 5, AHRS.DeviceDataType.kProcessedData, (byte)50);
             navX.zeroYaw();
-            int cycler = 0;
-            int timer = 0;
             while ( navX.isCalibrating() && !l.isStopRequested() ) {
-                timer++;
-                try {
-                    Thread.sleep(250);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                cycler++;
-                if (cycler == 0) {
-                    telemetry.addData("Gyro", " is still Calibrating");
-                } else if (cycler == 1) {
-                    telemetry.addData("Gyro", " is still Calibrating.");
-                } else if (cycler == 2) {
-                    telemetry.addData("Gyro", " is still Calibrating..");
-                } else {
-                    cycler = 0;
-                    telemetry.addData("Gyro", " is still Calibrating...");
-                }
+                telemetry.addData("Gyro", "Calibrating");
                 telemetry.update();
             } //This silly looking code above animates a "..." sequence in telemetry, if the gyroscope is still calibrating
             telemetry.addData("Gyro", "Done!");
@@ -699,15 +681,11 @@ public class Robot {
         ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
         ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
         infeed.setPower(power);
-        double time = 0;
-        while(l.opModeIsActive() && time < sensor)
-        {
-            time++;
-            try{
-                Thread.sleep(1);
-            } catch (InterruptedException e){
-                e.printStackTrace();
-            }
+        infeed.setPower(power);
+        try{
+            Thread.sleep((long)sensor);
+        } catch (InterruptedException e){
+            e.printStackTrace();
         }
         ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
         ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
