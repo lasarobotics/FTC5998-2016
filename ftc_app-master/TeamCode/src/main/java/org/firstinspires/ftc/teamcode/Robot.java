@@ -669,8 +669,15 @@ public class Robot {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
-            PressBeacon(t);
+            rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+            leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+            leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
         }
 
     }
