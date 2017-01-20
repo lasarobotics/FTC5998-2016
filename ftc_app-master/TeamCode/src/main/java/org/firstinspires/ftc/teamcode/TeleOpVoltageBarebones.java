@@ -5,7 +5,6 @@ https://ftcprogramming.wordpress.com/2015/11/30/building-ftc_app-wirelessly/
 package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -21,8 +20,7 @@ import java.util.Arrays;
  * Created by Ethan Schaffer on 10/31/2016.
  */
 @TeleOp(name="Tele Op", group="TeleOp")
-@Disabled
-public class TeleOpFinalVoltageSensor extends OpMode {
+public class TeleOpVoltageBarebones extends OpMode {
     public static final double LEFT_SERVO_OFF_VALUE = .3;
     public static final double LEFT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_ON_VALUE = 1;
@@ -195,34 +193,6 @@ public class TeleOpFinalVoltageSensor extends OpMode {
          | | | | | ||  __/  __/ (_| |
          |_|_| |_|_| \___|\___|\__,_|
         */
-        if(RECENT_TOPHAT_DOWN && !gamepad2.dpad_down){
-            INFEEDSTATUS = (INFEEDSTATUS == INFEEDSTATE.IN ? INFEEDSTATE.NOTGOING : INFEEDSTATE.IN);
-        }
-        else if(RECENT_TOPHAT_UP && !gamepad2.dpad_up){
-            INFEEDSTATUS = (INFEEDSTATUS == INFEEDSTATE.OUT ? INFEEDSTATE.NOTGOING : INFEEDSTATE.OUT);
-        }
-        if(gamepad2.left_stick_y > .5){
-            INFEEDSTATUS = INFEEDSTATE.IN;
-        } else if(gamepad2.left_stick_y < -.5){
-            INFEEDSTATUS = INFEEDSTATE.OUT;
-        } else if(INFEEDSTATUS == INFEEDSTATE.NOTGOING){
-            INFEEDSTATUS = INFEEDSTATE.NOTGOING;
-        }
-        RECENT_TOPHAT_DOWN = gamepad2.dpad_down;
-        RECENT_TOPHAT_UP = gamepad2.dpad_up;
-/*
-        switch (INFEEDSTATUS){
-            case IN:
-                infeed.setPower(MAXINFEEDPOWER);
-                break;
-            case OUT:
-                infeed.setPower(MAXOUTFEEDPOWER);
-                break;
-            case NOTGOING:
-                infeed.setPower(0);
-                break;
-        }
-*/
         if(gamepad2.dpad_down){
             infeed.setPower(MAXINFEEDPOWER);
         } else if(gamepad2.dpad_up) {
@@ -250,40 +220,17 @@ public class TeleOpFinalVoltageSensor extends OpMode {
                 inputY /= 5*BIGGERTRIGGER; //slow down our power inputs
                 inputX /= 5*BIGGERTRIGGER; //slow down our power inputs
                 inputC /= 5*BIGGERTRIGGER; //slow down our power inputs
-            }
-            if( (Math.abs(inputC) > Math.abs(inputX)) && (Math.abs(inputC) > Math.abs(inputY)) ){ //and if our turing motion is the largest motion vector
+            } else if( (Math.abs(inputC) > Math.abs(inputX)) && (Math.abs(inputC) > Math.abs(inputY)) ){ //and if our turing motion is the largest motion vector
                 inputY /= 4*BIGGERTRIGGER; //slow down our power inputs
                 inputX /= 4*BIGGERTRIGGER; //slow down our power inputs
                 inputC /= 4*BIGGERTRIGGER; //slow down our power inputs
-            }
-            if( (Math.abs(inputX) > Math.abs(inputY)) && (Math.abs(inputX) > Math.abs(inputC)) ){ //and if our strafing motion is the largest motion vector
+            } else if( (Math.abs(inputX) > Math.abs(inputY)) && (Math.abs(inputX) > Math.abs(inputC)) ){ //and if our strafing motion is the largest motion vector
                 inputY /= 3*BIGGERTRIGGER; //slow down our power inputs
                 inputX /= 3*BIGGERTRIGGER; //slow down our power inputs
                 inputC /= 3*BIGGERTRIGGER; //slow down our power inputs
             }
         }
         //Use the larger trigger value to scale down the inputs.
-
-        if(!gamepad1.right_bumper && RECENT_DRIVER_RIGHT_BUMPER){
-            if(leftBackWheel.getDirection() == DcMotorSimple.Direction.FORWARD){
-                leftBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
-                leftFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
-                rightFrontWheel.setDirection(DcMotorSimple.Direction.FORWARD);
-                rightBackWheel.setDirection(DcMotorSimple.Direction.FORWARD);
-            } else {
-                leftBackWheel.setDirection(DcMotorSimple.Direction.FORWARD);
-                leftFrontWheel.setDirection(DcMotorSimple.Direction.FORWARD);
-                rightFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
-                rightBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
-            }
-        }
-        if(leftBackWheel.getDirection() == DcMotorSimple.Direction.REVERSE){
-            inputC *= -1;
-        }
-
-        RECENT_DRIVER_RIGHT_BUMPER = gamepad1.right_bumper;
-        // The above code will reverse the motors (and therefore the robot's orientation)
-        // When the driver presses the 'A' button
 
         arcadeMecanum(inputY, inputX, inputC, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
 
@@ -318,15 +265,6 @@ public class TeleOpFinalVoltageSensor extends OpMode {
         }
         RECENT_B_BUTTON = gamepad2.b;
 
-        if(gamepad2.a){
-            lift.setPower(1);
-        } else if(gamepad2.y){
-            lift.setPower(-.25);
-        } else {
-            lift.setPower(0);
-        }
-
-
         /*
           _       _                     _
          | |     | |                   | |
@@ -337,17 +275,9 @@ public class TeleOpFinalVoltageSensor extends OpMode {
                                                   __/ |
                                                  |___/
         */
-        telemetry.addData("LF", leftFrontWheel.getPower());
-        telemetry.addData("LB", leftBackWheel.getPower());
-        telemetry.addData("RF", rightFrontWheel.getPower());
-        telemetry.addData("RB", rightBackWheel.getPower());
-
         telemetry.addData("Infeed", infeed.getPower() > .1 ? "IN" : infeed.getPower() < -.1 ? "OUT" : "OFF");
         telemetry.addData("Shooter", SHOOTERSTATUS == SHOOTERSTATE.SHOOTING ? "Shooting" : "Not Shooting");
-        telemetry.addData("turnRight Servo", RIGHTSERVOSTATE);
-        telemetry.addData("turnLeft Servo", LEFTSERVOSTATE);
         //Ternary, basically it just outputs the Infeed states.
-
         telemetry.update();
     }
 

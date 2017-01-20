@@ -40,7 +40,7 @@ public class Red2BShoot extends LinearOpMode{
         //Press the first beacon
         robot.StrafeFromWall(15, 1.0);
         robot.AlignToWithin(2, 0.05);
-        robot.Move(140, 1.00);
+        robot.Move(130, 1.00);
         robot.AlignToWithin(2.5, 0.05);
         robot.LineSearch(2, 0.11);
         robot.AlignToWithin(2.5, 0.05);

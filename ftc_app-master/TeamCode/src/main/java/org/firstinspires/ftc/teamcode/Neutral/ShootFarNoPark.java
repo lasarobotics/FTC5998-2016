@@ -14,7 +14,7 @@ public class ShootFarNoPark extends LinearOpMode {
     Robot robot = new Robot();
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(ShootFarNoPark.this, hardwareMap, telemetry, true);
+        robot.initialize(ShootFarNoPark.this, hardwareMap, telemetry, false);
         waitForStart();
         sleep(1000*10);
         robot.Move(180, .5);

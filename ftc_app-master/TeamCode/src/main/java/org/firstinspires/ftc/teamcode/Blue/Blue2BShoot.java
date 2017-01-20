@@ -37,7 +37,7 @@ public class Blue2BShoot extends LinearOpMode {
 
         robot.StrafeFromWall(15, 1.0);
         robot.AlignToWithin(3, 0.05);
-        robot.Move(140, - 1.00);
+        robot.Move(130, - 1.00);
         robot.LineSearch(2, - 0.11);
         robot.AlignToWithin(2.5, 0.05);
         robot.AlignToWithin(2.5, 0.05);

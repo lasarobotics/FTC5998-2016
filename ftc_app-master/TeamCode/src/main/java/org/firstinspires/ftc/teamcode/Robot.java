@@ -111,11 +111,15 @@ public class Robot {
         if(navXOn){
             navX = new AHRS(dim, 5, AHRS.DeviceDataType.kProcessedData, (byte)50);
             navX.zeroYaw();
-            while ( navX.isCalibrating() && !l.isStopRequested() ) {
+            while ( navX.isCalibrating() && !l.isStopRequested()) {
                 telemetry.addData("Gyro", "Calibrating");
+                telemetry.addData("Yaw", navX.getYaw());
+                if(!navX.isConnected()){
+                    telemetry.addData("NavX", "DISCONNECTED!");
+                } else {
+                    telemetry.addData("NavX", "Connected!");}
                 telemetry.update();
             } //This silly looking code above animates a "..." sequence in telemetry, if the gyroscope is still calibrating
-            telemetry.addData("Gyro", "Done!");
             telemetry.addData("Yaw", navX.getYaw());
             if(!navX.isConnected()){
                 telemetry.addData("NavX", "DISCONNECTED!");
@@ -236,6 +240,10 @@ public class Robot {
 
     }
     public void TurnLeftRelative(double sensor, double power){
+        if(!navX.isConnected()){
+            TurnLeftEnc(sensor, .10);
+            return;
+        }
         if(infeedOn){
             infeed.setPower(1);
         } else {
@@ -603,8 +611,6 @@ public class Robot {
             shoot1.setPower(0);
             shoot2.setPower(0);
         }
-        if(!l.opModeIsActive())
-            l.stop();
         team colorReading;
         if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
             colorReading = team.Red;
@@ -615,12 +621,19 @@ public class Robot {
             Move(1, - .25);
             rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
             leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
-        } else if(colorReading != team.NotSensed){
+        } else {
             rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
             leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
-        } else {
-            return;
         }
+        if(!l.opModeIsActive())
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+            leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+            l.stop();
         try {
             Thread.sleep(1250);
         } catch (InterruptedException e) {
@@ -628,6 +641,38 @@ public class Robot {
         }
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+        if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
+            colorReading = team.Red;
+        } else {
+            colorReading = team.Blue;
+        }
+        if(colorReading == t){
+            return;
+        } else {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
+                colorReading = team.Red;
+            } else {
+                colorReading = team.Blue;
+            }
+            if(colorReading == t){
+                rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+                leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+                return;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            PressBeacon(t);
+        }
+
     }
     public void PressBeaconSmart(team t){
         if(infeedOn){
