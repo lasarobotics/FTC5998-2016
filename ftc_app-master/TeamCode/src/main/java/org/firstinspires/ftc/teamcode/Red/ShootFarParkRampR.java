@@ -24,6 +24,6 @@ public class ShootFarParkRampR extends LinearOpMode {
         robot.TurnLeft(45, .05);
         robot.Move(90, .5);
         robot.TurnLeftEnc(20, .50);
-        robot.Move(50, .5);
+        robot.Move(110, .5);
     }
 }

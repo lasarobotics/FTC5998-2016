@@ -16,7 +16,7 @@ public class ShootFarParkRampB extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         robot.initialize(ShootFarParkRampB.this, hardwareMap, telemetry, true);
         waitForStart();
-        sleep(1000*10);
+        sleep(1000*5);
         robot.Move(180, .5);
         robot.ShootSmart();
         robot.EnableShot(2000, 1.00);
@@ -24,6 +24,6 @@ public class ShootFarParkRampB extends LinearOpMode {
         robot.TurnRight(45, .05);
         robot.Move(90, .5);
         robot.TurnRightEnc(20, .50);
-        robot.Move(50, .5);
+        robot.Move(110, .5);
     }
 }

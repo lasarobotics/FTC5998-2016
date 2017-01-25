@@ -111,7 +111,7 @@ public class TestColorSensingLine extends LinearOpMode {
         sleep(500);
         leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
-        while( colorSensorLeftBottom.alpha() < 4) {
+        while( colorSensorBottom.alpha() < 4) {
         }
         drive(0, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
         //AT SECOND BEACON

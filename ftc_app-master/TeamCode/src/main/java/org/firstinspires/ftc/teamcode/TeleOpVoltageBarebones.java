@@ -15,12 +15,14 @@ import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
 @TeleOp(name="Tele Op", group="TeleOp")
 public class TeleOpVoltageBarebones extends OpMode {
+    public double rpmTarget = 2400;
     public static final double LEFT_SERVO_OFF_VALUE = .3;
     public static final double LEFT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_ON_VALUE = 1;
@@ -80,11 +82,17 @@ public class TeleOpVoltageBarebones extends OpMode {
     public static final String COLORLEFTBOTTOMNAME = "cb";//Port 2
     public static final String COLORRIGHTBOTTOMNAME = "cb2"; //Port 4
     public static final String GYRONAME = "g"; //Port 4
+    final double NANOSECONDS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
 
     DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed, lift;
     Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlockLeft;
     ColorSensor colorSensorOnSide, colorSensorLeftBottom, colorSensorRightBottom;
     ModernRoboticsI2cGyro gyroSensor;
+    public double volts;
+    public double rpm;
+    public double power;
+    public double lastTime, lastEnc;
+    public double oldTime;
     DeviceInterfaceModule dim;
     ModernRoboticsI2cRangeSensor range;
     public double SHOOTERMAXVALUE = 1;
@@ -125,9 +133,9 @@ public class TeleOpVoltageBarebones extends OpMode {
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
         ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
-
-        double volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
-        double power = 1.0;
+        lastEnc = 0;
+        volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
+        power = 1.0;
     }
 
     @Override
@@ -149,31 +157,54 @@ public class TeleOpVoltageBarebones extends OpMode {
         //Ternary Operations used to toggle SHOOTERSTATUS
         switch(SHOOTERSTATUS){
             case SHOOTING:
-                double volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
-                double power;
+                volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
+                rpm = (Math.abs((shoot1.getCurrentPosition()-lastEnc)) / (7*4) ) //Rotations
+                            / // Per
+                        ( (System.nanoTime()-lastTime)/(NANOSECONDS_PER_SECOND*60) ); // Minute
                 if(volts > 13.3){
                     power = 0.40;
                 } else if(volts > 13.1){
                     power = 0.50;
                 } else if(volts > 12.9){
-                    power = 0.60;
+                    power = 0.55;
                 } else if(volts > 12.6){
-                    power = 0.65;
+                    power = 0.60;
                 } else if(volts > 12.3) {
-                    power = 0.75;
+                    power = 0.70;
                 } else if(volts > 12.0) {
-                    power = 0.85;
+                    power = 0.80;
                 } else {
-                    power = 1.00;
+                    power = 0.90;
                 }
-                shoot1.setPower(power);
-                shoot2.setPower(power);
+                if(rpm < rpmTarget - 1200){
+                    shoot1.setPower(power);
+                    shoot2.setPower(power);
+                    telemetry.addData("RPM", "Just Started");
+                } else if(rpm > rpmTarget+100){
+                    shoot1.setPower(shoot1.getPower() + .01);
+                    shoot2.setPower(shoot1.getPower() + .01);
+                    telemetry.addData("RPM", "Low");
+                } else if(rpm < rpmTarget-100){
+                    shoot1.setPower(shoot1.getPower() - .01);
+                    shoot2.setPower(shoot1.getPower() - .01);
+                    telemetry.addData("RPM", "High");
+                } else {
+                    telemetry.addData("RPM", "Good");
+                }
+                lastEnc = shoot1.getCurrentPosition();
+                lastTime = System.nanoTime();
+
+                telemetry.addData("RPM Value", rpm);
+                telemetry.addData("RPM Target", rpmTarget);
+                telemetry.addData("Power by RPM", shoot1.getPower());
+                telemetry.addData("Power by volts", power);
+                telemetry.update();
                 ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
                 ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
                 break;
             case BACK:
-                shoot1.setPower(-SHOOTERMAXVALUE);
-                shoot2.setPower(-SHOOTERMAXVALUE);
+                shoot1.setPower(-1);
+                shoot2.setPower(-1);
                 ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
                 ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
                 break;
@@ -210,7 +241,7 @@ public class TeleOpVoltageBarebones extends OpMode {
          */
         double inputY = Math.abs(gamepad1.left_stick_y) > ACCEPTINPUTTHRESHOLD ? gamepad1.left_stick_y : 0;
         double inputX = Math.abs(gamepad1.left_stick_x) > ACCEPTINPUTTHRESHOLD ? -gamepad1.left_stick_x : 0;
-        double inputC = Math.abs(gamepad1.right_stick_x)> ACCEPTINPUTTHRESHOLD ? gamepad1.right_stick_x: 0;
+        double inputC = Math.abs(gamepad1.right_stick_x)> ACCEPTINPUTTHRESHOLD ? -gamepad1.right_stick_x: 0;
 
         double BIGGERTRIGGER = gamepad1.left_trigger > gamepad1.right_trigger ? gamepad1.left_trigger : gamepad1.right_trigger;
         //Ternary, the larger trigger value is set to the value BIGGERTRIGGER
@@ -275,10 +306,7 @@ public class TeleOpVoltageBarebones extends OpMode {
                                                   __/ |
                                                  |___/
         */
-        telemetry.addData("Infeed", infeed.getPower() > .1 ? "IN" : infeed.getPower() < -.1 ? "OUT" : "OFF");
-        telemetry.addData("Shooter", SHOOTERSTATUS == SHOOTERSTATE.SHOOTING ? "Shooting" : "Not Shooting");
         //Ternary, basically it just outputs the Infeed states.
-        telemetry.update();
     }
 
     // y - forwards

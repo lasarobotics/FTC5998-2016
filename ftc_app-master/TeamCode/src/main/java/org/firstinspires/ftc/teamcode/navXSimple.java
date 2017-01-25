@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.navX.ftc.AHRS;
 /**
  * Created by Ethan Schaffer on 9/24/2016.
  */
-@Autonomous(name="navX", group="aSensor Testing")
+@Autonomous(name="navX", group="zSensor Testing")
 public class navXSimple extends LinearOpMode {
     AHRS navX;
     DeviceInterfaceModule dim;
