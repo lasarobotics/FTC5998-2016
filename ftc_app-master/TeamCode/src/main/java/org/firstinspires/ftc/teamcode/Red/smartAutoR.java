@@ -16,30 +16,38 @@ public class smartAutoR extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         robot.initialize(smartAutoR.this, hardwareMap, telemetry, true);
-        while(!isStarted()){
-            robot.sensorsInfo(telemetry);
+        while(!isStarted() && !isStopRequested()){
+            robot.sensorsInfo();
         }
         waitForStart();
         robot.ShootSmart();
-        robot.ForwardsPLoop(40);
+        robot.Move(65, 1.0);
         robot.EnableShot(850, 1);
         robot.StopShooter();
-        robot.DiagonalForwardsRight(150, 1);
+        robot.DiagonalForwardsLeft(15, 1);
+
+//        robot.StrafeFromWall(13, 1.0);
+        robot.StrafeToPrecise(13, 1, .10);
 
         robot.AlignToWithin(2, .05);
+        robot.LineSearch(2, .10);
+        robot.StrafeToPrecise(8, 1, .10);
+//        robot.StrafeToWall(9, .10);
+        robot.PressBeaconSimple(Robot.team.Red);
 
-        robot.StrafeToWall(10, .15);
-
-        robot.AlignToWithin(2, .05);
-
+        robot.StrafeToPrecise(13, 1, .10);
+        robot.AlignToWithin(1, .05);
+        robot.Move(130, -1.0);
         robot.LineSearch(2, -.10);
-        robot.PressBeacon(Robot.team.Red);
-        robot.StrafeFromWall(15, 1.0);
-        robot.ForwardsPLoop(130, .75);
-        robot.StrafeToWall(10, .15);
+        robot.AlignToWithin(1, .05);
+
+        robot.DiagonalForwardsLeft(9, .10);
         robot.LineSearch(2, -.10);
-        robot.PressBeacon(Robot.team.Red);
-        robot.StrafeFromWall(20, 1.0);
+
+        robot.PressBeaconSimple(Robot.team.Red);
+        robot.StrafeFromWall(25, .75);
+        robot.Move(110, -1.0);
+        robot.Move(25, -0.25);
 
     }
 }

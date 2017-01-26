@@ -112,7 +112,8 @@ public class TeleOpVoltageBarebones extends OpMode {
         shoot2 = hardwareMap.dcMotor.get(SHOOT2NAME);
         infeed = hardwareMap.dcMotor.get(INFEEDNAME);
         infeed.setDirection(DcMotorSimple.Direction.REVERSE);
-
+        shoot1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT); //allows the shooter to slow down properly
+        shoot2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT); //to avoid the gearboxes getting damaged over time
         ballBlockRight = hardwareMap.servo.get(BALLBLOCKRIGHTNAME);
         ballBlockLeft = hardwareMap.servo.get(BALLBLOCKLEFTNAME);
         leftButtonPusher = hardwareMap.servo.get(LEFTPUSHNAME);

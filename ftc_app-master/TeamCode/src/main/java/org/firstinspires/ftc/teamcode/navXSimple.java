@@ -18,7 +18,7 @@ public class navXSimple extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        dim = hardwareMap.get(DeviceInterfaceModule.class, "Device Interface Module 1");
+        dim = hardwareMap.get(DeviceInterfaceModule.class, "dim");
         navX = new AHRS(dim, 5, AHRS.DeviceDataType.kProcessedData, (byte)50);
         navX.zeroYaw();
         int timer = 0;
