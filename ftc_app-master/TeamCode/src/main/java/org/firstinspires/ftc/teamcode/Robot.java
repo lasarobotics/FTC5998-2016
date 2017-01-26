@@ -75,21 +75,22 @@ public class Robot {
     public static final double LEFT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_OFF_VALUE = .20;
-
-    public void sensorsInfo(Telemetry telemetry){
+    Telemetry t;
+    public void sensorsInfo(){
         if(navX.isConnected() ) {
-            telemetry.addData("NavX", navX.getYaw());
+            t.addData("NavX", navX.getYaw());
         }
-        telemetry.addData("NavX Connected", navX.isConnected());
-        telemetry.addData("Color Bottom", colorSensorBottom.alpha());
-            telemetry.addData("Color Side Red", colorSensorOnSide.red());
-            telemetry.addData("Color Side Blue", colorSensorOnSide.blue());
-            telemetry.addData("Range CM", range.getDistance(DistanceUnit.CM));
-            telemetry.addData("Range Light", range.getLightDetected());
-            telemetry.update();
+        t.addData("NavX Connected", navX.isConnected());
+        t.addData("Color Bottom", colorSensorBottom.alpha());
+        t.addData("Color Side Red", colorSensorOnSide.red());
+        t.addData("Color Side Blue", colorSensorOnSide.blue());
+        t.addData("Range CM", range.getDistance(DistanceUnit.CM));
+        t.addData("Range Light", range.getLightDetected());
+        t.update();
     }
     public void initialize(LinearOpMode lInput, HardwareMap hardwareMap, Telemetry telemetry, boolean navXOn){
         l = lInput;
+        t = telemetry;
         leftFrontWheel = hardwareMap.dcMotor.get(LEFT1NAME);
         leftBackWheel = hardwareMap.dcMotor.get(LEFT2NAME);
         rightFrontWheel = hardwareMap.dcMotor.get(RIGHT1NAME);
@@ -258,7 +259,7 @@ public class Robot {
         double avg = (RBPos + LBPos + RFPos + LFPos)/4;
         double power;
         while(avg < ticks && l.opModeIsActive()) {
-            power = Range.clip((avg - ticks)/ticks, .1, Math.abs(maxPower));
+            power = Range.clip((ticks-avg)/ticks, .1, Math.abs(maxPower));
             setDrivePower(power);
             RBPos = Math.abs(rightBackWheel.getCurrentPosition());
             RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
@@ -295,7 +296,7 @@ public class Robot {
         double avg = (RBPos + LBPos + RFPos + LFPos)/4;
         double power;
         while(avg < ticks && l.opModeIsActive()) {
-            power = - Range.clip((avg - ticks)/ticks, .1, Math.abs(maxPower));
+            power = - Range.clip((ticks-avg)/ticks, .1, Math.abs(maxPower));
             setDrivePower(power);
             RBPos = Math.abs(rightBackWheel.getCurrentPosition());
             RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
@@ -744,6 +745,46 @@ public class Robot {
         }
         setDrivePower(0);
     }
+    public void StrafeToPrecise(double cm, double threshold, double power){
+        StrafeToWall(cm+threshold, power);
+        StrafeFromWall(cm-threshold, power);
+        StrafeToWall(cm+threshold, power);
+    }
+    public void PressBeaconSimple(team t){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
+        team colorReading;
+        if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
+            colorReading = team.Red;
+        } else {
+            colorReading = team.Blue;
+        }
+        if(colorReading == t){
+            Move(1, - .25);
+            rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
+            leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+        } else {
+            rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+            leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
+        }
+        try {
+            Thread.sleep(1250);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+        leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+    }
+
     public void PressBeacon(team t){
         if(infeedOn){
             infeed.setPower(1);
@@ -896,60 +937,92 @@ public class Robot {
         range.close();
         l.stop();
     }
-    public void DiagonalForwardsLeft(double ticks, double power){
-        ResetDriveEncoders();
-        arcadeMecanum(1, 1, 0);
-        double avg = 0;
-        ticks*=ticksToStrafeDistance;
-        do {
-            int RBPos = Math.abs(rightBackWheel.getCurrentPosition());
-            int RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
-            int LBPos = Math.abs(leftBackWheel.getCurrentPosition());
-            int LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
-            avg = (RBPos + RFPos + LBPos + LFPos)/4;
-        } while(avg < ticks && l.opModeIsActive());
+
+    public void DiagonalForwardsLeft(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
+        double pastRange = 254;
+        if(!l.opModeIsActive())
+            Finish();
+        while(pastRange > sensor && l.opModeIsActive()){
+            pastRange = getRange(pastRange);
+            arcadeMecanum(1, -1, 0);
+        }
         setDrivePower(0);
     }
-    public void DiagonalForwardsRight(double ticks, double power){
-        ResetDriveEncoders();
-        arcadeMecanum(1, -1, 0);
-        double avg = 0;
-        ticks*=ticksToStrafeDistance;
-        do {
-            int RBPos = Math.abs(rightBackWheel.getCurrentPosition());
-            int RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
-            int LBPos = Math.abs(leftBackWheel.getCurrentPosition());
-            int LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
-            avg = (RBPos + RFPos + LBPos + LFPos)/4;
-        } while(avg < ticks && l.opModeIsActive());
+
+    public void DiagonalForwardsRight(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
+        double pastRange = 254;
+        if(!l.opModeIsActive())
+            Finish();
+        while(pastRange > sensor && l.opModeIsActive()){
+            pastRange = getRange(pastRange);
+            arcadeMecanum(1, 1, 0);
+        }
         setDrivePower(0);
     }
-    public void DiagonalBackwardsLeft(double ticks, double power){
-        ResetDriveEncoders();
-        arcadeMecanum(-1, 1, 0);
-        double avg = 0;
-        ticks*=ticksToStrafeDistance;
-        do {
-            int RBPos = Math.abs(rightBackWheel.getCurrentPosition());
-            int RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
-            int LBPos = Math.abs(leftBackWheel.getCurrentPosition());
-            int LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
-            avg = (RBPos + RFPos + LBPos + LFPos)/4;
-        } while(avg < ticks && l.opModeIsActive());
+
+    public void DiagonalBackwardsRight(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
+        double pastRange = 254;
+        if(!l.opModeIsActive())
+            Finish();
+        while(pastRange > sensor && l.opModeIsActive()){
+            pastRange = getRange(pastRange);
+            arcadeMecanum(-1, 1, 0);
+        }
         setDrivePower(0);
     }
-    public void DiagonalBackwardsRight(double ticks, double power){
-        ResetDriveEncoders();
-        arcadeMecanum(-1, -1, 0);
-        double avg = 0;
-        ticks*=ticksToStrafeDistance;
-        do {
-            int RBPos = Math.abs(rightBackWheel.getCurrentPosition());
-            int RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
-            int LBPos = Math.abs(leftBackWheel.getCurrentPosition());
-            int LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
-            avg = (RBPos + RFPos + LBPos + LFPos)/4;
-        } while(avg < ticks && l.opModeIsActive());
+
+    public void DiagonalBackwardsLeft(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
+        double pastRange = 254;
+        if(!l.opModeIsActive())
+            Finish();
+        while(pastRange > sensor && l.opModeIsActive()){
+            pastRange = getRange(pastRange);
+            arcadeMecanum(-1, -1, 0);
+        }
         setDrivePower(0);
     }
 
