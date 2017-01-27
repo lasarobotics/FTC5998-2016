@@ -48,7 +48,9 @@ public class smartAutoB extends LinearOpMode {
         robot.TurnRight(35, .25);
         robot.AlignToWithinOf(40, 1, .05);
         robot.Move(110, 1.0);
-        robot.EnableShot(1000, 1.0);
+        robot.EnableShot(250, 1.0);
+        robot.EnableShot(250, .30);
+        robot.EnableShot(500, 1.0);
         robot.StopShooter();
         robot.Move(65, 0.25);
 
