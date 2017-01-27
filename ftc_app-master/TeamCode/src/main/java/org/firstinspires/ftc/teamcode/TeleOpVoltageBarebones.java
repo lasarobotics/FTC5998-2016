@@ -89,10 +89,10 @@ public class TeleOpVoltageBarebones extends OpMode {
     ColorSensor colorSensorOnSide, colorSensorLeftBottom, colorSensorRightBottom;
     ModernRoboticsI2cGyro gyroSensor;
     public double volts;
-    public double rpm;
+    public double rpm1;
     public double power;
-    public double lastTime, lastEnc;
-    public double oldTime;
+    public double lastTime, lastEnc1, lastEnc2;
+    public double rpm2;
     DeviceInterfaceModule dim;
     ModernRoboticsI2cRangeSensor range;
     public double SHOOTERMAXVALUE = 1;
@@ -134,7 +134,7 @@ public class TeleOpVoltageBarebones extends OpMode {
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
         ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
-        lastEnc = 0;
+        lastEnc2 = 0;
         volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
         power = 1.0;
     }
@@ -150,16 +150,16 @@ public class TeleOpVoltageBarebones extends OpMode {
          \__ \ | | | (_) | (_) | |_
          |___/_| |_|\___/ \___/ \__|
         */
-        if(RECENT_LB && !gamepad2.left_bumper){
+        if(!RECENT_LB && gamepad2.left_bumper){
             SHOOTERSTATUS =(SHOOTERSTATUS == SHOOTERSTATE.SHOOTING) ? SHOOTERSTATE.NOTSHOOTING : SHOOTERSTATE.SHOOTING;
-        } else if (RECENT_RB && !gamepad2.right_bumper){
+        } else if (!RECENT_RB && gamepad2.right_bumper){
             SHOOTERSTATUS =(SHOOTERSTATUS == SHOOTERSTATE.BACK) ? SHOOTERSTATE.NOTSHOOTING : SHOOTERSTATE.BACK;
         }
         //Ternary Operations used to toggle SHOOTERSTATUS
         switch(SHOOTERSTATUS){
             case SHOOTING:
                 volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
-                rpm = (Math.abs((shoot1.getCurrentPosition()-lastEnc)) / (7*4) ) //Rotations
+                rpm1 = (Math.abs((shoot1.getCurrentPosition()- lastEnc1)) / (7*4) ) //Rotations
                             / // Per
                         ( (System.nanoTime()-lastTime)/(NANOSECONDS_PER_SECOND*60) ); // Minute
                 if(volts > 13.3){
@@ -177,35 +177,44 @@ public class TeleOpVoltageBarebones extends OpMode {
                 } else {
                     power = 0.90;
                 }
-                if(rpm < rpmTarget - 1200){
-                    shoot1.setPower(power);
-                    shoot2.setPower(power);
-                    telemetry.addData("RPM", "Just Started");
-                } else if(rpm > rpmTarget+100){
-                    shoot1.setPower(shoot1.getPower() + .01);
-                    shoot2.setPower(shoot1.getPower() + .01);
-                    telemetry.addData("RPM", "Low");
-                } else if(rpm < rpmTarget-100){
-                    shoot1.setPower(shoot1.getPower() - .01);
-                    shoot2.setPower(shoot1.getPower() - .01);
-                    telemetry.addData("RPM", "High");
-                } else {
-                    telemetry.addData("RPM", "Good");
-                }
-                lastEnc = shoot1.getCurrentPosition();
-                lastTime = System.nanoTime();
+                if(rpm1 != 0){
+                    if(rpm1 < rpmTarget - 1200){
+                        shoot1.setPower(power);
+                        shoot2.setPower(power);
+                        telemetry.addData("RPM1", "Just Started");
+                    } else if(rpm1 > rpmTarget+100){
+                        shoot1.setPower(shoot1.getPower() + .01);
+                        shoot2.setPower(shoot1.getPower() + .01);
+                        telemetry.addData("RPM1", "Low");
+                    } else if(rpm1 < rpmTarget-100){
+                        shoot1.setPower(shoot1.getPower() - .01);
+                        shoot2.setPower(shoot1.getPower() - .01);
+                        telemetry.addData("RPM1", "High");
+                    } else {
+                        telemetry.addData("RPM1", "Good");
+                    }
+                    telemetry.clear();
+                    telemetry.addData("RPM1 Value", rpm1);
+                    telemetry.addData("RPM2 Value", rpm2);
+                    telemetry.addData("RPM Target", rpmTarget);
+                    telemetry.addData("Power by RPM1", shoot1.getPower());
+                    telemetry.addData("Power by RPM2", shoot2.getPower());
+                    telemetry.addData("Power by volts", power);
+                    telemetry.update();
+                    ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
+                    ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
 
-                telemetry.addData("RPM Value", rpm);
-                telemetry.addData("RPM Target", rpmTarget);
-                telemetry.addData("Power by RPM", shoot1.getPower());
-                telemetry.addData("Power by volts", power);
-                telemetry.update();
-                ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
-                ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
+                    lastEnc1 = shoot1.getCurrentPosition();
+                    lastTime = System.nanoTime();
+                } else {
+                    telemetry.clear();
+                    telemetry.addData("RPM", "At Zero");
+                    telemetry.update();
+                }
                 break;
             case BACK:
-                shoot1.setPower(-1);
-                shoot2.setPower(-1);
+                shoot1.setPower(-.75);
+                shoot2.setPower(-.75);
                 ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
                 ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
                 break;
@@ -297,17 +306,6 @@ public class TeleOpVoltageBarebones extends OpMode {
         }
         RECENT_B_BUTTON = gamepad2.b;
 
-        /*
-          _       _                     _
-         | |     | |                   | |
-         | |_ ___| | ___ _ __ ___   ___| |_ _ __ _   _
-         | __/ _ \ |/ _ \ '_ ` _ \ / _ \ __| '__| | | |
-         | ||  __/ |  __/ | | | | |  __/ |_| |  | |_| |
-          \__\___|_|\___|_| |_| |_|\___|\__|_|   \__, |
-                                                  __/ |
-                                                 |___/
-        */
-        //Ternary, basically it just outputs the Infeed states.
     }
 
     // y - forwards

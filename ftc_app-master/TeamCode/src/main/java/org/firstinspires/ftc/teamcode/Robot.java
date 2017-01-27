@@ -198,10 +198,10 @@ public class Robot {
         TurnLeftAbsolute(sensor, power);
         TurnRightAbsolute(- sensor, power);
     }
-    public void AlignToWithinOf(double sensor, double reading, double power){
-        TurnRightAbsolute(reading - sensor, power);
-        TurnLeftAbsolute(reading + sensor, power);
-        TurnRightAbsolute(reading - sensor, power);
+    public void AlignToWithinOf(double expected, double threshold, double power){
+        TurnRightAbsolute(expected - threshold, power);
+        TurnLeftAbsolute(expected + threshold, power);
+        TurnRightAbsolute(expected - threshold, power);
     }
 
     public void Move(double sensor, double power) {
@@ -235,6 +235,37 @@ public class Robot {
         }
         setDrivePower(0);
     }
+    public void MoveCoast(double sensor, double power) {
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
+        if(!l.opModeIsActive())
+            Finish();
+        ResetDriveEncoders();
+        double ticks = sensor / cmPerTick;
+        int RBPos = Math.abs(rightBackWheel.getCurrentPosition());
+        int RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
+        int LBPos = Math.abs(leftBackWheel.getCurrentPosition());
+        int LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
+        double avg = (RBPos + LBPos + RFPos + LFPos)/4;
+        while(avg < ticks && l.opModeIsActive()) {
+            setDrivePower(power);
+            RBPos = Math.abs(rightBackWheel.getCurrentPosition());
+            RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
+            LBPos = Math.abs(leftBackWheel.getCurrentPosition());
+            LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
+            avg = (RBPos + LBPos + RFPos + LFPos) / 4;
+        }
+    }
+
     public void ForwardsPLoop(double sensor, double maxPower) {
         //Max Power should be normally set to 1, but for very precise Movements a value of .25 or lower is reccomended.
         if(infeedOn){
@@ -977,7 +1008,7 @@ public class Robot {
             Finish();
         while(pastRange > sensor && l.opModeIsActive()){
             pastRange = getRange(pastRange);
-            arcadeMecanum(1, 1, 0);
+            arcadeMecanum(power, power, 0);
         }
         setDrivePower(0);
     }
@@ -999,7 +1030,7 @@ public class Robot {
             Finish();
         while(pastRange > sensor && l.opModeIsActive()){
             pastRange = getRange(pastRange);
-            arcadeMecanum(-1, 1, 0);
+            arcadeMecanum(-power, power, 0);
         }
         setDrivePower(0);
     }
@@ -1021,7 +1052,28 @@ public class Robot {
             Finish();
         while(pastRange > sensor && l.opModeIsActive()){
             pastRange = getRange(pastRange);
-            arcadeMecanum(-1, -1, 0);
+            arcadeMecanum(-power, -power, 0);
+        }
+        setDrivePower(0);
+    }
+    public void DiagonalBackwardsLeft(double sensor, double yIn, double xIn){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
+        double pastRange = 254;
+        if(!l.opModeIsActive())
+            Finish();
+        while(pastRange > sensor && l.opModeIsActive()){
+            pastRange = getRange(pastRange);
+            arcadeMecanum(-yIn, -xIn, 0);
         }
         setDrivePower(0);
     }

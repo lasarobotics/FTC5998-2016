@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.Robot;
 /**
  * Created by Ethan Schaffer on 1/25/2017.
  */
-@Autonomous(name = "Smart R", group = "Red")
+@Autonomous(name = "R Diagonal", group = "Red")
 public class smartAutoR extends LinearOpMode {
     Robot robot = new Robot();
 
@@ -22,9 +22,11 @@ public class smartAutoR extends LinearOpMode {
         waitForStart();
         robot.ShootSmart();
         robot.Move(65, 1.0);
-        robot.EnableShot(850, 1);
+        robot.EnableShot(250, 1);
+        sleep(100);
+        robot.EnableShot(1000, 1);
         robot.StopShooter();
-        robot.DiagonalForwardsLeft(15, 1);
+        robot.DiagonalForwardsLeft(25, 1);
 
 //        robot.StrafeFromWall(13, 1.0);
         robot.StrafeToPrecise(13, 1, .10);
@@ -33,7 +35,7 @@ public class smartAutoR extends LinearOpMode {
         robot.LineSearch(2, .10);
         robot.StrafeToPrecise(8, 1, .10);
 //        robot.StrafeToWall(9, .10);
-        robot.PressBeaconSimple(Robot.team.Red);
+        robot.PressBeacon(Robot.team.Red);
 
         robot.StrafeToPrecise(13, 1, .10);
         robot.AlignToWithin(1, .05);
@@ -41,12 +43,11 @@ public class smartAutoR extends LinearOpMode {
         robot.LineSearch(2, -.10);
         robot.AlignToWithin(1, .05);
 
-        robot.DiagonalForwardsLeft(9, .10);
-        robot.LineSearch(2, -.10);
-
-        robot.PressBeaconSimple(Robot.team.Red);
+        robot.StrafeToWall(9, .10);
+        robot.PressBeacon(Robot.team.Red);
         robot.StrafeFromWall(25, .75);
-        robot.Move(110, -1.0);
+        robot.AlignToWithin(1.5, .05);
+        robot.Move(115, -1.0);
         robot.Move(25, -0.25);
 
     }
