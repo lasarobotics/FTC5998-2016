@@ -77,15 +77,12 @@ public class Robot {
     public static final double RIGHT_SERVO_OFF_VALUE = .20;
     Telemetry t;
     public void sensorsInfo(){
-        if(navX.isConnected() ) {
-            t.addData("NavX", navX.getYaw());
-        }
-        t.addData("NavX Connected", navX.isConnected());
+        t.clear();
+        t.addData("NavX", navX.isConnected() ? navX.getYaw() : "Disconnected");
         t.addData("Color Bottom", colorSensorBottom.alpha());
         t.addData("Color Side Red", colorSensorOnSide.red());
         t.addData("Color Side Blue", colorSensorOnSide.blue());
         t.addData("Range CM", range.getDistance(DistanceUnit.CM));
-        t.addData("Range Light", range.getLightDetected());
         t.update();
     }
     public void initialize(LinearOpMode lInput, HardwareMap hardwareMap, Telemetry telemetry, boolean navXOn){
@@ -226,6 +223,7 @@ public class Robot {
         int LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
         double avg = (RBPos + LBPos + RFPos + LFPos)/4;
         while(avg < ticks && l.opModeIsActive()) {
+            sensorsInfo();
             setDrivePower(power);
             RBPos = Math.abs(rightBackWheel.getCurrentPosition());
             RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
@@ -257,6 +255,7 @@ public class Robot {
         int LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
         double avg = (RBPos + LBPos + RFPos + LFPos)/4;
         while(avg < ticks && l.opModeIsActive()) {
+            sensorsInfo();
             setDrivePower(power);
             RBPos = Math.abs(rightBackWheel.getCurrentPosition());
             RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
@@ -290,6 +289,7 @@ public class Robot {
         double avg = (RBPos + LBPos + RFPos + LFPos)/4;
         double power;
         while(avg < ticks && l.opModeIsActive()) {
+            sensorsInfo();
             power = Range.clip((ticks-avg)/ticks, .1, Math.abs(maxPower));
             setDrivePower(power);
             RBPos = Math.abs(rightBackWheel.getCurrentPosition());
@@ -327,6 +327,7 @@ public class Robot {
         double avg = (RBPos + LBPos + RFPos + LFPos)/4;
         double power;
         while(avg < ticks && l.opModeIsActive()) {
+            sensorsInfo();
             power = - Range.clip((ticks-avg)/ticks, .1, Math.abs(maxPower));
             setDrivePower(power);
             RBPos = Math.abs(rightBackWheel.getCurrentPosition());
@@ -357,6 +358,7 @@ public class Robot {
             Finish();
         double power;
         while(navX.getYaw() >= degrees && l.opModeIsActive()){
+            sensorsInfo();
             power = Range.clip((navX.getYaw() - degrees)/degrees, .05, maxPower);
             rightBackWheel.setPower(power);
             rightFrontWheel.setPower(power);
@@ -383,6 +385,7 @@ public class Robot {
             Finish();
         double power;
         while(navX.getYaw() <= degrees && l.opModeIsActive()){
+            sensorsInfo();
             power = Range.clip((degrees - navX.getYaw())/degrees, .05, maxPower);
             rightBackWheel.setPower(power);
             rightFrontWheel.setPower(power);
@@ -408,6 +411,7 @@ public class Robot {
         if(!l.opModeIsActive())
             Finish();
         while(navX.getYaw() >= sensor && l.opModeIsActive()){
+            sensorsInfo();
             rightBackWheel.setPower(power);
             rightFrontWheel.setPower(power);
             leftBackWheel.setPower(-power);
@@ -437,6 +441,7 @@ public class Robot {
         double yaw = navX.getYaw();
         sensor = -Math.abs(sensor);
         while(Math.abs(yaw - navX.getYaw()) < sensor && l.opModeIsActive()){
+            sensorsInfo();
             rightBackWheel.setPower(power);
             rightFrontWheel.setPower(power);
             leftBackWheel.setPower(-power);
@@ -461,6 +466,7 @@ public class Robot {
             Finish();
         sensor = - Math.abs(sensor);
         while(navX.getYaw() >= sensor && l.opModeIsActive()){
+            sensorsInfo();
             rightBackWheel.setPower(power);
             rightFrontWheel.setPower(power);
             leftBackWheel.setPower(-power);
@@ -505,6 +511,7 @@ public class Robot {
             int LBPos = Math.abs(leftBackWheel.getCurrentPosition());
             int LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
             avg = (RBPos + RFPos + LBPos + LFPos)/4;
+            sensorsInfo();
         } while(avg < ticks && l.opModeIsActive());
         setDrivePower(0);
     }
@@ -524,6 +531,7 @@ public class Robot {
         if(!l.opModeIsActive())
             Finish();
         while(navX.getYaw() <= sensor && l.opModeIsActive()){
+            sensorsInfo();
             rightBackWheel.setPower(-power);
             rightFrontWheel.setPower(-power);
             leftBackWheel.setPower(power);
@@ -547,6 +555,7 @@ public class Robot {
             Finish();
         sensor = Math.abs(sensor);
         while(navX.getYaw() <= sensor && l.opModeIsActive()){
+            sensorsInfo();
             rightBackWheel.setPower(-power);
             rightFrontWheel.setPower(-power);
             leftBackWheel.setPower(power);
@@ -570,6 +579,7 @@ public class Robot {
             Finish();
         double yaw = navX.getYaw();
         while(Math.abs(yaw - navX.getYaw()) < sensor && l.opModeIsActive()){
+            sensorsInfo();
             rightBackWheel.setPower(-power);
             rightFrontWheel.setPower(-power);
             leftBackWheel.setPower(power);
@@ -613,6 +623,7 @@ public class Robot {
             int LBPos = Math.abs(leftBackWheel.getCurrentPosition());
             int LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
             avg = (RBPos + RFPos + LBPos + LFPos)/4;
+            sensorsInfo();
         } while(avg < ticks && l.opModeIsActive());
         setDrivePower(0);
     }
@@ -643,6 +654,7 @@ public class Robot {
             int LBPos = Math.abs(leftBackWheel.getCurrentPosition());
             int LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
             avg = (RBPos + RFPos + LBPos + LFPos)/4;
+            sensorsInfo();
         } while(avg < ticks && l.opModeIsActive());
         setDrivePower(0);
     }
@@ -670,6 +682,7 @@ public class Robot {
             int LBPos = Math.abs(leftBackWheel.getCurrentPosition());
             int LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
             avg = (RBPos + RFPos + LBPos + LFPos)/4;
+            sensorsInfo();
         } while(avg < ticks && l.opModeIsActive());
         setDrivePower(0);
     }
@@ -686,19 +699,19 @@ public class Robot {
         double volts = voltageGetter.getVoltage();
         double power = 1.00;
         if(volts > 13.3){
-            power = 0.50;
+            power = 0.40;
         } else if(volts > 13.1){
-            power = 0.60;
+            power = 0.50;
         } else if(volts > 12.9){
-            power = 0.65;
+            power = 0.55;
         } else if(volts > 12.6){
-            power = 0.70;
+            power = 0.60;
         } else if(volts > 12.3) {
-            power = 0.80;
+            power = 0.70;
         } else if(volts > 12.0) {
-            power = 0.90;
+            power = 0.80;
         } else {
-            power = 1.00;
+            power = 0.90;
         }
         shoot1.setPower(power);
         shoot2.setPower(power);
@@ -724,6 +737,7 @@ public class Robot {
         if(!l.opModeIsActive())
             Finish();
         while(pastRange > sensor && l.opModeIsActive()){
+            sensorsInfo();
             pastRange = getRange(pastRange);
             setStrafePower("Left", power);
         }
@@ -748,6 +762,7 @@ public class Robot {
         if(!l.opModeIsActive())
             Finish();
         while(pastRange < sensor && l.opModeIsActive()){
+            sensorsInfo();
             pastRange = getRange(pastRange);
             setStrafePower("Right", power);
         }
@@ -772,6 +787,7 @@ public class Robot {
         if(!l.opModeIsActive())
             Finish();
         while(colorSensorBottom.red() < sensor && colorSensorBottom.blue() < sensor && colorSensorBottom.alpha() < sensor && l.opModeIsActive()){
+            sensorsInfo();
             setDrivePower(power);
         }
         setDrivePower(0);
@@ -794,6 +810,9 @@ public class Robot {
             shoot2.setPower(0);
         }
         team colorReading;
+        if(colorSensorOnSide.red() == 255){
+            return;
+        }
         if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
             colorReading = team.Red;
         } else {
@@ -829,6 +848,9 @@ public class Robot {
             shoot2.setPower(0);
         }
         team colorReading;
+        if(colorSensorOnSide.red() == 255){
+            return;
+        }
         if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
             colorReading = team.Red;
         } else {
@@ -898,44 +920,6 @@ public class Robot {
         }
 
     }
-    public void PressBeaconSmart(team t){
-        if(infeedOn){
-            infeed.setPower(1);
-        } else {
-            infeed.setPower(0);
-        }
-        if(shooterOn){
-            ShootSmart();
-        } else {
-            shoot1.setPower(0);
-            shoot2.setPower(0);
-        }
-        if(!l.opModeIsActive())
-            Finish();
-        Move(.25, 0.25);
-        team colorReading;
-        if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
-            colorReading = team.Red;
-        } else {
-            colorReading = team.Blue;
-        }
-        Move(.25, - 0.25);
-        if(colorReading == t){
-            rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
-            leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
-        } else {
-            rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
-            leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
-        }
-        try {
-            Thread.sleep(1250);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
-        leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
-    }
-
     public void ShootAtPower(double power){
         shooterOn = true;
         if(!l.opModeIsActive())
@@ -985,6 +969,7 @@ public class Robot {
         if(!l.opModeIsActive())
             Finish();
         while(pastRange > sensor && l.opModeIsActive()){
+            sensorsInfo();
             pastRange = getRange(pastRange);
             arcadeMecanum(1, -1, 0);
         }
@@ -1007,6 +992,7 @@ public class Robot {
         if(!l.opModeIsActive())
             Finish();
         while(pastRange > sensor && l.opModeIsActive()){
+            sensorsInfo();
             pastRange = getRange(pastRange);
             arcadeMecanum(power, power, 0);
         }
@@ -1029,6 +1015,7 @@ public class Robot {
         if(!l.opModeIsActive())
             Finish();
         while(pastRange > sensor && l.opModeIsActive()){
+            sensorsInfo();
             pastRange = getRange(pastRange);
             arcadeMecanum(-power, power, 0);
         }
@@ -1050,6 +1037,7 @@ public class Robot {
         if(!l.opModeIsActive())
             Finish();
         while(pastRange > sensor && l.opModeIsActive()){
+            sensorsInfo();
             pastRange = getRange(pastRange);
             arcadeMecanum(-power, power, 0);
         }
@@ -1070,6 +1058,7 @@ public class Robot {
         if(!l.opModeIsActive())
             Finish();
         while(pastRange > sensor && l.opModeIsActive()){
+            sensorsInfo();
             pastRange = getRange(pastRange);
             arcadeMecanum(-power, -power, 0);
         }
@@ -1091,6 +1080,7 @@ public class Robot {
         if(!l.opModeIsActive())
             Finish();
         while(pastRange > sensor && l.opModeIsActive()){
+            sensorsInfo();
             pastRange = getRange(pastRange);
             arcadeMecanum(-power, -power, 0);
         }
@@ -1112,6 +1102,7 @@ public class Robot {
         if(!l.opModeIsActive())
             Finish();
         while(pastRange > sensor && l.opModeIsActive()){
+            sensorsInfo();
             pastRange = getRange(pastRange);
             arcadeMecanum(-yIn, -xIn, 0);
         }
