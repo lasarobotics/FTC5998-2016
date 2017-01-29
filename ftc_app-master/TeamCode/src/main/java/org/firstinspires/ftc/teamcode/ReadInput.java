@@ -54,7 +54,7 @@ public class ReadInput extends LinearOpMode {
                         break;
                     case 7:
                         double color_3 = s.nextDouble();
-                        robot.PressBeaconSmart(color_3 == 1 ? Robot.team.Blue : Robot.team.Red);
+                        robot.PressBeacon(color_3 == 1 ? Robot.team.Blue : Robot.team.Red);
                         break;
                     case 8:
                         robot.ShootSmart();

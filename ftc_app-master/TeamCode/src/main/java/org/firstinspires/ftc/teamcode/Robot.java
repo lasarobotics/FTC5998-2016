@@ -125,8 +125,8 @@ public class Robot {
 
         dim = hardwareMap.get(DeviceInterfaceModule.class, DIMNAME);
         //Based on the value of autoRouteChosen, we set the stateOrder array to the correct value
+        navX = new AHRS(dim, hardwareMap.i2cDevice.get("n").getPort(), AHRS.DeviceDataType.kProcessedData, (byte)50);
         if(navXOn){
-            navX = new AHRS(dim, hardwareMap.i2cDevice.get("n").getPort(), AHRS.DeviceDataType.kProcessedData, (byte)50);
             navX.zeroYaw();
             while ( navX.isCalibrating() && !l.isStopRequested()) {
                 telemetry.addData("Gyro", "Calibrating");
