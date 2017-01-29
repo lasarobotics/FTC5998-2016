@@ -28,22 +28,25 @@ public class smartAutoR extends LinearOpMode {
         robot.StopShooter();
         robot.DiagonalForwardsLeft(25, 1);
 
-//        robot.StrafeFromWall(13, 1.0);
-        robot.StrafeToPrecise(13, 1, .10);
+        robot.StrafeFromWall(13, 1.0);
 
         robot.AlignToWithin(2, .05);
-        robot.LineSearch(2, .10);
-        robot.StrafeToPrecise(8, 1, .10);
-//        robot.StrafeToWall(9, .10);
+        robot.StrafeToWall(9, .10);
+        robot.AlignToWithin(1, .05);
+        robot.LineSearch(2, .15);
+        robot.LineSearch(2, - .05);
         robot.PressBeacon(Robot.team.Red);
 
-        robot.StrafeToPrecise(13, 1, .10);
+        robot.StrafeFromWall(13, 1.0);
         robot.AlignToWithin(1, .05);
         robot.Move(130, -1.0);
-        robot.LineSearch(2, -.10);
+        robot.StrafeToWall(9, .10);
+
         robot.AlignToWithin(1, .05);
 
-        robot.StrafeToWall(9, .10);
+        robot.LineSearch(2, -.15);
+        sleep(100);
+        robot.LineSearch(2, .05);
         robot.PressBeacon(Robot.team.Red);
         robot.StrafeFromWall(25, .75);
         robot.AlignToWithin(1.5, .05);

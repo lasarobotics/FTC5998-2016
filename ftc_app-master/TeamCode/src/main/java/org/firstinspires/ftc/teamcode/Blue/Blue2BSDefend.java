@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Blue;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.Robot;
@@ -8,6 +9,7 @@ import org.firstinspires.ftc.teamcode.Robot;
  * Created by Ethan Schaffer on 1/11/2017.
  */
 @Autonomous(group = "Blue", name = "B_2BS (Defend)")
+@Disabled
 public class Blue2BSDefend extends LinearOpMode {
     Robot robot = new Robot();
 

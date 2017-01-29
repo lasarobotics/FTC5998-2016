@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Red;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.Robot;
@@ -9,6 +10,7 @@ import org.firstinspires.ftc.teamcode.Robot;
  * Created by Ethan Schaffer on 1/11/2017.
  */
 @Autonomous(group = "ZLess", name = "R_1BS")
+@Disabled
 public class Red1BShoot extends LinearOpMode{
     Robot robot = new Robot();
     @Override

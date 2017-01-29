@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Blue;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.Robot;
@@ -10,6 +11,7 @@ import org.firstinspires.ftc.teamcode.Robot;
  */
 
 @Autonomous(group = "YNeutral", name = "B_FarParkRamp")
+@Disabled
 public class ShootFarParkRampB extends LinearOpMode {
     Robot robot = new Robot();
     @Override

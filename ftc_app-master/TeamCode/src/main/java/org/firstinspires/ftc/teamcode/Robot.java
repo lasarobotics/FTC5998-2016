@@ -889,7 +889,7 @@ public class Robot {
             rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
             leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
             try {
-                Thread.sleep(500);
+                Thread.sleep(1500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -1033,6 +1033,46 @@ public class Robot {
             arcadeMecanum(-power, power, 0);
         }
         setDrivePower(0);
+    }
+    public void DiagonalBackwardsRightCoast(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
+        double pastRange = 254;
+        if(!l.opModeIsActive())
+            Finish();
+        while(pastRange > sensor && l.opModeIsActive()){
+            pastRange = getRange(pastRange);
+            arcadeMecanum(-power, power, 0);
+        }
+    }
+    public void DiagonalBackwardsLeftCoast(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
+        double pastRange = 254;
+        if(!l.opModeIsActive())
+            Finish();
+        while(pastRange > sensor && l.opModeIsActive()){
+            pastRange = getRange(pastRange);
+            arcadeMecanum(-power, -power, 0);
+        }
     }
 
     public void DiagonalBackwardsLeft(double sensor, double power){
