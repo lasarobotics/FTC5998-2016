@@ -12,7 +12,7 @@ import java.util.Scanner;
 /**
  * Created by Ethan Schaffer on 1/11/2017.
  */
-@Autonomous(group = "Red", name = "R_2B")
+@Autonomous(group = "Input", name = "Input")
 public class ReadInput extends LinearOpMode {
     Robot robot = new Robot();
 
@@ -23,7 +23,7 @@ public class ReadInput extends LinearOpMode {
             robot.sensorsInfo();
         }
         waitForStart();
-        String FILE_DIR = "/LASA";
+        String FILE_DIR = "/Download";
         File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + FILE_DIR, "route.txt");
         Scanner s = null;
         try {
