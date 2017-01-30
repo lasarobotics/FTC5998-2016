@@ -20,7 +20,7 @@ import java.util.Arrays;
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
-@TeleOp(name="Who Needs an Operator?", group="TeleOp")
+@TeleOp(name="Who Needs an Operator?", group="TeleOpCurrent")
 @Disabled
 public class TeleOpFinalSingle extends OpMode {
 

@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.navX.ftc.AHRS;
 /**
  * Created by Ethan Schaffer on 9/24/2016.
  */
-@TeleOp(name="Test: Tele", group = "TeleOp")
+@TeleOp(name="Test: Tele", group = "TeleOpCurrent")
 @Disabled
 public class Tele extends OpMode{
     DcMotor left, right;

@@ -12,7 +12,7 @@ import java.util.Arrays;
  * Created by Ethan Schaffer on 11/11/2016.
  */
 
-@TeleOp(name="Tele Op Mecanum ", group = "TeleOp")
+@TeleOp(name="Tele Op Mecanum ", group = "TeleOpCurrent")
 @Disabled
 public class SimpleMecanum extends OpMode {
     DcMotor leftFront, leftBack, rightBack, rightFront;

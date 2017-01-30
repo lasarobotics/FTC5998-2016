@@ -20,7 +20,7 @@ import java.util.Arrays;
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
-@TeleOp(name="Ethan's Sketchy Code", group="TeleOp")
+@TeleOp(name="Ethan's Sketchy Code", group="TeleOpCurrent")
 @Disabled
 public class TeleOpStillInTesting extends OpMode {
 

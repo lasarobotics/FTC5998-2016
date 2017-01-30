@@ -20,7 +20,7 @@ import java.util.Arrays;
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
-@TeleOp(name=" Single Driver ", group="TeleOp")
+@TeleOp(name=" Single Driver ", group="TeleOpCurrent")
 @Disabled
 public class TeleOp60InfeedOn extends OpMode {
     public static final double SHOOTERMAXVALUE = .60;

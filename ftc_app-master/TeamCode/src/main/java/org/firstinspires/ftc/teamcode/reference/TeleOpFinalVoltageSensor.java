@@ -2,9 +2,10 @@
 ADB guide can be found at:
 https://ftcprogramming.wordpress.com/2015/11/30/building-ftc_app-wirelessly/
 */
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.reference;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -15,14 +16,13 @@ import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
-@TeleOp(name="Tele Op", group="TeleOp")
-public class TeleOpVoltageBarebones extends OpMode {
-    public double rpmTarget = 2400;
+@TeleOp(name="Tele Op", group="TeleOpCurrent")
+@Disabled
+public class TeleOpFinalVoltageSensor extends OpMode {
     public static final double LEFT_SERVO_OFF_VALUE = .3;
     public static final double LEFT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_ON_VALUE = 1;
@@ -82,17 +82,11 @@ public class TeleOpVoltageBarebones extends OpMode {
     public static final String COLORLEFTBOTTOMNAME = "cb";//Port 2
     public static final String COLORRIGHTBOTTOMNAME = "cb2"; //Port 4
     public static final String GYRONAME = "g"; //Port 4
-    final double NANOSECONDS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
 
     DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed, lift;
     Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlockLeft;
     ColorSensor colorSensorOnSide, colorSensorLeftBottom, colorSensorRightBottom;
     ModernRoboticsI2cGyro gyroSensor;
-    public double volts;
-    public double rpm1;
-    public double power;
-    public double lastTime, lastEnc1, lastEnc2;
-    public double rpm2;
     DeviceInterfaceModule dim;
     ModernRoboticsI2cRangeSensor range;
     public double SHOOTERMAXVALUE = 1;
@@ -112,8 +106,7 @@ public class TeleOpVoltageBarebones extends OpMode {
         shoot2 = hardwareMap.dcMotor.get(SHOOT2NAME);
         infeed = hardwareMap.dcMotor.get(INFEEDNAME);
         infeed.setDirection(DcMotorSimple.Direction.REVERSE);
-        shoot1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT); //allows the shooter to slow down properly
-        shoot2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT); //to avoid the gearboxes getting damaged over time
+
         ballBlockRight = hardwareMap.servo.get(BALLBLOCKRIGHTNAME);
         ballBlockLeft = hardwareMap.servo.get(BALLBLOCKLEFTNAME);
         leftButtonPusher = hardwareMap.servo.get(LEFTPUSHNAME);
@@ -134,9 +127,9 @@ public class TeleOpVoltageBarebones extends OpMode {
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
         ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
-        lastEnc2 = 0;
-        volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
-        power = 1.0;
+
+        double volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
+        double power = 1.0;
     }
 
     @Override
@@ -150,71 +143,39 @@ public class TeleOpVoltageBarebones extends OpMode {
          \__ \ | | | (_) | (_) | |_
          |___/_| |_|\___/ \___/ \__|
         */
-        if(!RECENT_LB && gamepad2.left_bumper){
+        if(RECENT_LB && !gamepad2.left_bumper){
             SHOOTERSTATUS =(SHOOTERSTATUS == SHOOTERSTATE.SHOOTING) ? SHOOTERSTATE.NOTSHOOTING : SHOOTERSTATE.SHOOTING;
-        } else if (!RECENT_RB && gamepad2.right_bumper){
+        } else if (RECENT_RB && !gamepad2.right_bumper){
             SHOOTERSTATUS =(SHOOTERSTATUS == SHOOTERSTATE.BACK) ? SHOOTERSTATE.NOTSHOOTING : SHOOTERSTATE.BACK;
         }
         //Ternary Operations used to toggle SHOOTERSTATUS
         switch(SHOOTERSTATUS){
             case SHOOTING:
-                volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
-                rpm1 = (Math.abs((shoot1.getCurrentPosition()- lastEnc1)) / (7*4) ) //Rotations
-                            / // Per
-                        ( (System.nanoTime()-lastTime)/(NANOSECONDS_PER_SECOND*60) ); // Minute
+                double volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
+                double power;
                 if(volts > 13.3){
                     power = 0.40;
                 } else if(volts > 13.1){
                     power = 0.50;
                 } else if(volts > 12.9){
-                    power = 0.55;
-                } else if(volts > 12.6){
                     power = 0.60;
+                } else if(volts > 12.6){
+                    power = 0.65;
                 } else if(volts > 12.3) {
-                    power = 0.70;
+                    power = 0.75;
                 } else if(volts > 12.0) {
-                    power = 0.80;
+                    power = 0.85;
                 } else {
-                    power = 0.90;
+                    power = 1.00;
                 }
-                if(rpm1 != 0){
-                    if(rpm1 < rpmTarget - 1200){
-                        shoot1.setPower(power);
-                        shoot2.setPower(power);
-                        telemetry.addData("RPM1", "Just Started");
-                    } else if(rpm1 > rpmTarget+100){
-                        shoot1.setPower(shoot1.getPower() + .01);
-                        shoot2.setPower(shoot1.getPower() + .01);
-                        telemetry.addData("RPM1", "Low");
-                    } else if(rpm1 < rpmTarget-100){
-                        shoot1.setPower(shoot1.getPower() - .01);
-                        shoot2.setPower(shoot1.getPower() - .01);
-                        telemetry.addData("RPM1", "High");
-                    } else {
-                        telemetry.addData("RPM1", "Good");
-                    }
-                    telemetry.clear();
-                    telemetry.addData("RPM1 Value", rpm1);
-                    telemetry.addData("RPM2 Value", rpm2);
-                    telemetry.addData("RPM Target", rpmTarget);
-                    telemetry.addData("Power by RPM1", shoot1.getPower());
-                    telemetry.addData("Power by RPM2", shoot2.getPower());
-                    telemetry.addData("Power by volts", power);
-                    telemetry.update();
-                    ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
-                    ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
-
-                    lastEnc1 = shoot1.getCurrentPosition();
-                    lastTime = System.nanoTime();
-                } else {
-                    telemetry.clear();
-                    telemetry.addData("RPM", "At Zero");
-                    telemetry.update();
-                }
+                shoot1.setPower(power);
+                shoot2.setPower(power);
+                ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
+                ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
                 break;
             case BACK:
-                shoot1.setPower(-.75);
-                shoot2.setPower(-.75);
+                shoot1.setPower(-SHOOTERMAXVALUE);
+                shoot2.setPower(-SHOOTERMAXVALUE);
                 ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
                 ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
                 break;
@@ -234,6 +195,34 @@ public class TeleOpVoltageBarebones extends OpMode {
          | | | | | ||  __/  __/ (_| |
          |_|_| |_|_| \___|\___|\__,_|
         */
+        if(RECENT_TOPHAT_DOWN && !gamepad2.dpad_down){
+            INFEEDSTATUS = (INFEEDSTATUS == INFEEDSTATE.IN ? INFEEDSTATE.NOTGOING : INFEEDSTATE.IN);
+        }
+        else if(RECENT_TOPHAT_UP && !gamepad2.dpad_up){
+            INFEEDSTATUS = (INFEEDSTATUS == INFEEDSTATE.OUT ? INFEEDSTATE.NOTGOING : INFEEDSTATE.OUT);
+        }
+        if(gamepad2.left_stick_y > .5){
+            INFEEDSTATUS = INFEEDSTATE.IN;
+        } else if(gamepad2.left_stick_y < -.5){
+            INFEEDSTATUS = INFEEDSTATE.OUT;
+        } else if(INFEEDSTATUS == INFEEDSTATE.NOTGOING){
+            INFEEDSTATUS = INFEEDSTATE.NOTGOING;
+        }
+        RECENT_TOPHAT_DOWN = gamepad2.dpad_down;
+        RECENT_TOPHAT_UP = gamepad2.dpad_up;
+/*
+        switch (INFEEDSTATUS){
+            case IN:
+                infeed.setPower(MAXINFEEDPOWER);
+                break;
+            case OUT:
+                infeed.setPower(MAXOUTFEEDPOWER);
+                break;
+            case NOTGOING:
+                infeed.setPower(0);
+                break;
+        }
+*/
         if(gamepad2.dpad_down){
             infeed.setPower(MAXINFEEDPOWER);
         } else if(gamepad2.dpad_up) {
@@ -251,7 +240,7 @@ public class TeleOpVoltageBarebones extends OpMode {
          */
         double inputY = Math.abs(gamepad1.left_stick_y) > ACCEPTINPUTTHRESHOLD ? gamepad1.left_stick_y : 0;
         double inputX = Math.abs(gamepad1.left_stick_x) > ACCEPTINPUTTHRESHOLD ? -gamepad1.left_stick_x : 0;
-        double inputC = Math.abs(gamepad1.right_stick_x)> ACCEPTINPUTTHRESHOLD ? -gamepad1.right_stick_x: 0;
+        double inputC = Math.abs(gamepad1.right_stick_x)> ACCEPTINPUTTHRESHOLD ? gamepad1.right_stick_x: 0;
 
         double BIGGERTRIGGER = gamepad1.left_trigger > gamepad1.right_trigger ? gamepad1.left_trigger : gamepad1.right_trigger;
         //Ternary, the larger trigger value is set to the value BIGGERTRIGGER
@@ -261,17 +250,40 @@ public class TeleOpVoltageBarebones extends OpMode {
                 inputY /= 5*BIGGERTRIGGER; //slow down our power inputs
                 inputX /= 5*BIGGERTRIGGER; //slow down our power inputs
                 inputC /= 5*BIGGERTRIGGER; //slow down our power inputs
-            } else if( (Math.abs(inputC) > Math.abs(inputX)) && (Math.abs(inputC) > Math.abs(inputY)) ){ //and if our turing motion is the largest motion vector
+            }
+            if( (Math.abs(inputC) > Math.abs(inputX)) && (Math.abs(inputC) > Math.abs(inputY)) ){ //and if our turing motion is the largest motion vector
                 inputY /= 4*BIGGERTRIGGER; //slow down our power inputs
                 inputX /= 4*BIGGERTRIGGER; //slow down our power inputs
                 inputC /= 4*BIGGERTRIGGER; //slow down our power inputs
-            } else if( (Math.abs(inputX) > Math.abs(inputY)) && (Math.abs(inputX) > Math.abs(inputC)) ){ //and if our strafing motion is the largest motion vector
+            }
+            if( (Math.abs(inputX) > Math.abs(inputY)) && (Math.abs(inputX) > Math.abs(inputC)) ){ //and if our strafing motion is the largest motion vector
                 inputY /= 3*BIGGERTRIGGER; //slow down our power inputs
                 inputX /= 3*BIGGERTRIGGER; //slow down our power inputs
                 inputC /= 3*BIGGERTRIGGER; //slow down our power inputs
             }
         }
         //Use the larger trigger value to scale down the inputs.
+
+        if(!gamepad1.right_bumper && RECENT_DRIVER_RIGHT_BUMPER){
+            if(leftBackWheel.getDirection() == DcMotorSimple.Direction.FORWARD){
+                leftBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
+                leftFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
+                rightFrontWheel.setDirection(DcMotorSimple.Direction.FORWARD);
+                rightBackWheel.setDirection(DcMotorSimple.Direction.FORWARD);
+            } else {
+                leftBackWheel.setDirection(DcMotorSimple.Direction.FORWARD);
+                leftFrontWheel.setDirection(DcMotorSimple.Direction.FORWARD);
+                rightFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
+                rightBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
+            }
+        }
+        if(leftBackWheel.getDirection() == DcMotorSimple.Direction.REVERSE){
+            inputC *= -1;
+        }
+
+        RECENT_DRIVER_RIGHT_BUMPER = gamepad1.right_bumper;
+        // The above code will reverse the motors (and therefore the robot's orientation)
+        // When the driver presses the 'A' button
 
         arcadeMecanum(inputY, inputX, inputC, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
 
@@ -306,6 +318,37 @@ public class TeleOpVoltageBarebones extends OpMode {
         }
         RECENT_B_BUTTON = gamepad2.b;
 
+        if(gamepad2.a){
+            lift.setPower(1);
+        } else if(gamepad2.y){
+            lift.setPower(-.25);
+        } else {
+            lift.setPower(0);
+        }
+
+
+        /*
+          _       _                     _
+         | |     | |                   | |
+         | |_ ___| | ___ _ __ ___   ___| |_ _ __ _   _
+         | __/ _ \ |/ _ \ '_ ` _ \ / _ \ __| '__| | | |
+         | ||  __/ |  __/ | | | | |  __/ |_| |  | |_| |
+          \__\___|_|\___|_| |_| |_|\___|\__|_|   \__, |
+                                                  __/ |
+                                                 |___/
+        */
+        telemetry.addData("LF", leftFrontWheel.getPower());
+        telemetry.addData("LB", leftBackWheel.getPower());
+        telemetry.addData("RF", rightFrontWheel.getPower());
+        telemetry.addData("RB", rightBackWheel.getPower());
+
+        telemetry.addData("Infeed", infeed.getPower() > .1 ? "IN" : infeed.getPower() < -.1 ? "OUT" : "OFF");
+        telemetry.addData("Shooter", SHOOTERSTATUS == SHOOTERSTATE.SHOOTING ? "Shooting" : "Not Shooting");
+        telemetry.addData("turnRight Servo", RIGHTSERVOSTATE);
+        telemetry.addData("turnLeft Servo", LEFTSERVOSTATE);
+        //Ternary, basically it just outputs the Infeed states.
+
+        telemetry.update();
     }
 
     // y - forwards
