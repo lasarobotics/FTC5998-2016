@@ -6,13 +6,13 @@ package org.firstinspires.ftc.teamcode.Current;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  */
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Tele Op", group="TeleOp")
 public class TeleOpCurrent extends OpMode {
-    public double rpmTarget = 2400;
+    public double rpmTarget = 1800;
     public static final double LEFT_SERVO_OFF_VALUE = .3;
     public static final double LEFT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_ON_VALUE = 1;
@@ -89,10 +89,9 @@ public class TeleOpCurrent extends OpMode {
     ColorSensor colorSensorOnSide, colorSensorLeftBottom, colorSensorRightBottom;
     ModernRoboticsI2cGyro gyroSensor;
     public double volts;
-    public double rpm1;
+    public double rpm, rpmOffset;
     public double power;
     public double lastTime, lastEnc1, lastEnc2;
-    public double rpm2;
     DeviceInterfaceModule dim;
     ModernRoboticsI2cRangeSensor range;
     public double SHOOTERMAXVALUE = 1;
@@ -112,8 +111,8 @@ public class TeleOpCurrent extends OpMode {
         shoot2 = hardwareMap.dcMotor.get(SHOOT2NAME);
         infeed = hardwareMap.dcMotor.get(INFEEDNAME);
         infeed.setDirection(DcMotorSimple.Direction.REVERSE);
-        shoot1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT); //allows the shooter to slow down properly
-        shoot2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT); //to avoid the gearboxes getting damaged over time
+//        shoot1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT); //allows the shooter to slow down properly
+//        shoot2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT); //to avoid the gearboxes getting damaged over time
         ballBlockRight = hardwareMap.servo.get(BALLBLOCKRIGHTNAME);
         ballBlockLeft = hardwareMap.servo.get(BALLBLOCKLEFTNAME);
         leftButtonPusher = hardwareMap.servo.get(LEFTPUSHNAME);
@@ -158,63 +157,48 @@ public class TeleOpCurrent extends OpMode {
         //Ternary Operations used to toggle SHOOTERSTATUS
         switch(SHOOTERSTATUS){
             case SHOOTING:
-                volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
-                rpm1 = (Math.abs((shoot1.getCurrentPosition()- lastEnc1)) / (7*4) ) //Rotations
-                            / // Per
-                        ( (System.nanoTime()-lastTime)/(NANOSECONDS_PER_SECOND*60) ); // Minute
-                if(volts > 13.3){
-                    power = 0.40;
-                } else if(volts > 13.1){
-                    power = 0.50;
-                } else if(volts > 12.9){
-                    power = 0.55;
-                } else if(volts > 12.6){
-                    power = 0.60;
-                } else if(volts > 12.3) {
-                    power = 0.70;
-                } else if(volts > 12.0) {
-                    power = 0.80;
-                } else {
-                    power = 0.90;
+                if(shoot1.getPower() == 0){
+                    shoot1.setPower(.75);
+                    shoot2.setPower(.75);
+                    break;
                 }
-                if(rpm1 != 0){
-                    if(rpm1 < rpmTarget - 1200){
-                        shoot1.setPower(power);
-                        shoot2.setPower(power);
-                        telemetry.addData("RPM1", "Just Started");
-                    } else if(rpm1 > rpmTarget+100){
-                        shoot1.setPower(shoot1.getPower() + .01);
-                        shoot2.setPower(shoot1.getPower() + .01);
+                rpm = (((shoot2.getCurrentPosition()- lastEnc2)) / (7*4))  //Rotations
+                            / // Per
+                        ( (System.nanoTime()-lastTime)/(NANOSECONDS_PER_SECOND*60)); // Minute
+                if(rpm != 0){
+                    if(rpm > rpmTarget + 200){
+                        rpmOffset = rpm - rpmTarget;
+                        rpmOffset/=300;
+                        Range.clip(rpmOffset, .01, .05);
+                        shoot1.setPower(shoot1.getPower() - rpmOffset);
+                        shoot2.setPower(shoot1.getPower() - rpmOffset);
                         telemetry.addData("RPM1", "Low");
-                    } else if(rpm1 < rpmTarget-100){
-                        shoot1.setPower(shoot1.getPower() - .01);
-                        shoot2.setPower(shoot1.getPower() - .01);
+                    } else if(rpm < rpmTarget - 200){
+                        rpmOffset = rpmTarget - rpm;
+                        rpmOffset/=300;
+                        Range.clip(rpmOffset, .01, .05);
+                        shoot1.setPower(shoot1.getPower() + rpmOffset);
+                        shoot2.setPower(shoot1.getPower() + rpmOffset);
                         telemetry.addData("RPM1", "High");
                     } else {
                         telemetry.addData("RPM1", "Good");
                     }
                     telemetry.clear();
-                    telemetry.addData("RPM1 Value", rpm1);
-                    telemetry.addData("RPM2 Value", rpm2);
+                    telemetry.addData("RPM Value", rpm);
                     telemetry.addData("RPM Target", rpmTarget);
-                    telemetry.addData("Power by RPM1", shoot1.getPower());
-                    telemetry.addData("Power by RPM2", shoot2.getPower());
+                    telemetry.addData("Power by RPM", shoot1.getPower());
                     telemetry.addData("Power by volts", power);
                     telemetry.update();
                     ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
                     ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
 
-                    lastEnc1 = shoot1.getCurrentPosition();
+                    lastEnc2 = shoot2.getCurrentPosition();
                     lastTime = System.nanoTime();
-                } else {
-                    telemetry.clear();
-                    telemetry.addData("RPM", "At Zero");
-                    telemetry.update();
                 }
                 break;
             case BACK:
-                shoot1.setPower(-.75);
-                shoot2.setPower(-.75);
+                shoot1.setPower(-.5);
+                shoot2.setPower(-.5);
                 ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
                 ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
                 break;
@@ -294,7 +278,7 @@ public class TeleOpCurrent extends OpMode {
         }
         RECENT_X_BUTTON = gamepad2.x;
 
-        if(RECENT_B_BUTTON && !gamepad2.b){
+        if(RECENT_B_BUTTON && !gamepad2.b && !gamepad2.start){
             RIGHTSERVOSTATE = (RIGHTSERVOSTATE== SERVOSTATE.OFF ? SERVOSTATE.ON : SERVOSTATE.OFF);
         }
         switch (LEFTSERVOSTATE){

@@ -48,7 +48,7 @@ public class RPMTest2 extends LinearOpMode
             int rpm1 = Rotations1*(1000/(int)timeelapsed)*60;
             int rpm2 = Rotations2*(1000/(int)timeelapsed)*60;
 
-            telemetry.addData("rpm1", rpm1);
+            telemetry.addData("rpm", rpm1);
             telemetry.addData("rpm2", rpm2);
             telemetry.update();
 
