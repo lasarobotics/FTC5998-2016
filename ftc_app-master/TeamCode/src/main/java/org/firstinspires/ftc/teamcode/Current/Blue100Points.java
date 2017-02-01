@@ -48,8 +48,6 @@ public class Blue100Points extends LinearOpMode {
         robot.Move(110, 1.0);
         robot.AlignToWithinOf(35, 1, .05);
         robot.EnableShot(250, 1.0);
-        sleep(250);
-        robot.EnableShot(750, 1.0);
         robot.StopShooter();
         robot.Move(75, 0.25);
 

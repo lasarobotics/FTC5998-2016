@@ -14,6 +14,8 @@ import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.reference.RPM1Motor;
+
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -54,7 +56,6 @@ public class TeleOpCurrent extends OpMode {
     public boolean RECENT_B_BUTTON = false;
     public boolean RECENT_TOPHAT_DOWN = false;
     public boolean RECENT_TOPHAT_UP = false;
-
     public boolean RECENT_LB = false;
     public boolean RECENT_RB = false;
 
@@ -68,9 +69,8 @@ public class TeleOpCurrent extends OpMode {
     public static final String LEFT2NAME = "l2"; //LX Port 1
     public static final String RIGHT1NAME = "r1";//0A Port 1
     public static final String RIGHT2NAME = "r2";//0A Port 2
-    public static final String BALLBLOCKLEFTNAME = "bl", BALLBLOCKRIGHTNAME = "br"; //MO Ports 3+4
-    public static final double BALLBLOCKLEFTOPEN = 1, BALLBLOCKLEFTCLOSED = 0;
-    public static final double BALLBLOCKRIGHTOPEN = 0, BALLBLOCKRIGHTCLOSED = 1;
+    public static final String BALLBLOCKNAME = "s"; //MO Port 4
+    public static final double BALLBLOCKOPEN = .62, BALLBLOCKCLOSED = 0;
     public static final String SHOOT1NAME = "sh1";//PN Port 1
     public static final String SHOOT2NAME = "sh2";//PN Port 2
     public static final String INFEEDNAME = "in"; //2S Port 2
@@ -85,7 +85,7 @@ public class TeleOpCurrent extends OpMode {
     final double NANOSECONDS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
 
     DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed, lift;
-    Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlockLeft;
+    Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlock;
     ColorSensor colorSensorOnSide, colorSensorLeftBottom, colorSensorRightBottom;
     ModernRoboticsI2cGyro gyroSensor;
     public double volts;
@@ -113,8 +113,7 @@ public class TeleOpCurrent extends OpMode {
         infeed.setDirection(DcMotorSimple.Direction.REVERSE);
 //        shoot1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT); //allows the shooter to slow down properly
 //        shoot2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT); //to avoid the gearboxes getting damaged over time
-        ballBlockRight = hardwareMap.servo.get(BALLBLOCKRIGHTNAME);
-        ballBlockLeft = hardwareMap.servo.get(BALLBLOCKLEFTNAME);
+        ballBlock = hardwareMap.servo.get(BALLBLOCKNAME);
         leftButtonPusher = hardwareMap.servo.get(LEFTPUSHNAME);
         rightButtonPusher = hardwareMap.servo.get(RIGHTPUSHNAME);
 
@@ -131,8 +130,8 @@ public class TeleOpCurrent extends OpMode {
 
         leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
-        ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
-        ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
+        ballBlockRight.setPosition(BALLBLOCKCLOSED);
+        ballBlock.setPosition(BALLBLOCKCLOSED);
         lastEnc2 = 0;
         volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
         power = 1.0;
@@ -157,67 +156,55 @@ public class TeleOpCurrent extends OpMode {
         //Ternary Operations used to toggle SHOOTERSTATUS
         switch(SHOOTERSTATUS){
             case SHOOTING:
-                if(shoot1.getPower() == 0){
-                    shoot1.setPower(.75);
-                    shoot2.setPower(.75);
-                    break;
-                }
+                ballBlock.setPosition(BALLBLOCKOPEN);
                 rpm = (((shoot2.getCurrentPosition()- lastEnc2)) / (7*4))  //Rotations
                             / // Per
                         ( (System.nanoTime()-lastTime)/(NANOSECONDS_PER_SECOND*60)); // Minute
+                rpm = Math.abs(rpm);
                 if(rpm != 0){
-                    if(rpm > rpmTarget + 200){
+                    telemetry.clear();
+                    if(shoot1.getPower() == 0){
+                        telemetry.addData("RPM", "Just Started");
+                        shoot1.setPower(.75);
+                        shoot2.setPower(.75);
+                    } else if(rpm > rpmTarget + 200){
                         rpmOffset = rpm - rpmTarget;
                         rpmOffset/=300;
                         Range.clip(rpmOffset, .01, .05);
                         shoot1.setPower(shoot1.getPower() - rpmOffset);
                         shoot2.setPower(shoot1.getPower() - rpmOffset);
-                        telemetry.addData("RPM1", "Low");
+                        telemetry.addData("RPM", "Low");
                     } else if(rpm < rpmTarget - 200){
                         rpmOffset = rpmTarget - rpm;
                         rpmOffset/=300;
                         Range.clip(rpmOffset, .01, .05);
                         shoot1.setPower(shoot1.getPower() + rpmOffset);
                         shoot2.setPower(shoot1.getPower() + rpmOffset);
-                        telemetry.addData("RPM1", "High");
+                        telemetry.addData("RPM", "High");
                     } else {
-                        telemetry.addData("RPM1", "Good");
+                        telemetry.addData("RPM", "Good");
                     }
-                    telemetry.clear();
                     telemetry.addData("RPM Value", rpm);
-                    telemetry.addData("RPM Target", rpmTarget);
-                    telemetry.addData("Power by RPM", shoot1.getPower());
-                    telemetry.addData("Power by volts", power);
+                    telemetry.addData("Power", shoot1.getPower());
                     telemetry.update();
-                    ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
-                    ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
-
-                    lastEnc2 = shoot2.getCurrentPosition();
-                    lastTime = System.nanoTime();
                 }
                 break;
             case BACK:
                 shoot1.setPower(-.5);
                 shoot2.setPower(-.5);
-                ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
-                ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
+                ballBlock.setPosition(BALLBLOCKOPEN);
                 break;
             default:
                 shoot1.setPower(0);
                 shoot2.setPower(0);
-                ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
-                ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
+                ballBlock.setPosition(BALLBLOCKCLOSED);
         }
+        lastEnc2 = shoot2.getCurrentPosition();
+        lastTime = System.nanoTime();
         RECENT_LB = gamepad2.left_bumper;
         RECENT_RB = gamepad2.right_bumper;
-        /*
-          _        __              _
-         (_)      / _|            | |
-          _ _ __ | |_ ___  ___  __| |
-         | | '_ \|  _/ _ \/ _ \/ _` |
-         | | | | | ||  __/  __/ (_| |
-         |_|_| |_|_| \___|\___|\__,_|
-        */
+
+
         if(gamepad2.dpad_down){
             infeed.setPower(MAXINFEEDPOWER);
         } else if(gamepad2.dpad_up) {
@@ -225,6 +212,8 @@ public class TeleOpCurrent extends OpMode {
         } else {
             infeed.setPower(0);
         }
+
+
         /*
               _      _
              | |    (_)
@@ -266,27 +255,23 @@ public class TeleOpCurrent extends OpMode {
          |___/\___|_|    \_/ \___/
          */
 
-        if(RECENT_X_BUTTON && !gamepad2.x){
+        if(RECENT_X_BUTTON && !gamepad2.x)
             LEFTSERVOSTATE = (LEFTSERVOSTATE == SERVOSTATE.OFF ? SERVOSTATE.ON : SERVOSTATE.OFF);
-        }
         switch (RIGHTSERVOSTATE){
             case ON:
-                leftButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
-                break;
+                leftButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE); break;
             case OFF:
-                leftButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+                leftButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE); break;
         }
         RECENT_X_BUTTON = gamepad2.x;
 
-        if(RECENT_B_BUTTON && !gamepad2.b && !gamepad2.start){
+        if(RECENT_B_BUTTON && !gamepad2.b && !gamepad2.start)
             RIGHTSERVOSTATE = (RIGHTSERVOSTATE== SERVOSTATE.OFF ? SERVOSTATE.ON : SERVOSTATE.OFF);
-        }
         switch (LEFTSERVOSTATE){
             case ON:
-                rightButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
-                break;
+                rightButtonPusher.setPosition(LEFT_SERVO_ON_VALUE); break;
             case OFF:
-                rightButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+                rightButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE); break;
         }
         RECENT_B_BUTTON = gamepad2.b;
 

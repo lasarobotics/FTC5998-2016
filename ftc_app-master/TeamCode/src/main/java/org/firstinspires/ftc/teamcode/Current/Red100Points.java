@@ -20,8 +20,6 @@ public class Red100Points extends LinearOpMode {
         robot.ShootSmart();
         robot.Move(65, 1.0);
         robot.EnableShot(250, 1);
-        sleep(100);
-        robot.EnableShot(1000, 1);
         robot.StopShooter();
         robot.DiagonalForwardsLeft(25, 1);
         sleep(100);

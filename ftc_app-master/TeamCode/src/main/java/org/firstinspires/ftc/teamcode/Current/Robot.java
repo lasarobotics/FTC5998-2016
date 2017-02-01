@@ -48,9 +48,8 @@ public class Robot {
     public static final String LEFT2NAME = "l2"; //LX Port 1
     public static final String RIGHT1NAME = "r1";//0A Port 1
     public static final String RIGHT2NAME = "r2";//0A Port 2
-    public static final String BALLBLOCKLEFTNAME = "bl", BALLBLOCKRIGHTNAME = "br"; //MO Ports 3+4
-    public static final double BALLBLOCKLEFTOPEN = 1, BALLBLOCKLEFTCLOSED = 0;
-    public static final double BALLBLOCKRIGHTOPEN = 0, BALLBLOCKRIGHTCLOSED = 1;
+    public static final String BALLBLOCKNAME = "s"; //MO Port 4
+    public static final double BALLBLOCKOPEN = .65, BALLBLOCKCLOSED = 0;
     public static final String SHOOT1NAME = "sh1";//PN Port 1
     public static final String SHOOT2NAME = "sh2";//PN Port 2
     public static final String INFEEDNAME = "in"; //2S Port 2
@@ -65,7 +64,7 @@ public class Robot {
     public VoltageSensor voltageGetter;
 
     public DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed, lift;
-    public Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlockLeft;
+    public Servo leftButtonPusher, rightButtonPusher, ballBlock;
     public ColorSensor colorSensorOnSide, colorSensorBottom;
     public ModernRoboticsI2cGyro gyroSensor;
     public DeviceInterfaceModule dim;
@@ -101,15 +100,13 @@ public class Robot {
         infeed = hardwareMap.dcMotor.get(INFEEDNAME);
         infeed.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        ballBlockRight = hardwareMap.servo.get(BALLBLOCKRIGHTNAME);
-        ballBlockLeft = hardwareMap.servo.get(BALLBLOCKLEFTNAME);
+        ballBlock = hardwareMap.servo.get(BALLBLOCKNAME);
         leftButtonPusher = hardwareMap.servo.get(LEFTPUSHNAME);
         rightButtonPusher = hardwareMap.servo.get(RIGHTPUSHNAME);
 
         leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
-        ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
-        ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
+        ballBlock.setPosition(BALLBLOCKCLOSED);
         voltageGetter = hardwareMap.voltageSensor.get("Motor Controller 1");
 
         range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "r");
@@ -928,20 +925,21 @@ public class Robot {
         shoot2.setPower(power);
     }
     public void EnableShot(double sensor, double power){
-        infeedOn = true;
         if(!l.opModeIsActive())
             Finish();
-        ballBlockLeft.setPosition(BALLBLOCKLEFTOPEN);
-        ballBlockRight.setPosition(BALLBLOCKRIGHTOPEN);
-        infeed.setPower(power);
         infeed.setPower(power);
         try{
-            Thread.sleep((long)sensor);
+            Thread.sleep(750);
         } catch (InterruptedException e){
             e.printStackTrace();
         }
-        ballBlockLeft.setPosition(BALLBLOCKLEFTCLOSED);
-        ballBlockRight.setPosition(BALLBLOCKRIGHTCLOSED);
+        ballBlock.setPosition(BALLBLOCKOPEN);
+        try{
+            Thread.sleep(1250);
+        } catch (InterruptedException e){
+            e.printStackTrace();
+        }
+        ballBlock.setPosition(BALLBLOCKCLOSED);
         infeed.setPower(0);
         infeedOn = false;
     }
