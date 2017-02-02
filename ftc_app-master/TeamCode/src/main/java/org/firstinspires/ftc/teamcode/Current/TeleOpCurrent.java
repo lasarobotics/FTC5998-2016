@@ -3,7 +3,6 @@ ADB guide can be found at:
 https://ftcprogramming.wordpress.com/2015/11/30/building-ftc_app-wirelessly/
 */
 package org.firstinspires.ftc.teamcode.Current;
-import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -13,8 +12,6 @@ import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
-
-import org.firstinspires.ftc.teamcode.reference.RPM1Motor;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -85,13 +82,12 @@ public class TeleOpCurrent extends OpMode {
     final double NANOSECONDS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
 
     DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed, lift;
-    Servo leftButtonPusher, rightButtonPusher, ballBlockRight, ballBlock;
+    Servo leftButtonPusher, rightButtonPusher, ballBlock;
     ColorSensor colorSensorOnSide, colorSensorLeftBottom, colorSensorRightBottom;
-    ModernRoboticsI2cGyro gyroSensor;
     public double volts;
     public double rpm, rpmOffset;
     public double power;
-    public double lastTime, lastEnc1, lastEnc2;
+    public double lastTime, lastEnc1;
     DeviceInterfaceModule dim;
     ModernRoboticsI2cRangeSensor range;
     public double SHOOTERMAXVALUE = 1;
@@ -130,9 +126,8 @@ public class TeleOpCurrent extends OpMode {
 
         leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
-        ballBlockRight.setPosition(BALLBLOCKCLOSED);
         ballBlock.setPosition(BALLBLOCKCLOSED);
-        lastEnc2 = 0;
+        lastEnc1 = 0;
         volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
         power = 1.0;
     }
@@ -157,38 +152,59 @@ public class TeleOpCurrent extends OpMode {
         switch(SHOOTERSTATUS){
             case SHOOTING:
                 ballBlock.setPosition(BALLBLOCKOPEN);
-                rpm = (((shoot2.getCurrentPosition()- lastEnc2)) / (7*4))  //Rotations
+                rpm = (((shoot1.getCurrentPosition() - lastEnc1)) / (7*4))  //Rotations
                             / // Per
                         ( (System.nanoTime()-lastTime)/(NANOSECONDS_PER_SECOND*60)); // Minute
                 rpm = Math.abs(rpm);
-                if(rpm != 0){
+                double volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
+                double power = 1.00;
+                if(volts > 13.3){
+                    power = 0.40;
+                } else if(volts > 13.1){
+                    power = 0.50;
+                } else if(volts > 12.9){
+                    power = 0.55;
+                } else if(volts > 12.6){
+                    power = 0.60;
+                } else if(volts > 12.3) {
+                    power = 0.70;
+                } else if(volts > 12.0) {
+                    power = 0.80;
+                } else {
+                    power = 0.90;
+                }
+                shoot1.setPower(power);
+                shoot2.setPower(power);
+                break;
+            /*
+                if(shoot1.getPower() == 0){
+                    telemetry.addData("RPM", "Just Started");
+                    telemetry.update();
+                    shoot1.setPower(.75);
+                    shoot2.setPower(.75);
+                } else {
                     telemetry.clear();
-                    if(shoot1.getPower() == 0){
-                        telemetry.addData("RPM", "Just Started");
-                        shoot1.setPower(.75);
-                        shoot2.setPower(.75);
-                    } else if(rpm > rpmTarget + 200){
+
+                    if(rpm > rpmTarget + 200){
                         rpmOffset = rpm - rpmTarget;
                         rpmOffset/=300;
-                        Range.clip(rpmOffset, .01, .05);
-                        shoot1.setPower(shoot1.getPower() - rpmOffset);
-                        shoot2.setPower(shoot1.getPower() - rpmOffset);
+                        Range.clip(rpmOffset, .01, .01);
+                        shoot1.setPower(shoot1.getPower() - .01);
+                        shoot2.setPower(shoot1.getPower() - .01);
                         telemetry.addData("RPM", "Low");
                     } else if(rpm < rpmTarget - 200){
                         rpmOffset = rpmTarget - rpm;
                         rpmOffset/=300;
-                        Range.clip(rpmOffset, .01, .05);
-                        shoot1.setPower(shoot1.getPower() + rpmOffset);
-                        shoot2.setPower(shoot1.getPower() + rpmOffset);
+                        Range.clip(rpmOffset, .01, .01);
+                        shoot1.setPower(shoot1.getPower() + .01);
+                        shoot2.setPower(shoot1.getPower() + .01);
                         telemetry.addData("RPM", "High");
                     } else {
                         telemetry.addData("RPM", "Good");
                     }
-                    telemetry.addData("RPM Value", rpm);
-                    telemetry.addData("Power", shoot1.getPower());
-                    telemetry.update();
                 }
                 break;
+            */
             case BACK:
                 shoot1.setPower(-.5);
                 shoot2.setPower(-.5);
@@ -199,7 +215,12 @@ public class TeleOpCurrent extends OpMode {
                 shoot2.setPower(0);
                 ballBlock.setPosition(BALLBLOCKCLOSED);
         }
-        lastEnc2 = shoot2.getCurrentPosition();
+        telemetry.addData("Pos 2", shoot2.getCurrentPosition());
+        telemetry.addData("Pos 1", shoot1.getCurrentPosition());
+        telemetry.addData("RPM Value", rpm);
+        telemetry.addData("Power", shoot1.getPower());
+        telemetry.update();
+        lastEnc1 = shoot1.getCurrentPosition();
         lastTime = System.nanoTime();
         RECENT_LB = gamepad2.left_bumper;
         RECENT_RB = gamepad2.right_bumper;
