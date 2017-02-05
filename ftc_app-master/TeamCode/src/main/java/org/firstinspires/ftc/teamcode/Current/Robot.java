@@ -39,10 +39,23 @@ public class Robot {
     public final double cmPerInch = 2.54;
     public final double width = 31.75;
     public final double ticksToStrafeDistance = 2000/(172*cmPerInch);
+
     //The Above Values lets us convert encoder ticks to centimeters per travelled, as shown below.
 
     public final double cmPerTick = (wheelDiameter / (ticksPerRev * gearBoxOne * gearBoxTwo * gearBoxThree)) * cmPerInch;
-    //Allows us to drive our roobt with accuracy to the centiment
+    //Allows us to drive our roobt with accuracy to the centimeter
+
+    double targPerSecond = 1950;
+    double timeWait = .33; //in seconds
+    /*
+    * PWR  Made/Shot
+    * .2   4   / 10
+    * .33  9   / 10
+    * .5   9   / 10
+    *  1   10  / 10
+    * */
+    double target = targPerSecond * timeWait; //Target Rotations per second
+
 
     public static final String LEFT1NAME = "l1"; //LX Port 2
     public static final String LEFT2NAME = "l2"; //LX Port 1
@@ -204,9 +217,7 @@ public class Robot {
         } else {
             infeed.setPower(0);
         }
-        if(shooterOn){
-            ShootSmart();
-        } else {
+        if(!shooterOn){
             shoot1.setPower(0);
             shoot2.setPower(0);
         }
@@ -219,7 +230,41 @@ public class Robot {
         int LBPos = Math.abs(leftBackWheel.getCurrentPosition());
         int LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
         double avg = (RBPos + LBPos + RFPos + LFPos)/4;
+        double lastTime = l.getRuntime(),
+                deltaEnc1 = 0,
+                deltaEnc2 = 0,
+                pastEnc1 = shoot1.getCurrentPosition(),
+                pastEnc2 = shoot2.getCurrentPosition(),
+                percentError,
+                DeltaAvg;
         while(avg < ticks && l.opModeIsActive()) {
+            if(shooterOn){
+                if(shoot1.getPower() == 0) {
+                    shoot1.setPower(power);
+                    shoot2.setPower(power);
+                    break;
+                } else if( !((l.getRuntime() - timeWait) < lastTime)){
+                    deltaEnc1 = Math.abs(Math.abs(shoot1.getCurrentPosition())-pastEnc1);
+                    deltaEnc2 = Math.abs(Math.abs(shoot2.getCurrentPosition())-pastEnc2);
+                    DeltaAvg = (deltaEnc1 + deltaEnc2) / 2;
+                    percentError = ((DeltaAvg - target) / DeltaAvg);
+
+                    power = Range.clip( power - percentError / 5 , -1, 1);
+                    shoot1.setPower(power);
+                    shoot2.setPower(power);
+                    l.telemetry.clear();
+                    l.telemetry.addData("Delta Avg", DeltaAvg);
+                    l.telemetry.addData("Target", target);
+                    l.telemetry.addData("Power", shoot1.getPower());
+                    l.telemetry.addData("Delta 1", deltaEnc1);
+                    l.telemetry.addData("Delta 2", deltaEnc2);
+                    l.telemetry.addData("Percent Error", percentError);
+                    l.telemetry.update();
+                    pastEnc1 = Math.abs(shoot1.getCurrentPosition());
+                    pastEnc2 = Math.abs(shoot2.getCurrentPosition());
+                    lastTime = l.getRuntime();
+                }
+            }
             sensorsInfo();
             setDrivePower(power);
             RBPos = Math.abs(rightBackWheel.getCurrentPosition());
