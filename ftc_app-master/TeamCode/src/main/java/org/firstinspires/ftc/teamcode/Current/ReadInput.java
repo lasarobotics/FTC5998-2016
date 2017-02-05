@@ -19,13 +19,14 @@ public class ReadInput extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         robot.initialize(ReadInput.this, hardwareMap, telemetry, true);
+        String FILE_DIR = "/Download";
+        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + FILE_DIR, "route.txt");
+        Scanner s = null;
         while (!isStarted()) {
             robot.sensorsInfo();
         }
         waitForStart();
-        String FILE_DIR = "/Download";
-        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + FILE_DIR, "route.txt");
-        Scanner s = null;
+
         try {
             s = new Scanner(file);
             while (s.hasNextDouble()) {
