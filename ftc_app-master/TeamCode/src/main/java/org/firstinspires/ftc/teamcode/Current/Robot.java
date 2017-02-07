@@ -162,13 +162,6 @@ public class Robot {
 
     }
 
-    public void setDrivePower(double power) {
-        leftBackWheel.setPower(power);
-        leftFrontWheel.setPower(power);
-        rightBackWheel.setPower(power);
-        rightFrontWheel.setPower(power);
-    }
-
     public void ResetDriveEncoders(){
         leftBackWheel.setMode(DcMotor.RunMode.RESET_ENCODERS);
         leftFrontWheel.setMode(DcMotor.RunMode.RESET_ENCODERS);
@@ -211,6 +204,12 @@ public class Robot {
         TurnRightAbsolute(expected - threshold, power);
     }
 
+    public void setDrivePower(double power) {
+        leftBackWheel.setPower(power);
+        leftFrontWheel.setPower(power);
+        rightBackWheel.setPower(power);
+        rightFrontWheel.setPower(power);
+    }
     public void Move(double sensor, double power) {
         if(infeedOn){
             infeed.setPower(1);
@@ -306,9 +305,8 @@ public class Robot {
             avg = (RBPos + LBPos + RFPos + LFPos) / 4;
         }
     }
-
     public void ForwardsPLoop(double sensor, double maxPower) {
-        //Max Power should be normally set to 1, but for very precise Movements a value of .25 or lower is reccomended.
+        //Max Power should be normally set to 1, but for very precise Movements a value of .diagonalBrokeThreshold or lower is reccomended.
         if(infeedOn){
             infeed.setPower(1);
         } else {
@@ -346,7 +344,7 @@ public class Robot {
         ForwardsPLoop(sensor, 1.0);
     }
     public void BackwardsPLoop(double sensor, double maxPower) {
-        //Max Power should be normally set to 1, but for very precise Movements a value of .25 or lower is reccomended.
+        //Max Power should be normally set to 1, but for very precise Movements a value of .diagonalBrokeThreshold or lower is reccomended.
         if(infeedOn){
             infeed.setPower(1);
         } else {
@@ -383,6 +381,7 @@ public class Robot {
     public void BackwardsPLoop(double sensor){
         BackwardsPLoop(sensor, 1.0);
     }
+
     public void TurnLeftPLoop(double degrees, double maxPower){
         //Max Power should be normally set to .5, but for very precise turns a value of .05 is reccomended.
         if(infeedOn){
@@ -409,35 +408,6 @@ public class Robot {
         }
         setDrivePower(0);
     }
-
-    public void TurnRightPLoop(double degrees, double maxPower){
-        //Max Power should be normally set to .5, but for very precise turns a value of .05 is reccomended.
-        if(infeedOn){
-            infeed.setPower(1);
-        } else {
-            infeed.setPower(0);
-        }
-        if(shooterOn){
-            ShootSmart();
-        } else {
-            shoot1.setPower(0);
-            shoot2.setPower(0);
-        }
-        if(!l.opModeIsActive())
-            Finish();
-        double power;
-        while(navX.getYaw() <= degrees && l.opModeIsActive()){
-            sensorsInfo();
-            power = Range.clip((degrees - navX.getYaw())/degrees, .05, maxPower);
-            rightBackWheel.setPower(power);
-            rightFrontWheel.setPower(power);
-            leftBackWheel.setPower(-power);
-            leftFrontWheel.setPower(-power);
-        }
-        setDrivePower(0);
-    }
-
-
     public void TurnLeftAbsolute(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);
@@ -517,7 +487,6 @@ public class Robot {
         setDrivePower(0);
 
     }
-
     public void TurnLeftEnc(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);
@@ -558,6 +527,32 @@ public class Robot {
         setDrivePower(0);
     }
 
+    public void TurnRightPLoop(double degrees, double maxPower){
+        //Max Power should be normally set to .5, but for very precise turns a value of .05 is reccomended.
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
+        if(!l.opModeIsActive())
+            Finish();
+        double power;
+        while(navX.getYaw() <= degrees && l.opModeIsActive()){
+            sensorsInfo();
+            power = Range.clip((degrees - navX.getYaw())/degrees, .05, maxPower);
+            rightBackWheel.setPower(power);
+            rightFrontWheel.setPower(power);
+            leftBackWheel.setPower(-power);
+            leftFrontWheel.setPower(-power);
+        }
+        setDrivePower(0);
+    }
     public void TurnRightAbsolute(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);
@@ -629,7 +624,6 @@ public class Robot {
         }
         setDrivePower(0);
     }
-
     public void TurnRightEnc(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);
@@ -669,6 +663,7 @@ public class Robot {
         } while(avg < ticks && l.opModeIsActive());
         setDrivePower(0);
     }
+
     public void StrafeLeft(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);
@@ -813,7 +808,6 @@ public class Robot {
         }
         setDrivePower(0);
     }
-
     public void LineSearch(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);
@@ -876,7 +870,6 @@ public class Robot {
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
     }
-
     public void PressBeacon(team t){
         if(infeedOn){
             infeed.setPower(1);
@@ -996,7 +989,133 @@ public class Robot {
         l.stop();
     }
 
-    public void DiagonalForwardsLeft(double sensor, double power){
+    double diagonalBrokeThreshold = 17.5;
+
+    public void handleCollision(double sensor){
+        Move(15, -1.0);
+        StrafeToWall(sensor, .20);
+        AlignToWithin(1.5, .05);
+        Move(25, 1.0);
+    }
+    public boolean DiagonalForwardsLeft(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
+        double pastRange = 254;
+        if(!l.opModeIsActive())
+            Finish();
+        double angStart = navX.getYaw();
+        while(pastRange > sensor && l.opModeIsActive() && Math.abs(navX.getYaw() - angStart) < diagonalBrokeThreshold){
+            sensorsInfo();
+            pastRange = getRange(pastRange);
+            arcadeMecanum(1, -1, 0);
+        }
+        if(Math.abs(navX.getYaw() - angStart) > diagonalBrokeThreshold){
+            handleCollision(sensor);
+            setDrivePower(0);
+            return true;
+        }
+        setDrivePower(0);
+        return false;
+    }
+    public boolean DiagonalForwardsLeft(double sensor, double yIn, double xIn) {
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
+        double pastRange = 254;
+        if(!l.opModeIsActive())
+            Finish();
+
+        double angStart = navX.getYaw();
+        while(pastRange > sensor && Math.abs(navX.getYaw() - angStart) < diagonalBrokeThreshold && l.opModeIsActive()){
+            sensorsInfo();
+            pastRange = getRange(pastRange);
+            arcadeMecanum(yIn, -xIn, 0);
+        }
+        if(Math.abs(navX.getYaw() - angStart) > diagonalBrokeThreshold){
+            handleCollision(sensor);
+            setDrivePower(0);
+            return true;
+        }
+        setDrivePower(0);
+        return false;
+    }
+
+    public boolean DiagonalForwardsLeftCoast(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
+        double pastRange = 254;
+        if(!l.opModeIsActive())
+            Finish();
+        double angStart = navX.getYaw();
+        while(pastRange > sensor && Math.abs(navX.getYaw() - angStart) < diagonalBrokeThreshold && l.opModeIsActive()){
+            sensorsInfo();
+            pastRange = getRange(pastRange);
+            arcadeMecanum(power, -power, 0);
+        }
+        if(Math.abs(navX.getYaw() - angStart) > diagonalBrokeThreshold){
+            handleCollision(sensor);
+            setDrivePower(0);
+            return true;
+        }
+        return false;
+    }
+    public boolean DiagonalForwardsRight(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
+        double pastRange = 254;
+        if(!l.opModeIsActive())
+            Finish();
+        double angStart = navX.getYaw();
+        while(pastRange > sensor && l.opModeIsActive() && (Math.abs(navX.getYaw() - angStart) < diagonalBrokeThreshold)){
+            sensorsInfo();
+            pastRange = getRange(pastRange);
+            arcadeMecanum(power, power, 0);
+            return true;
+        }
+        if(Math.abs(navX.getYaw() - angStart) > diagonalBrokeThreshold){
+            handleCollision(sensor);
+            return true;
+        }
+
+        setDrivePower(0);
+        return false;
+    }
+    public boolean DiagonalForwardsRight(double sensor, double yIn, double xIn){
         if(infeedOn){
             infeed.setPower(1);
         } else {
@@ -1014,12 +1133,14 @@ public class Robot {
         while(pastRange > sensor && l.opModeIsActive()){
             sensorsInfo();
             pastRange = getRange(pastRange);
-            arcadeMecanum(1, -1, 0);
+            arcadeMecanum(yIn, xIn, 0);
+            setDrivePower(0);
+            return true;
         }
         setDrivePower(0);
+        return false;
     }
-
-    public void DiagonalForwardsRight(double sensor, double power){
+    public boolean DiagonalForwardsRightCoast(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);
         } else {
@@ -1038,11 +1159,11 @@ public class Robot {
             sensorsInfo();
             pastRange = getRange(pastRange);
             arcadeMecanum(power, power, 0);
+            return true;
         }
-        setDrivePower(0);
+        return false;
     }
-
-    public void DiagonalBackwardsRight(double sensor, double power){
+    public boolean DiagonalBackwardsRight(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);
         } else {
@@ -1061,10 +1182,38 @@ public class Robot {
             sensorsInfo();
             pastRange = getRange(pastRange);
             arcadeMecanum(-power, power, 0);
+            setDrivePower(0);
+            return true;
         }
         setDrivePower(0);
+        return false;
     }
-    public void DiagonalBackwardsRightCoast(double sensor, double power){
+    public boolean DiagonalBackwardsRight(double sensor, double yIn, double xIn){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
+        double pastRange = 254;
+        if(!l.opModeIsActive())
+            Finish();
+        while(pastRange > sensor && l.opModeIsActive()){
+            sensorsInfo();
+            pastRange = getRange(pastRange);
+            arcadeMecanum(-yIn, xIn, 0);
+            setDrivePower(0);
+            return true;
+        }
+        setDrivePower(0);
+        return false;
+    }
+    public boolean DiagonalBackwardsRightCoast(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);
         } else {
@@ -1083,9 +1232,11 @@ public class Robot {
             sensorsInfo();
             pastRange = getRange(pastRange);
             arcadeMecanum(-power, power, 0);
+            return true;
         }
+        return false;
     }
-    public void DiagonalBackwardsLeftCoast(double sensor, double power){
+    public boolean DiagonalBackwardsLeft(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);
         } else {
@@ -1100,36 +1251,23 @@ public class Robot {
         double pastRange = 254;
         if(!l.opModeIsActive())
             Finish();
-        while(pastRange > sensor && l.opModeIsActive()){
+        double angStart = navX.getYaw();
+        while(pastRange > sensor && Math.abs(navX.getYaw() - angStart) < diagonalBrokeThreshold && l.opModeIsActive()){
             sensorsInfo();
             pastRange = getRange(pastRange);
             arcadeMecanum(-power, -power, 0);
         }
-    }
 
-    public void DiagonalBackwardsLeft(double sensor, double power){
-        if(infeedOn){
-            infeed.setPower(1);
-        } else {
-            infeed.setPower(0);
-        }
-        if(shooterOn){
-            ShootSmart();
-        } else {
-            shoot1.setPower(0);
-            shoot2.setPower(0);
-        }
-        double pastRange = 254;
-        if(!l.opModeIsActive())
-            Finish();
-        while(pastRange > sensor && l.opModeIsActive()){
-            sensorsInfo();
-            pastRange = getRange(pastRange);
-            arcadeMecanum(-power, -power, 0);
+        if(Math.abs(navX.getYaw() - angStart) > 25){
+            handleCollision(sensor);
+            setDrivePower(0);
+            return true;
         }
         setDrivePower(0);
+        return false;
     }
-    public void DiagonalBackwardsLeft(double sensor, double yIn, double xIn){
+
+    public boolean DiagonalBackwardsLeft(double sensor, double yIn, double xIn){
         if(infeedOn){
             infeed.setPower(1);
         } else {
@@ -1144,13 +1282,48 @@ public class Robot {
         double pastRange = 254;
         if(!l.opModeIsActive())
             Finish();
-        while(pastRange > sensor && l.opModeIsActive()){
+        double angStart = navX.getYaw();
+        while(pastRange > sensor && Math.abs(navX.getYaw() - angStart) < diagonalBrokeThreshold && l.opModeIsActive()){
             sensorsInfo();
             pastRange = getRange(pastRange);
             arcadeMecanum(-yIn, -xIn, 0);
         }
+        if(Math.abs(navX.getYaw() - angStart) > diagonalBrokeThreshold){
+            handleCollision(sensor);
+            return true;
+        }
         setDrivePower(0);
+        return false;
     }
+    public boolean DiagonalBackwardsLeftCoast(double sensor, double power){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(shooterOn){
+            ShootSmart();
+        } else {
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
+        double pastRange = 254;
+        if(!l.opModeIsActive())
+            Finish();
+
+        double angStart = navX.getYaw();
+        while(pastRange > sensor && Math.abs(navX.getYaw() - angStart) < diagonalBrokeThreshold && l.opModeIsActive()){
+            sensorsInfo();
+            pastRange = getRange(pastRange);
+            arcadeMecanum(-power, -power, 0);
+        }
+        if(Math.abs(navX.getYaw() - angStart) > diagonalBrokeThreshold){
+            handleCollision(sensor);
+            return true;
+        }
+        return false;
+    }
+
 
     public void arcadeMecanum(double y, double x, double c) {
         double leftFrontVal = y + x + c;
