@@ -275,9 +275,9 @@ public class TeleOpRPM extends OpMode {
             LEFTSERVOSTATE = (LEFTSERVOSTATE == SERVOSTATE.OFF ? SERVOSTATE.ON : SERVOSTATE.OFF);
         switch (RIGHTSERVOSTATE){
             case ON:
-                leftButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE); break;
+                rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE); break;
             case OFF:
-                leftButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE); break;
+                rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE); break;
         }
         RECENT_X_BUTTON = gamepad2.x;
 
@@ -285,9 +285,9 @@ public class TeleOpRPM extends OpMode {
             RIGHTSERVOSTATE = (RIGHTSERVOSTATE== SERVOSTATE.OFF ? SERVOSTATE.ON : SERVOSTATE.OFF);
         switch (LEFTSERVOSTATE){
             case ON:
-                rightButtonPusher.setPosition(LEFT_SERVO_ON_VALUE); break;
+                leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE); break;
             case OFF:
-                rightButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE); break;
+                leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE); break;
         }
         RECENT_B_BUTTON = gamepad2.b;
 
