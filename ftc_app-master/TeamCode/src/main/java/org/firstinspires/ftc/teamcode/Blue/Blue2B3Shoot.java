@@ -57,7 +57,7 @@ public class Blue2B3Shoot extends LinearOpMode{
         //Press the second beacon
 
         robot.StrafeFromWall(13, 1.00);
-        robot.ShootSmart();
+        robot.ShootByVoltage();
 //        robot.ShootAtPower(0, 0.80); //Turn on the shooter so it can speed up without wasting time
         robot.TurnRight(35, 0.10);
         robot.Move(145, 1.00);

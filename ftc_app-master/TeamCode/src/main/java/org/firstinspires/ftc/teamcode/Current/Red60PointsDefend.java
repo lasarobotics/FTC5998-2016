@@ -17,7 +17,7 @@ public class Red60PointsDefend extends LinearOpMode {
             robot.sensorsInfo();
         }
         waitForStart();
-        robot.ShootSmart();
+        robot.ShootByVoltage();
         robot.Move(65, 1.0);
         robot.EnableShot(250, 1);
         robot.StopShooter();

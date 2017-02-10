@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.Current;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 /**
@@ -16,7 +15,7 @@ public class ShootFarParkRampR extends LinearOpMode {
         robot.initialize(ShootFarParkRampR.this, hardwareMap, telemetry, true);
         waitForStart();
         sleep(1000*5);
-        robot.ShootSmart();
+        robot.ShootByVoltage();
         robot.Move(180, .5);
         robot.EnableShot(250, 1);
         sleep(100);

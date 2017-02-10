@@ -16,7 +16,7 @@ public class ShootFarPark extends LinearOpMode {
         waitForStart();
         sleep(1000*10);
         robot.Move(180, .5);
-        robot.ShootSmart();
+        robot.ShootByVoltage();
         robot.EnableShot(2000, 1.00);
         robot.StopShooter();
         robot.Move(60, .5);

@@ -21,7 +21,8 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * Created by Ethan Schaffer on 1/11/2017.
+ * Created by Ethan Schaffer and team 5998
+ * All references to anything with the word "Left" in it works similarly or identically for any similarly named method "Right".
  */
 
 public class Robot {
@@ -37,22 +38,26 @@ public class Robot {
     public final double gearBoxThree = 1.0;
     public final double wheelDiameter = 4.0 * Math.PI;
     public final double cmPerInch = 2.54;
-    public final double width = 31.75;
-    public final double ticksToStrafeDistance = 2000/(172*cmPerInch);
-
-    //The Above Values lets us convert encoder ticks to centimeters per travelled, as shown below.
-
     public final double cmPerTick = (wheelDiameter / (ticksPerRev * gearBoxOne * gearBoxTwo * gearBoxThree)) * cmPerInch;
     //Allows us to drive our roobt with accuracy to the centimeter
 
-    double targPerSecond = 1950;
+    public final double width = 31.75;
+    // The wheel's width is used to calculate turn distance by Encoder ticks, using our turnLeftEnc method.
+
+    public final double distance = 2000/(172*cmPerInch);
+    //This value isn't too accurate, but it theoretically works.
+
+    //The Above Values lets us convert encoder ticks to centimeters per travelled, as shown below.
+
+    double targPerSecond = 1950; //This is our target RPM
     double timeWait = .33; //in seconds
     /*
-    * PWR  Made/Shot
-    * .2   4   / 10
-    * .33  9   / 10
-    * .5   9   / 10
-    *  1   10  / 10
+    * Our tests showed us that an update rate of 3Hz was the most effective for accuracy.
+    * Update Rate (Hz) Made/Shot
+    * 5                4   / 10
+    * 3                9   / 10
+    * 2                9   / 10
+    * 1                10  / 10
     * */
     double target = targPerSecond * timeWait; //Target Rotations per second
 
@@ -83,11 +88,15 @@ public class Robot {
     public DeviceInterfaceModule dim;
     public ModernRoboticsI2cRangeSensor range;
     public AHRS navX;
-    public static final double LEFT_SERVO_OFF_VALUE = .20;
+    public static final double LEFT_SERVO_OFF_VALUE = .25;
     public static final double LEFT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_ON_VALUE = 1;
-    public static final double RIGHT_SERVO_OFF_VALUE = .20;
+    public static final double RIGHT_SERVO_OFF_VALUE = .25;
     Telemetry t;
+
+    // This method prints out sensor readings to the driver's station.
+    // This is most used for debugging, but it also lets us check the status
+    // of sensors before the start of a match
     public void sensorsInfo(){
         t.clear();
         t.addData("NavX", navX.isConnected() ? navX.getYaw() : "Disconnected");
@@ -97,6 +106,8 @@ public class Robot {
         t.addData("Range CM", range.getDistance(DistanceUnit.CM));
         t.update();
     }
+    // We initialize all of our Motors and Servos locally. This helps our other files maintain readability,
+    // and allows us to change how the hardware map works here or otherwise.
     public void initialize(LinearOpMode lInput, HardwareMap hardwareMap, Telemetry telemetry, boolean navXOn){
         l = lInput;
         t = telemetry;
@@ -123,20 +134,20 @@ public class Robot {
         voltageGetter = hardwareMap.voltageSensor.get("Motor Controller 1");
 
         range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "r");
-//        colorSensorBottom = hardwareMap.get(ModernRoboticsI2cColorSensor.class, "cb");
         colorSensorBottom = hardwareMap.colorSensor.get(COLORLEFTBOTTOMNAME);
 
         colorSensorBottom.setI2cAddress(I2cAddr.create8bit(0x4c));
-//        colorSensorOnSide = hardwareMap.get(ModernRoboticsI2cColorSensor.class, "cs");
         colorSensorOnSide = hardwareMap.colorSensor.get(COLORSIDENAME);
         colorSensorOnSide.setI2cAddress(I2cAddr.create8bit(0x3c));
         colorSensorBottom.enableLed(true);
         colorSensorOnSide.enableLed(false);
 
         dim = hardwareMap.get(DeviceInterfaceModule.class, DIMNAME);
-        //Based on the value of autoRouteChosen, we set the stateOrder array to the correct value
-        navX = new AHRS(dim, hardwareMap.i2cDevice.get("n").getPort(), AHRS.DeviceDataType.kProcessedData, (byte)50);
+        // If the navXOn boolean is input as false, we can skip this step.
+        // This will only be the case in a fraction of our routes,
+        // but it is a good fallback if the navX is broken.
         if(navXOn){
+            navX = new AHRS(dim, hardwareMap.i2cDevice.get("n").getPort(), AHRS.DeviceDataType.kProcessedData, (byte)50);
             navX.zeroYaw();
             while ( navX.isCalibrating() && !l.isStopRequested()) {
                 telemetry.addData("Gyro", "Calibrating");
@@ -146,7 +157,8 @@ public class Robot {
                 } else {
                     telemetry.addData("NavX", "Connected!");}
                 telemetry.update();
-            } //This silly looking code above animates a "..." sequence in telemetry, if the gyroscope is still calibrating
+            }
+            // Allow the NavX to calibrate before exiting the
             telemetry.addData("Yaw", navX.getYaw());
             if(!navX.isConnected()){
                 telemetry.addData("NavX", "DISCONNECTED!");
@@ -157,11 +169,14 @@ public class Robot {
             telemetry.addData("NavX", "None");
         }
 
-        colorSensorBottom.enableLed(true); //If you don't set the LED until after the waitForStart(), it doesn't work as well.
+        //We found that if you don't set the LED until after the waitForStart(), it doesn't work as well.
+        colorSensorBottom.enableLed(true);
         colorSensorOnSide.enableLed(false);
-
     }
 
+    // This function resets the encoders of the 4 drive wheels.
+    // We call it at the start of each method that uses drive encoders,
+    // to ensure that our encoders are accurate and in the correct mode.
     public void ResetDriveEncoders(){
         leftBackWheel.setMode(DcMotor.RunMode.RESET_ENCODERS);
         leftFrontWheel.setMode(DcMotor.RunMode.RESET_ENCODERS);
@@ -176,6 +191,9 @@ public class Robot {
         rightBackWheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightFrontWheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
+
+    // This method lets us set strafing power to the motors
+    // such that we strafe either left or right.
     public void setStrafePower(String Direction, double Speed) {
         if(Objects.equals(Direction, "Left"))
         {
@@ -193,23 +211,41 @@ public class Robot {
         }
     }
 
-    public void AlignToWithin(double sensor, double power){
-        TurnRightAbsolute(- sensor, power);
-        TurnLeftAbsolute(sensor, power);
-        TurnRightAbsolute(- sensor, power);
+    // This is our most used, and most useful method.
+    // We use it to turn to within our  threshold angle of 0.
+    // The default power is .05 as that power performed with the best accuracy in our testing.
+    public void AlignToWithin(double threshold){
+        AlignToWithin(threshold, .05);
     }
+
+    // The align to within algorithm uses our team's unique method of non-recovery turning.
+    // Because the robot exits the control loop once the reading is past the target,
+    // we can apply this logic and use it to control our turning to a precise degree of accuracy.
+    public void AlignToWithin(double threshold, double power){
+        TurnRightAbsolute(- threshold, power);
+        TurnLeftAbsolute(threshold, power);
+        TurnRightAbsolute(- threshold, power);
+    }
+
+    // The AlignToWithinOf method aligns to within threshold degrees of expected.
+    // To do this, we subtract or add threshold to the expected reading,
+    // following a similar structure to that of AlignToWithin
     public void AlignToWithinOf(double expected, double threshold, double power){
         TurnRightAbsolute(expected - threshold, power);
         TurnLeftAbsolute(expected + threshold, power);
         TurnRightAbsolute(expected - threshold, power);
     }
 
+    // Sets the same power to all four wheels. This lets us stop and start the robot easily,
+    // and in a more _ way.
     public void setDrivePower(double power) {
         leftBackWheel.setPower(power);
         leftFrontWheel.setPower(power);
         rightBackWheel.setPower(power);
         rightFrontWheel.setPower(power);
     }
+
+    //Using the
     public void Move(double sensor, double power) {
         if(infeedOn){
             infeed.setPower(1);
@@ -243,11 +279,17 @@ public class Robot {
                     shoot2.setPower(power);
                     break;
                 } else if( !((l.getRuntime() - timeWait) < lastTime)){
+                    // We set up RPM handling within the running of our control loop.
+                    // This lets us get more accuracy from our flywheel shooter,
+                    // while saving time by letting us tweak the shooter power
                     deltaEnc1 = Math.abs(Math.abs(shoot1.getCurrentPosition())-pastEnc1);
                     deltaEnc2 = Math.abs(Math.abs(shoot2.getCurrentPosition())-pastEnc2);
                     DeltaAvg = (deltaEnc1 + deltaEnc2) / 2;
+                    // We take the average change in encoder reading ...
                     percentError = ((DeltaAvg - target) / DeltaAvg);
-
+                    // And calculate the percent error based on an expected change,
+                    // which is based on the target speed value.
+                    // Based on this, we add our percent error to the current power ...
                     power = Range.clip( power - percentError / 5 , -1, 1);
                     shoot1.setPower(power);
                     shoot2.setPower(power);
@@ -262,6 +304,7 @@ public class Robot {
                     pastEnc1 = Math.abs(shoot1.getCurrentPosition());
                     pastEnc2 = Math.abs(shoot2.getCurrentPosition());
                     lastTime = l.getRuntime();
+                    // And then store out old times and encoder positions
                 }
             }
             sensorsInfo();
@@ -274,6 +317,11 @@ public class Robot {
         }
         setDrivePower(0);
     }
+
+    // MoveCoast functions like Move, but the drive wheels are not stopped at the end.
+    // This allows for more fluid motion while driving autonomously,
+    // especially on routes like our main blue one where we are aiming for
+    // more fluid motion.
     public void MoveCoast(double sensor, double power) {
         if(infeedOn){
             infeed.setPower(1);
@@ -281,7 +329,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -305,15 +353,19 @@ public class Robot {
             avg = (RBPos + LBPos + RFPos + LFPos) / 4;
         }
     }
+
+
+    // The ForwardsPLoop method slows the robot down
+    // to give us more control of our distance travelled.
     public void ForwardsPLoop(double sensor, double maxPower) {
-        //Max Power should be normally set to 1, but for very precise Movements a value of .diagonalBrokeThreshold or lower is reccomended.
+        //Max Power should be normally set to 1, but for very precise Movements a value of .diagonalBrokeThreshold or lower is recommended.
         if(infeedOn){
             infeed.setPower(1);
         } else {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -340,9 +392,12 @@ public class Robot {
         }
         setDrivePower(0);
     }
+
+    // The default max power is 1.0, or 100%
     public void ForwardsPLoop(double sensor){
         ForwardsPLoop(sensor, 1.0);
     }
+    //Same as forwardsPLoop, but backwards
     public void BackwardsPLoop(double sensor, double maxPower) {
         //Max Power should be normally set to 1, but for very precise Movements a value of .diagonalBrokeThreshold or lower is reccomended.
         if(infeedOn){
@@ -351,7 +406,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -378,10 +433,15 @@ public class Robot {
         }
         setDrivePower(0);
     }
+    // The default max power is 1.0, or 100%
     public void BackwardsPLoop(double sensor){
         BackwardsPLoop(sensor, 1.0);
     }
 
+    // TurnLeftPLoop is designed to use a P style control loop to
+    // turn a bit faster. It doesn't work too well,
+    // but is good if we are in a rush but need more accuracy than
+    // normal turning provides.
     public void TurnLeftPLoop(double degrees, double maxPower){
         //Max Power should be normally set to .5, but for very precise turns a value of .05 is reccomended.
         if(infeedOn){
@@ -390,7 +450,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -408,6 +468,8 @@ public class Robot {
         }
         setDrivePower(0);
     }
+
+    // Turns left to a precise angle, regardless of current lineup.
     public void TurnLeftAbsolute(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);
@@ -415,7 +477,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -432,6 +494,9 @@ public class Robot {
         setDrivePower(0);
 
     }
+
+    // Turns left to an angle based on the current reading.
+    // This is most useful when we are using our file reading code.
     public void TurnLeftRelative(double sensor, double power){
         if(!navX.isConnected()){
             TurnLeftEnc(sensor, .10);
@@ -443,7 +508,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -462,6 +527,8 @@ public class Robot {
         setDrivePower(0);
 
     }
+
+    //  Functions similarly to TurnLeftAbsolute.
     public void TurnLeft(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);
@@ -469,7 +536,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -487,6 +554,11 @@ public class Robot {
         setDrivePower(0);
 
     }
+
+    // Uses Motor Encoders to turn faster, without the reliance on a gyroscope.
+    // This turning tends to be less accurate,
+    // but is good for faster turns that we are making
+    // towards the end of a route.
     public void TurnLeftEnc(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);
@@ -494,7 +566,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -535,7 +607,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -560,7 +632,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -583,7 +655,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -607,7 +679,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -631,7 +703,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -664,6 +736,7 @@ public class Robot {
         setDrivePower(0);
     }
 
+    // The StrafeLeft and StrafeRight methods
     public void StrafeLeft(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);
@@ -671,7 +744,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -679,7 +752,7 @@ public class Robot {
         if(!l.opModeIsActive())
             Finish();
         double ticks = sensor / cmPerTick;
-        ticks *= ticksToStrafeDistance;
+        ticks *= distance;
         int avg = 0;
         rightFrontWheel.setPower(power);
         rightBackWheel.setPower(-power);
@@ -702,7 +775,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -710,7 +783,7 @@ public class Robot {
         if(!l.opModeIsActive())
             Finish();
         double ticks = sensor / cmPerTick;
-        ticks *= ticksToStrafeDistance;
+        ticks *= distance;
         int avg = 0;
         setStrafePower("Right", power);
         do {
@@ -723,6 +796,10 @@ public class Robot {
         } while(avg < ticks && l.opModeIsActive());
         setDrivePower(0);
     }
+
+    // The getRange method filters out bogus range values of 255.
+    // We found that these values were common around other robots
+    // using similar sensors, so wee filter them out.
     public double getRange(double previous){
         double c = range.getDistance(DistanceUnit.CM);
         if(c == 255){
@@ -731,7 +808,10 @@ public class Robot {
             return c;
         }
     }
-    public void ShootSmart(){
+
+    // The ShootByVoltage method uses the battery voltage
+    // to set the shooter to the right power.
+    public void ShootByVoltage(){
         shooterOn = true;
         double volts = voltageGetter.getVoltage();
         double power = 1.00;
@@ -753,11 +833,16 @@ public class Robot {
         shoot1.setPower(power);
         shoot2.setPower(power);
     }
+
+    // The StopShooter method sets the power of the shooter to zero.
+    // It's use is pretty self-evident
     public void StopShooter(){
         shoot1.setPower(0);
         shoot2.setPower(0);
         shooterOn = false;
     }
+
+
     public void StrafeToWall(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);
@@ -765,7 +850,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -783,6 +868,7 @@ public class Robot {
         }
         setDrivePower(0);
     }
+
     public void StrafeFromWall(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);
@@ -790,7 +876,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -808,6 +894,13 @@ public class Robot {
         }
         setDrivePower(0);
     }
+
+    // Finds the white tape line beneath the robot.
+    public void LineSearch(double power){
+        LineSearch(2, power);
+    }
+    // The sensor value is the expected value of
+    // the Color Sensor's Alpha reading.
     public void LineSearch(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);
@@ -815,7 +908,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -828,11 +921,15 @@ public class Robot {
         }
         setDrivePower(0);
     }
+
+    // Follows the same logic as AlignToWithinOf,
     public void StrafeToPrecise(double cm, double threshold, double power){
         StrafeToWall(cm+threshold, power);
         StrafeFromWall(cm-threshold, power);
         StrafeToWall(cm+threshold, power);
     }
+
+    // Presses the beacon without correction.
     public void PressBeaconSimple(team t){
         if(infeedOn){
             infeed.setPower(1);
@@ -840,7 +937,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -870,6 +967,9 @@ public class Robot {
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
     }
+
+    // Presses the beacon so that the color is the same as the team input.
+    // Will correct the beacon if it is the wrong color.
     public void PressBeacon(team t){
         if(infeedOn){
             infeed.setPower(1);
@@ -877,7 +977,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -955,6 +1055,8 @@ public class Robot {
         }
 
     }
+
+    // Sets the shooter to a power based on the parameter input.
     public void ShootAtPower(double power){
         shooterOn = true;
         if(!l.opModeIsActive())
@@ -962,6 +1064,8 @@ public class Robot {
         shoot1.setPower(power);
         shoot2.setPower(power);
     }
+
+    // Turns on the infeed motor, and shoots two particles.
     public void EnableShot(double sensor, double power){
         if(!l.opModeIsActive())
             Finish();
@@ -981,6 +1085,8 @@ public class Robot {
         infeed.setPower(0);
         infeedOn = false;
     }
+
+    // Runs the super.stop() method, and turns off all of the sensors
     public void Finish(){
         navX.close();
         colorSensorOnSide.close();
@@ -989,22 +1095,33 @@ public class Robot {
         l.stop();
     }
 
+    // If the NavX is offset by more than this angle,
+    // the robot will exit the strafing control loop and
+    // run the handleCollision code.
     double diagonalBrokeThreshold = 17.5;
 
+    // We want to back away from whatever dislodged us,
+    // and then strafe to the wall to the same distance as the
+    // DiagonalForwardsLeft was told to.
     public void handleCollision(double sensor){
         Move(15, -1.0);
         StrafeToWall(sensor, .20);
         AlignToWithin(1.5, .05);
+        // Line back up to center.
         Move(25, 1.0);
+        // This will give us a similar outcome to the expected outcome
+        // of the call to DiagonalForwards
     }
-    public boolean DiagonalForwardsLeft(double sensor, double power){
+
+    // DiagonalForwardsLeft will strafe at a diagonal until the
+    public boolean DiagonalForwardsLeft(double distance, double power){
         if(infeedOn){
             infeed.setPower(1);
         } else {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -1013,27 +1130,31 @@ public class Robot {
         if(!l.opModeIsActive())
             Finish();
         double angStart = navX.getYaw();
-        while(pastRange > sensor && l.opModeIsActive() && Math.abs(navX.getYaw() - angStart) < diagonalBrokeThreshold){
+        while(pastRange > distance && l.opModeIsActive() && Math.abs(navX.getYaw() - angStart) < diagonalBrokeThreshold){
             sensorsInfo();
             pastRange = getRange(pastRange);
             arcadeMecanum(1, -1, 0);
         }
         if(Math.abs(navX.getYaw() - angStart) > diagonalBrokeThreshold){
-            handleCollision(sensor);
+            handleCollision(distance);
             setDrivePower(0);
             return true;
         }
         setDrivePower(0);
         return false;
     }
-    public boolean DiagonalForwardsLeft(double sensor, double yIn, double xIn) {
+
+    // This method functions like DiagonalForwardsLeft,
+    // but it takes separate input for the
+    // x and y directions of motion.
+    public boolean DiagonalForwardsLeft(double distance, double yIn, double xIn) {
         if(infeedOn){
             infeed.setPower(1);
         } else {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -1043,13 +1164,13 @@ public class Robot {
             Finish();
 
         double angStart = navX.getYaw();
-        while(pastRange > sensor && Math.abs(navX.getYaw() - angStart) < diagonalBrokeThreshold && l.opModeIsActive()){
+        while(pastRange > distance && Math.abs(navX.getYaw() - angStart) < diagonalBrokeThreshold && l.opModeIsActive()){
             sensorsInfo();
             pastRange = getRange(pastRange);
             arcadeMecanum(yIn, -xIn, 0);
         }
         if(Math.abs(navX.getYaw() - angStart) > diagonalBrokeThreshold){
-            handleCollision(sensor);
+            handleCollision(distance);
             setDrivePower(0);
             return true;
         }
@@ -1057,14 +1178,15 @@ public class Robot {
         return false;
     }
 
-    public boolean DiagonalForwardsLeftCoast(double sensor, double power){
+    // Functions like the above method, but coasts instead of stopping. This is good for curved motion.
+    public boolean DiagonalForwardsLeftCoast(double distance, double power){
         if(infeedOn){
             infeed.setPower(1);
         } else {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -1073,13 +1195,13 @@ public class Robot {
         if(!l.opModeIsActive())
             Finish();
         double angStart = navX.getYaw();
-        while(pastRange > sensor && Math.abs(navX.getYaw() - angStart) < diagonalBrokeThreshold && l.opModeIsActive()){
+        while(pastRange > distance && Math.abs(navX.getYaw() - angStart) < diagonalBrokeThreshold && l.opModeIsActive()){
             sensorsInfo();
             pastRange = getRange(pastRange);
             arcadeMecanum(power, -power, 0);
         }
         if(Math.abs(navX.getYaw() - angStart) > diagonalBrokeThreshold){
-            handleCollision(sensor);
+            handleCollision(distance);
             setDrivePower(0);
             return true;
         }
@@ -1092,7 +1214,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -1122,7 +1244,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -1147,7 +1269,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -1170,7 +1292,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -1195,7 +1317,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -1220,7 +1342,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -1243,7 +1365,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -1266,7 +1388,6 @@ public class Robot {
         setDrivePower(0);
         return false;
     }
-
     public boolean DiagonalBackwardsLeft(double sensor, double yIn, double xIn){
         if(infeedOn){
             infeed.setPower(1);
@@ -1274,7 +1395,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -1302,7 +1423,7 @@ public class Robot {
             infeed.setPower(0);
         }
         if(shooterOn){
-            ShootSmart();
+            ShootByVoltage();
         } else {
             shoot1.setPower(0);
             shoot2.setPower(0);
@@ -1325,6 +1446,8 @@ public class Robot {
     }
 
 
+    // This is the same method as we use in TeleOp.
+    // We use it for our diagonal strafing methods.
     public void arcadeMecanum(double y, double x, double c) {
         double leftFrontVal = y + x + c;
         double rightFrontVal = y - x - c;

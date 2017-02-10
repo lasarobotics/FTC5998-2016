@@ -18,7 +18,7 @@ public class Red2B extends LinearOpMode{
         robot.initialize(Red2B.this, hardwareMap, telemetry, true);
         waitForStart();
 
-        robot.ShootSmart();
+        robot.ShootByVoltage();
         robot.Move(80, 1.00);
         robot.EnableShot(850, 1.00);
         robot.infeed.setPower(0);

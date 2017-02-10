@@ -38,7 +38,7 @@ public class Blue1BShoot extends LinearOpMode {
 
         robot.StrafeFromWall(15, 1.0);
         robot.TurnRightRelative(45, .07);
-        robot.ShootSmart();
+        robot.ShootByVoltage();
         robot.Move(90, 1.0);
         robot.TurnRightRelative(90, .07);
         robot.EnableShot(1000, 1);

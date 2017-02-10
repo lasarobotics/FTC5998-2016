@@ -58,7 +58,7 @@ public class ReadInput extends LinearOpMode {
                         robot.PressBeacon(color_3 == 1 ? Robot.team.Blue : Robot.team.Red);
                         break;
                     case 8:
-                        robot.ShootSmart();
+                        robot.ShootByVoltage();
                         break;
                     case 9:
                         robot.StopShooter();

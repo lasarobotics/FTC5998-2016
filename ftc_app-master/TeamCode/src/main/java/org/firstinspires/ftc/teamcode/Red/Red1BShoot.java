@@ -18,7 +18,7 @@ public class Red1BShoot extends LinearOpMode{
         robot.initialize(Red1BShoot.this, hardwareMap, telemetry, true);
         waitForStart();
 
-        robot.ShootSmart();
+        robot.ShootByVoltage();
         robot.Move(80, 1.00);
         robot.EnableShot(750, 1.00);
         robot.infeed.setPower(0);

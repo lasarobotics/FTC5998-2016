@@ -24,7 +24,7 @@ public class Red2B3Shoot extends LinearOpMode{
         robot.infeed.setPower(0);
         robot.AlignToWithinOf(2.5, - 90, .15);
         robot.infeed.setPower(0);
-        robot.ShootSmart();
+        robot.ShootByVoltage();
 //        robot.ShootAtPower(1, .65);
         robot.Move(70, 1.00);
         robot.EnableShot(1100, 1.00);

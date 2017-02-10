@@ -42,7 +42,7 @@ public class Blue100Points extends LinearOpMode {
         robot.PressBeacon(Robot.team.Blue);
 
         robot.StrafeFromWall(25, .75);
-        robot.ShootSmart();
+        robot.ShootByVoltage();
         robot.TurnRight(20, .50);
         robot.AlignToWithinOf(35, 1, .05);
         robot.Move(110, 1.0);
