@@ -245,7 +245,7 @@ public class Robot {
         rightFrontWheel.setPower(power);
     }
 
-    //Using the
+    //Using the encoders, we move to a certain distance
     public void Move(double sensor, double power) {
         if(infeedOn){
             infeed.setPower(1);
@@ -314,6 +314,15 @@ public class Robot {
             LBPos = Math.abs(leftBackWheel.getCurrentPosition());
             LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
             avg = (RBPos + LBPos + RFPos + LFPos) / 4;
+        }
+        setDrivePower(0);
+    }
+
+    //Drive in a direction until the robot's pitch changes.
+    public void MoveToPitch(double pitch, double power){
+        setDrivePower(power);
+        while(l.opModeIsActive() && (Math.abs(navX.getPitch()) < pitch) ){
+            sensorsInfo();
         }
         setDrivePower(0);
     }
@@ -1070,16 +1079,81 @@ public class Robot {
         if(!l.opModeIsActive())
             Finish();
         infeed.setPower(power);
-        try{
-            Thread.sleep(750);
-        } catch (InterruptedException e){
-            e.printStackTrace();
+        double timeStart = l.getRuntime();
+        double lastTime = l.getRuntime();
+        double deltaEnc1 = 0,
+                deltaEnc2 = 0,
+                pastEnc1 = shoot1.getCurrentPosition(),
+                pastEnc2 = shoot2.getCurrentPosition(),
+                DeltaAvg = 0, percentError;
+        while ( ((l.getRuntime() - timeStart) < .750) && l.opModeIsActive()){
+            if(shoot1.getPower() == 0) {
+                shoot1.setPower(power);
+                shoot2.setPower(power);
+                break;
+            } else if( !((l.getRuntime() - timeWait) < lastTime)){
+                // We set up RPM handling within the running of our control loop.
+                // This lets us get more accuracy from our flywheel shooter,
+                // while saving time by letting us tweak the shooter power
+                deltaEnc1 = Math.abs(Math.abs(shoot1.getCurrentPosition())-pastEnc1);
+                deltaEnc2 = Math.abs(Math.abs(shoot2.getCurrentPosition())-pastEnc2);
+                DeltaAvg = (deltaEnc1 + deltaEnc2) / 2;
+                // We take the average change in encoder reading ...
+                percentError = ((DeltaAvg - target) / DeltaAvg);
+                // And calculate the percent error based on an expected change,
+                // which is based on the target speed value.
+                // Based on this, we add our percent error to the current power ...
+                power = Range.clip( power - percentError / 5 , -1, 1);
+                shoot1.setPower(power);
+                shoot2.setPower(power);
+                l.telemetry.clear();
+                l.telemetry.addData("Delta Avg", DeltaAvg);
+                l.telemetry.addData("Target", target);
+                l.telemetry.addData("Power", shoot1.getPower());
+                l.telemetry.addData("Delta 1", deltaEnc1);
+                l.telemetry.addData("Delta 2", deltaEnc2);
+                l.telemetry.addData("Percent Error", percentError);
+                l.telemetry.update();
+                pastEnc1 = Math.abs(shoot1.getCurrentPosition());
+                pastEnc2 = Math.abs(shoot2.getCurrentPosition());
+                lastTime = l.getRuntime();
+                // And then store out old times and encoder positions
+            }
         }
         ballBlock.setPosition(BALLBLOCKOPEN);
-        try{
-            Thread.sleep(1250);
-        } catch (InterruptedException e){
-            e.printStackTrace();
+        while ( ((l.getRuntime() - timeStart) < 1.250) && l.opModeIsActive()){
+            if(shoot1.getPower() == 0) {
+                shoot1.setPower(power);
+                shoot2.setPower(power);
+                break;
+            } else if( !((l.getRuntime() - timeWait) < lastTime)){
+                // We set up RPM handling within the running of our control loop.
+                // This lets us get more accuracy from our flywheel shooter,
+                // while saving time by letting us tweak the shooter power
+                deltaEnc1 = Math.abs(Math.abs(shoot1.getCurrentPosition())-pastEnc1);
+                deltaEnc2 = Math.abs(Math.abs(shoot2.getCurrentPosition())-pastEnc2);
+                DeltaAvg = (deltaEnc1 + deltaEnc2) / 2;
+                // We take the average change in encoder reading ...
+                percentError = ((DeltaAvg - target) / DeltaAvg);
+                // And calculate the percent error based on an expected change,
+                // which is based on the target speed value.
+                // Based on this, we add our percent error to the current power ...
+                power = Range.clip( power - percentError / 5 , -1, 1);
+                shoot1.setPower(power);
+                shoot2.setPower(power);
+                l.telemetry.clear();
+                l.telemetry.addData("Delta Avg", DeltaAvg);
+                l.telemetry.addData("Target", target);
+                l.telemetry.addData("Power", shoot1.getPower());
+                l.telemetry.addData("Delta 1", deltaEnc1);
+                l.telemetry.addData("Delta 2", deltaEnc2);
+                l.telemetry.addData("Percent Error", percentError);
+                l.telemetry.update();
+                pastEnc1 = Math.abs(shoot1.getCurrentPosition());
+                pastEnc2 = Math.abs(shoot2.getCurrentPosition());
+                lastTime = l.getRuntime();
+                // And then store out old times and encoder positions
+            }
         }
         ballBlock.setPosition(BALLBLOCKCLOSED);
         infeed.setPower(0);
@@ -1104,11 +1178,22 @@ public class Robot {
     // and then strafe to the wall to the same distance as the
     // DiagonalForwardsLeft was told to.
     public void handleCollision(double sensor){
-        Move(15, -1.0);
+        boolean turnedTooFarRight;
+        if(navX.getYaw() < 0){
+            turnedTooFarRight = true;
+            Move(15, 1.0);
+        } else{
+            turnedTooFarRight = false;
+            Move(15, -1.0);
+        }
         StrafeToWall(sensor, .20);
         AlignToWithin(1.5, .05);
         // Line back up to center.
-        Move(25, 1.0);
+        if(!turnedTooFarRight){
+            Move(25, 1.0);
+        } else {
+            Move(25, -1.0);
+        }
         // This will give us a similar outcome to the expected outcome
         // of the call to DiagonalForwards
     }
@@ -1443,6 +1528,33 @@ public class Robot {
             return true;
         }
         return false;
+    }
+
+    public void ArcadeToAngleLeft(double yIn, double xIn, double cIn, double angleTarget){
+        arcadeMecanum(yIn, xIn, cIn);
+        while(navX.getYaw() >= -Math.abs(angleTarget) && l.opModeIsActive()){
+            sensorsInfo();
+        }
+        setDrivePower(0);
+    }
+    public void ArcadeToAngleRight(double yIn, double xIn, double cIn, double angleTarget){
+        arcadeMecanum(yIn, xIn, cIn);
+        while(navX.getYaw() <= Math.abs(angleTarget) && l.opModeIsActive()){
+            sensorsInfo();
+        }
+        setDrivePower(0);
+    }
+    public void ArcadeToAngleLeftCoast(double yIn, double xIn, double cIn, double angleTarget){
+        arcadeMecanum(yIn, xIn, cIn);
+        while(navX.getYaw() >= -Math.abs(angleTarget) && l.opModeIsActive()){
+            sensorsInfo();
+        }
+    }
+    public void ArcadeToAngleRightCoast(double yIn, double xIn, double cIn, double angleTarget){
+        arcadeMecanum(yIn, xIn, cIn);
+        while(navX.getYaw() <= Math.abs(angleTarget) && l.opModeIsActive()){
+            sensorsInfo();
+        }
     }
 
 
