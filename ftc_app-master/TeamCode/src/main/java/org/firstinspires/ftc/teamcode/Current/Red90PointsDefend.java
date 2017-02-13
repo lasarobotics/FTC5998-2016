@@ -21,8 +21,7 @@ public class Red90PointsDefend extends LinearOpMode {
         robot.Move(65, 1.0);
         robot.EnableShot(250, 1);
         robot.StopShooter();
-        robot.DiagonalForwardsLeft(40, 1);
-        robot.DiagonalForwardsLeft(25, 0.75, 1.0);
+        robot.DiagonalForwardsLeft(25, 1);
         sleep(100);
         robot.AlignToWithin(.5, .05);
         robot.LineSearch(2, -.15);
