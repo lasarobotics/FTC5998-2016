@@ -33,90 +33,119 @@ public class ReadInput extends LinearOpMode {
                 double functionVal;
                 functionVal = s.nextDouble();
                 switch ((int)functionVal){
+                    case 0:
+                        robot.Finish();
+                        break;
                     case 1:
                         robot.Move(s.nextDouble(), s.nextDouble());
                         break;
                     case 2:
+                        //Degrees, Power
                         robot.TurnLeft(s.nextDouble(), s.nextDouble());
                         break;
                     case 3:
+                        //Degrees, Power
                         robot.TurnRight(s.nextDouble(), s.nextDouble());
                         break;
                     case 4:
-                        robot.StrafeFromWall(s.nextDouble(), s.nextDouble());
+                        //Distance, Power
+                        robot.StrafeToWall(s.nextDouble(), s.nextDouble());
                         break;
                     case 5:
+                        //Distance, Power
+                        robot.StrafeFromWall(s.nextDouble(), s.nextDouble());
+                        break;
+                    case 6:
+                        robot.AlignToWithin(1.5, .05);
+                    case 7:
+                        robot.EnableShot(0, 1);
+                        break;
+                    case 8:
+                        robot.LineSearch(2, .05);
+                        break;
+                    case 9:
+                        robot.LineSearch(2, -.05);
+                        break;
+                    case 10:
                         double color = s.nextDouble();
                         robot.PressBeacon(color == 1 ? Robot.team.Blue : Robot.team.Red);
                         break;
-                    case 6:
-                        double color_2 = s.nextDouble();
-                        robot.PressBeaconSimple(color_2 == 1 ? Robot.team.Blue : Robot.team.Red);
-                        break;
-                    case 7:
-                        double color_3 = s.nextDouble();
-                        robot.PressBeacon(color_3 == 1 ? Robot.team.Blue : Robot.team.Red);
-                        break;
-                    case 8:
+                    case 11:
                         robot.ShootByVoltage();
                         break;
-                    case 9:
+                    case 12:
                         robot.StopShooter();
                         break;
-                    case 10:
+                    case 13:
                         sleep((long)s.nextDouble());
                         break;
-                    case 11:
+                    case 14:
                         robot.DiagonalForwardsLeft(s.nextDouble(), s.nextDouble());
                         break;
-                    case 12:
+                    case 15:
                         robot.DiagonalForwardsRight(s.nextDouble(), s.nextDouble());
                         break;
-                    case 13:
+                    case 16:
                         robot.DiagonalBackwardsLeft(s.nextDouble(), s.nextDouble());
                         break;
-                    case 14:
+                    case 17:
                         robot.DiagonalBackwardsRight(s.nextDouble(), s.nextDouble());
                         break;
-                    case 15:
+                    case 18:
+                        // Angle, Power
                         robot.AlignToWithin(s.nextDouble(), s.nextDouble());
                         break;
-                    case 16:
+                    case 19:
                         robot.AlignToWithinOf(s.nextDouble(), s.nextDouble(), s.nextDouble());
                         break;
-                    case 17:
-                        robot.EnableShot(s.nextDouble(), s.nextDouble());
-                        break;
-                    case 18:
-                        robot.LineSearch(s.nextDouble(), s.nextDouble());
-                        break;
-                    case 19:
-                        robot.StrafeToWall(s.nextDouble(), s.nextDouble());
-                        break;
                     case 20:
-                        robot.ForwardsPLoop(s.nextDouble(), s.nextDouble());
+                        //None, Power of Infeed
+                        robot.EnableShot(0, s.nextDouble());
                         break;
                     case 21:
-                        robot.TurnLeftEnc(s.nextDouble(), s.nextDouble());
+                        // Threshold, Power
+                        robot.LineSearch(s.nextDouble(), s.nextDouble());
                         break;
                     case 22:
-                        robot.TurnRightEnc(s.nextDouble(), s.nextDouble());
+                        robot.ForwardsPLoop(s.nextDouble(), s.nextDouble());
                         break;
                     case 23:
-                        robot.StrafeToPrecise(s.nextDouble(), s.nextDouble(), s.nextDouble());
+                        robot.TurnLeftEnc(s.nextDouble(), s.nextDouble());
                         break;
                     case 24:
-                        robot.TurnRightRelative(s.nextDouble(), s.nextDouble());
+                        robot.TurnRightEnc(s.nextDouble(), s.nextDouble());
                         break;
                     case 25:
-                        robot.TurnLeftRelative(s.nextDouble(), s.nextDouble());
+                        robot.StrafeToPrecise(s.nextDouble(), s.nextDouble(), s.nextDouble());
                         break;
                     case 26:
-                        robot.TurnLeftAbsolute(s.nextDouble(), s.nextDouble());
+                        robot.TurnRightRelative(s.nextDouble(), s.nextDouble());
                         break;
                     case 27:
+                        robot.TurnLeftRelative(s.nextDouble(), s.nextDouble());
+                        break;
+                    case 28:
+                        robot.TurnLeftAbsolute(s.nextDouble(), s.nextDouble());
+                        break;
+                    case 29:
                         robot.TurnRightAbsolute(s.nextDouble(), s.nextDouble());
                         break;
+                    case 30:
+                        robot.arcadeMecanum(s.nextDouble(), s.nextDouble(), s.nextDouble());
+                        break;
+                    case 31:
+                        robot.infeed.setPower(s.nextDouble());
+                        break;
+                    case 32:
+                        double power = s.nextDouble();
+                        robot.shoot1.setPower(power);
+                        robot.shoot2.setPower(power);
+                        break;
+                    case 33:
+                        robot.ArcadeToAngleLeft(s.nextDouble(), s.nextDouble(), s.nextDouble(), s.nextDouble());
+                        break;
+                    case 34:
+                        robot.ArcadeToAngleRight(s.nextDouble(), s.nextDouble(), s.nextDouble(), s.nextDouble());
                     default:
                         robot.Finish();
                         break;
