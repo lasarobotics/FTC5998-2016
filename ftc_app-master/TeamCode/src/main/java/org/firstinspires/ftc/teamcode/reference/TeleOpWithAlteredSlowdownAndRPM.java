@@ -20,7 +20,7 @@ import java.util.Arrays;
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
-@TeleOp(name="Driver Controlled (New With RPM)", group="TeleOpCurrent")
+@TeleOp(name="Driver Controlled (New With RPM)", group="TeleOpOld")
 @Disabled
 public class TeleOpWithAlteredSlowdownAndRPM extends OpMode {
 

@@ -20,7 +20,7 @@ import java.util.Arrays;
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
-@TeleOp(name="Tele Op 50", group="TeleOpCurrent")
+@TeleOp(name="Tele Op 50", group="TeleOpOld")
 @Disabled
 public class TeleOpFinal50 extends OpMode {
     public static final double SHOOTERMAXVALUE = .50;

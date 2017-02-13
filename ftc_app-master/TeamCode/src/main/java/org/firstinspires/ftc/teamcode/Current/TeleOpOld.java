@@ -4,6 +4,7 @@ https://ftcprogramming.wordpress.com/2015/11/30/building-ftc_app-wirelessly/
 */
 package org.firstinspires.ftc.teamcode.Current;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -20,7 +21,8 @@ import java.util.concurrent.TimeUnit;
  * Created by Ethan Schaffer on 10/31/2016.
  */
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Tele Op", group="TeleOp")
-public class TeleOpCurrent extends OpMode {
+@Disabled
+public class TeleOpOld extends OpMode {
     public double rpmTarget = 1800;
     public static final double LEFT_SERVO_OFF_VALUE = .3;
     public static final double LEFT_SERVO_ON_VALUE = 1;

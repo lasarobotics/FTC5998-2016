@@ -7,11 +7,11 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
  * Created by Ethan Schaffer on 1/12/2017.
  */
 @Autonomous(group = "ZNeutral", name = "ClosePark")
-public class ShootClosePark extends LinearOpMode {
+public class NeutralShootClosePark extends LinearOpMode {
     Robot robot = new Robot();
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(ShootClosePark.this, hardwareMap, telemetry, false);
+        robot.initialize(NeutralShootClosePark.this, hardwareMap, telemetry, false);
         waitForStart();
         sleep(1000*10);
         robot.Move(105, .5);

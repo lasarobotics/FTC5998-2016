@@ -10,7 +10,7 @@ import java.util.Arrays;
 /**
  * Created by Ethan Schaffer on 10/6/2016.
  */
-@TeleOp(name="Mecanum", group="TeleOpCurrent")
+@TeleOp(name="Mecanum", group="TeleOpOld")
 @Disabled
 public class SimpleMecanumTele extends OpMode {
     DcMotor left1, left2, right1, right2;

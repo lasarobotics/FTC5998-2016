@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 /**
  * Created by Ethan Schaffer on 9/24/2016.
  */
-@TeleOp(name="CR Servo", group = "TeleOpCurrent")
+@TeleOp(name="CR Servo", group = "TeleOpOld")
 @Disabled
 public class CRinfeed extends OpMode{
     CRServo left, right;

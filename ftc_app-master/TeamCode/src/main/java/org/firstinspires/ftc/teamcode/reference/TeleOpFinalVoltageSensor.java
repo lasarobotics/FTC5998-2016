@@ -20,7 +20,7 @@ import java.util.Arrays;
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
-@TeleOp(name="Tele Op", group="TeleOpCurrent")
+@TeleOp(name="Tele Op", group="TeleOpOld")
 @Disabled
 public class TeleOpFinalVoltageSensor extends OpMode {
     public static final double LEFT_SERVO_OFF_VALUE = .3;
