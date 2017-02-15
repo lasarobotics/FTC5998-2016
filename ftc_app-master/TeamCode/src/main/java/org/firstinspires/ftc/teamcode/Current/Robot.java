@@ -1091,7 +1091,7 @@ public class Robot {
                 shoot1.setPower(power);
                 shoot2.setPower(power);
                 break;
-            } else if( !((l.getRuntime() - timeWait) < lastTime)){
+            } else if( !((l.getRuntime() - lastTime) < timeWait)){
                 // We set up RPM handling within the running of our control loop.
                 // This lets us get more accuracy from our flywheel shooter,
                 // while saving time by letting us tweak the shooter power
@@ -1126,7 +1126,7 @@ public class Robot {
                 shoot1.setPower(power);
                 shoot2.setPower(power);
                 break;
-            } else if( !((l.getRuntime() - timeWait) < lastTime)){
+            } else if( !((l.getRuntime() - lastTime) < timeWait)){
                 // We set up RPM handling within the running of our control loop.
                 // This lets us get more accuracy from our flywheel shooter,
                 // while saving time by letting us tweak the shooter power
