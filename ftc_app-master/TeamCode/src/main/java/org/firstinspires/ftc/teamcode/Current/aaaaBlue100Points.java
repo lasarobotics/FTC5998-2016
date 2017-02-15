@@ -6,13 +6,13 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 /**
  * Created by Ethan Schaffer on 1/25/2017.
  */
-@Autonomous(name = "B 100", group = "aaMain")
-public class Blue100Points extends LinearOpMode {
+@Autonomous(name = "B 100", group = "Main")
+public class aaaaBlue100Points extends LinearOpMode {
     Robot robot = new Robot();
 
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(Blue100Points.this, hardwareMap, telemetry, true);
+        robot.initialize(aaaaBlue100Points.this, hardwareMap, telemetry, true);
         while(!isStarted() && !isStopRequested()){
             robot.sensorsInfo();
         }
