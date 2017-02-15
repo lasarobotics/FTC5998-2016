@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 /**
  * Created by Ethan Schaffer on 1/25/2017.
  */
-@Autonomous(name = "B 100", group = "Main")
+@Autonomous(name = "B Do It All", group = "Main")
 public class aaaaBlue100Points extends LinearOpMode {
     Robot robot = new Robot();
 
