@@ -19,9 +19,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Tele Op RPM", group="TeleOp")
-public class TeleOpRPM extends OpMode {
-    public double rpmTarget = 1800;
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Tele Op Tweakable", group="TeleOp")
+public class TeleOpTweakableRPM extends OpMode {
+    public double rpmTarget = 1600;
     public static final double LEFT_SERVO_OFF_VALUE = .3;
     public static final double LEFT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_ON_VALUE = 1;
@@ -48,7 +48,10 @@ public class TeleOpRPM extends OpMode {
     public boolean RECENT_DRIVER_RIGHT_BUMPER = false;
     public boolean RECENT_Y_BUTTON = false;
     public boolean RECENT_TRIGGER = false;
+    public double timeIn = 0;
 
+    public boolean RECENT_B_BUTTON_C1 = false;
+    public boolean RECENT_X_BUTTON_C1 = false;
     public boolean RECENT_X_BUTTON = false;
     public boolean RECENT_B_BUTTON = false;
     public boolean RECENT_TOPHAT_DOWN = false;
@@ -84,7 +87,6 @@ public class TeleOpRPM extends OpMode {
     DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed, lift;
     Servo leftButtonPusher, rightButtonPusher, ballBlock;
     ColorSensor colorSensorOnSide, colorSensorLeftBottom, colorSensorRightBottom;
-    public double volts;
     int pastEnc1 = 0, pastEnc2 = 0;
     int deltaEnc1 = 0, deltaEnc2 = 0;
     DeviceInterfaceModule dim;
@@ -94,7 +96,6 @@ public class TeleOpRPM extends OpMode {
 
     public double lastTime, lastEnc1, percentError = 0, power;
 
-    double targPerSecond = 1950;
     double timeWait = .33; //in seconds
     /*
     * PWR  Made/Shot
@@ -103,7 +104,7 @@ public class TeleOpRPM extends OpMode {
     * .5   9   / 10
     *  1   10  / 10
     * */
-    double target = targPerSecond * timeWait; //Target Rotations per second
+    double target = rpmTarget* timeWait; //Target Rotations per second
 
 
     @Override
@@ -162,6 +163,15 @@ public class TeleOpRPM extends OpMode {
     @Override
     public void loop() {
 
+        if(!RECENT_B_BUTTON_C1 && gamepad1.b && !gamepad1.start){
+            rpmTarget+=50;
+        } else if (!RECENT_X_BUTTON_C1 && gamepad1.x){
+            rpmTarget -=50;
+        }
+        RECENT_X_BUTTON_C1 = gamepad1.x;
+        RECENT_B_BUTTON_C1 = gamepad1.b;
+        telemetry.addData("RPM Target", rpmTarget);
+        telemetry.update();
         /*
               _                 _
              | |               | |
@@ -187,6 +197,12 @@ public class TeleOpRPM extends OpMode {
                 if( (getRuntime() - timeWait) < lastTime){
                     break;
                 }
+                if(timeIn < 2){
+                    // This ensures that we don't over adjust the shooter as it gains momentum
+                    timeIn++;
+                    break;
+                }
+                target = rpmTarget* timeWait; //Target Rotations per second
                 deltaEnc1 = Math.abs(Math.abs(shoot1.getCurrentPosition())-pastEnc1);
                 deltaEnc2 = Math.abs(Math.abs(shoot2.getCurrentPosition())-pastEnc2);
                 DeltaAvg = (deltaEnc1 + deltaEnc2) / 2;
@@ -195,6 +211,7 @@ public class TeleOpRPM extends OpMode {
                 power = Range.clip( power - percentError / 5 , -1, 1);
                 shoot1.setPower(power);
                 shoot2.setPower(power);
+/*
                 telemetry.clear();
                 telemetry.addData("Delta Avg", DeltaAvg);
                 telemetry.addData("Target", target);
@@ -203,6 +220,7 @@ public class TeleOpRPM extends OpMode {
                 telemetry.addData("Delta 2", deltaEnc2);
                 telemetry.addData("Percent Error", percentError);
                 telemetry.update();
+*/
                 pastEnc1 = Math.abs(shoot1.getCurrentPosition());
                 pastEnc2 = Math.abs(shoot2.getCurrentPosition());
                 lastTime = getRuntime();
@@ -213,6 +231,7 @@ public class TeleOpRPM extends OpMode {
                 ballBlock.setPosition(BALLBLOCKOPEN);
                 break;
             default:
+                timeIn = 0;
                 shoot1.setPower(0);
                 shoot2.setPower(0);
                 ballBlock.setPosition(BALLBLOCKCLOSED);
