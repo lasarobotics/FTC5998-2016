@@ -21,10 +21,10 @@ import java.util.concurrent.TimeUnit;
  */
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Tele Op 1950", group="TeleOp")
 public class TeleOpRPM1950 extends OpMode {
-    public static final double LEFT_SERVO_OFF_VALUE = .3;
+    public static final double LEFT_SERVO_OFF_VALUE = .15;
     public static final double LEFT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_ON_VALUE = 1;
-    public static final double RIGHT_SERVO_OFF_VALUE = .3;
+    public static final double RIGHT_SERVO_OFF_VALUE = .15;
 
     public static final double MAXINFEEDPOWER = 1;
     public static final double MAXOUTFEEDPOWER = -1;

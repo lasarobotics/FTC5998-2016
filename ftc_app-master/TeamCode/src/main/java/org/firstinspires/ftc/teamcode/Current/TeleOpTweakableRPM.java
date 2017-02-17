@@ -21,11 +21,12 @@ import java.util.concurrent.TimeUnit;
  */
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Tele Op Tweakable", group="TeleOp")
 public class TeleOpTweakableRPM extends OpMode {
-    public double rpmTarget = 1600;
-    public static final double LEFT_SERVO_OFF_VALUE = .3;
+    public double rpmTarget = 1850;
+    public static final double LEFT_SERVO_OFF_VALUE = .15;
     public static final double LEFT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_ON_VALUE = 1;
-    public static final double RIGHT_SERVO_OFF_VALUE = .3;
+    public static final double RIGHT_SERVO_OFF_VALUE = .15;
+
 
     public static final double MAXINFEEDPOWER = 1;
     public static final double MAXOUTFEEDPOWER = -1;
@@ -130,13 +131,10 @@ public class TeleOpTweakableRPM extends OpMode {
 
         range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGENAME);
         colorSensorLeftBottom = hardwareMap.colorSensor.get(COLORLEFTBOTTOMNAME);
-        colorSensorRightBottom = hardwareMap.colorSensor.get(COLORRIGHTBOTTOMNAME);
         colorSensorOnSide = hardwareMap.colorSensor.get(COLORSIDENAME);
         colorSensorLeftBottom.setI2cAddress(I2cAddr.create8bit(0x4c));
         colorSensorOnSide.setI2cAddress(I2cAddr.create8bit(0x3c));
-        colorSensorRightBottom.setI2cAddress(I2cAddr.create8bit(0x2c));
         dim = hardwareMap.get(DeviceInterfaceModule.class, "Device Interface Module 1");
-
         leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         ballBlock.setPosition(BALLBLOCKCLOSED);
@@ -189,11 +187,6 @@ public class TeleOpTweakableRPM extends OpMode {
         switch(SHOOTERSTATUS){
             case SHOOTING:
                 ballBlock.setPosition(BALLBLOCKOPEN);
-                if(shoot1.getPower() == 0) {
-                    shoot1.setPower(power);
-                    shoot2.setPower(power);
-                    break;
-                }
                 if( (getRuntime() - timeWait) < lastTime){
                     break;
                 }

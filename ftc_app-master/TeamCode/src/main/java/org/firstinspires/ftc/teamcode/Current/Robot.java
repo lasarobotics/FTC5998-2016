@@ -49,8 +49,8 @@ public class Robot {
 
     //The Above Values lets us convert encoder ticks to centimeters per travelled, as shown below.
 
-    double targPerSecond = 1950; //This is our target RPM
-    double timeWait = .33; //in seconds
+    double targPerSecond = 1900; //This is our target RPM
+    double timeWait = .50; //in seconds
     /*
     * Our tests showed us that an update rate of 3Hz was the most effective for accuracy.
     * Update Rate (Hz) Made/Shot
@@ -1076,6 +1076,7 @@ public class Robot {
 
     // Turns on the infeed motor, and shoots two particles.
     public void EnableShot(double sensor, double power){
+        ballBlock.setPosition(BALLBLOCKOPEN);
         if(!l.opModeIsActive())
             Finish();
         infeed.setPower(power);
@@ -1120,7 +1121,6 @@ public class Robot {
                 // And then store out old times and encoder positions
             }
         }
-        ballBlock.setPosition(BALLBLOCKOPEN);
         while ( ((l.getRuntime() - timeStart) < 1.250) && l.opModeIsActive()){
             if(shoot1.getPower() == 0) {
                 shoot1.setPower(power);

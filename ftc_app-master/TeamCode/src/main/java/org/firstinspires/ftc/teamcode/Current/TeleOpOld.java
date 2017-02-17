@@ -117,11 +117,9 @@ public class TeleOpOld extends OpMode {
 
         range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGENAME);
         colorSensorLeftBottom = hardwareMap.colorSensor.get(COLORLEFTBOTTOMNAME);
-        colorSensorRightBottom = hardwareMap.colorSensor.get(COLORRIGHTBOTTOMNAME);
         colorSensorOnSide = hardwareMap.colorSensor.get(COLORSIDENAME);
         colorSensorLeftBottom.setI2cAddress(I2cAddr.create8bit(0x4c));
         colorSensorOnSide.setI2cAddress(I2cAddr.create8bit(0x3c));
-        colorSensorRightBottom.setI2cAddress(I2cAddr.create8bit(0x2c));
         dim = hardwareMap.get(DeviceInterfaceModule.class, "Device Interface Module 1");
         telemetry.addData("raw ultrasonic", range.rawUltrasonic());
         telemetry.update();
