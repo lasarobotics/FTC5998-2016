@@ -13,7 +13,10 @@ public class NeutralShootFarNoPark extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         robot.initialize(NeutralShootFarNoPark.this, hardwareMap, telemetry, false);
-        waitForStart();
+        while(!isStarted() && !isStopRequested()){
+            robot.sensorsInfo();
+        }
+        waitForStart(); //Should be unecessary, as isStarted() is only true when the start button is hit
         sleep(1000*10);
         robot.Move(180, .5);
         robot.ShootByVoltage();
