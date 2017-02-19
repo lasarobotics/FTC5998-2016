@@ -57,6 +57,7 @@ public class ReadInput extends LinearOpMode {
                         break;
                     case 6:
                         robot.AlignToWithin(1.5, .05);
+                        break;
                     case 7:
                         robot.EnableShot(0, 1);
                         break;
