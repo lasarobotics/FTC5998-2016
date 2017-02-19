@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.I2cAddr;
+import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.Range;
@@ -99,8 +100,12 @@ public class Robot {
     // of sensors before the start of a match
     public void sensorsInfo(){
         t.clear();
-        t.addData("NavX", navX.isConnected() ? navX.getYaw() : "Disconnected");
-        t.addData("Color Bottom", colorSensorBottom.alpha());
+        try{
+            t.addData("NavX", navX.isConnected() ? navX.getYaw() : "Disconnected");
+        } catch (NullPointerException e){
+            t.addData("NavX", "Disabled!");
+        }
+//        t.addData("Color Bottom", colorSensorBottom.alpha());
         t.addData("Color Side Red", colorSensorOnSide.red());
         t.addData("Color Side Blue", colorSensorOnSide.blue());
         t.addData("Range CM", range.getDistance(DistanceUnit.CM));
@@ -134,7 +139,6 @@ public class Robot {
         voltageGetter = hardwareMap.voltageSensor.get("Motor Controller 1");
 
         range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "r");
-        colorSensorBottom = hardwareMap.colorSensor.get(COLORLEFTBOTTOMNAME);
 
         colorSensorBottom.setI2cAddress(I2cAddr.create8bit(0x4c));
         colorSensorOnSide = hardwareMap.colorSensor.get(COLORSIDENAME);
@@ -171,6 +175,67 @@ public class Robot {
 
         //We found that if you don't set the LED until after the waitForStart(), it doesn't work as well.
         colorSensorBottom.enableLed(true);
+        colorSensorOnSide.enableLed(false);
+    }
+    public void initializeNoBottom(LinearOpMode lInput, HardwareMap hardwareMap, Telemetry telemetry, boolean navXOn){
+        l = lInput;
+        t = telemetry;
+        leftFrontWheel = hardwareMap.dcMotor.get(LEFT1NAME);
+        leftBackWheel = hardwareMap.dcMotor.get(LEFT2NAME);
+        rightFrontWheel = hardwareMap.dcMotor.get(RIGHT1NAME);
+        rightBackWheel = hardwareMap.dcMotor.get(RIGHT2NAME);
+        rightBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        shoot1 = hardwareMap.dcMotor.get(SHOOT1NAME);
+        shoot1.setDirection(DcMotorSimple.Direction.REVERSE);
+        shoot2 = hardwareMap.dcMotor.get(SHOOT2NAME);
+        infeed = hardwareMap.dcMotor.get(INFEEDNAME);
+        infeed.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        ballBlock = hardwareMap.servo.get(BALLBLOCKNAME);
+        leftButtonPusher = hardwareMap.servo.get(LEFTPUSHNAME);
+        rightButtonPusher = hardwareMap.servo.get(RIGHTPUSHNAME);
+
+        leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+        rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+        ballBlock.setPosition(BALLBLOCKCLOSED);
+        voltageGetter = hardwareMap.voltageSensor.get("Motor Controller 1");
+
+        range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "r");
+
+        colorSensorOnSide = hardwareMap.colorSensor.get(COLORSIDENAME);
+        colorSensorOnSide.setI2cAddress(I2cAddr.create8bit(0x3c));
+        colorSensorOnSide.enableLed(false);
+
+        dim = hardwareMap.get(DeviceInterfaceModule.class, DIMNAME);
+        // If the navXOn boolean is input as false, we can skip this step.
+        // This will only be the case in a fraction of our routes,
+        // but it is a good fallback if the navX is broken.
+        if(navXOn){
+            navX = new AHRS(dim, hardwareMap.i2cDevice.get("n").getPort(), AHRS.DeviceDataType.kProcessedData, (byte)50);
+            navX.zeroYaw();
+            while ( navX.isCalibrating() && !l.isStopRequested()) {
+                telemetry.addData("Gyro", "Calibrating");
+                telemetry.addData("Yaw", navX.getYaw());
+                if(!navX.isConnected()){
+                    telemetry.addData("NavX", "DISCONNECTED!");
+                } else {
+                    telemetry.addData("NavX", "Connected!");}
+                telemetry.update();
+            }
+            // Allow the NavX to calibrate before exiting the
+            telemetry.addData("Yaw", navX.getYaw());
+            if(!navX.isConnected()){
+                telemetry.addData("NavX", "DISCONNECTED!");
+            } else {
+                telemetry.addData("NavX", "Connected!");}
+            telemetry.update();
+        } else {
+            telemetry.addData("NavX", "None");
+        }
+
+        //We found that if you don't set the LED until after the waitForStart(), it doesn't work as well.
         colorSensorOnSide.enableLed(false);
     }
 
@@ -314,6 +379,90 @@ public class Robot {
             LBPos = Math.abs(leftBackWheel.getCurrentPosition());
             LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
             avg = (RBPos + LBPos + RFPos + LFPos) / 4;
+        }
+        setDrivePower(0);
+    }
+
+    //Follows the same logic as Move.
+    // However, it makes movements based on the change in encoders,
+    // rather than by resetting the encoders.
+    // This allows us to achieve more streamlined motion,
+    // because we can call MoveByDelta right after some other method that has the robot drive.
+    // Thanks to this, we can 
+    public void MoveByDelta(double sensor, double power) {
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(!shooterOn){
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
+        if(!l.opModeIsActive())
+            Finish();
+        int StartRBPos = Math.abs(rightBackWheel.getCurrentPosition());
+        int StartRFPos = Math.abs(rightFrontWheel.getCurrentPosition());
+        int StartLBPos = Math.abs(leftBackWheel.getCurrentPosition());
+        int StartLFPos = Math.abs(leftFrontWheel.getCurrentPosition());
+        double avg = (StartRBPos + StartLFPos+ StartLBPos + StartRFPos)/4;
+        double ticks;
+        if(power > 0){
+            ticks = avg+Math.abs(sensor);
+        } else {
+            ticks = avg-Math.abs(sensor);
+        }
+        double lastTime = l.getRuntime(),
+                deltaEnc1 = 0,
+                deltaEnc2 = 0,
+                pastEnc1 = shoot1.getCurrentPosition(),
+                pastEnc2 = shoot2.getCurrentPosition(),
+                percentError,
+                DeltaAvg;
+        int RBPos, LFPos, LBPos, RFPos;
+        while(avg < ticks && l.opModeIsActive()) {
+            if(shooterOn){
+                if(shoot1.getPower() == 0) {
+                    shoot1.setPower(power);
+                    shoot2.setPower(power);
+                    break;
+                } else if( !((l.getRuntime() - timeWait) < lastTime)){
+                    // We set up RPM handling within the running of our control loop.
+                    // This lets us get more accuracy from our flywheel shooter,
+                    // while saving time by letting us tweak the shooter power
+                    deltaEnc1 = Math.abs(Math.abs(shoot1.getCurrentPosition())-pastEnc1);
+                    deltaEnc2 = Math.abs(Math.abs(shoot2.getCurrentPosition())-pastEnc2);
+                    DeltaAvg = (deltaEnc1 + deltaEnc2) / 2;
+                    // We take the average change in encoder reading ...
+                    percentError = ((DeltaAvg - target) / DeltaAvg);
+                    // And calculate the percent error based on an expected change,
+                    // which is based on the target speed value.
+                    // Based on this, we add our percent error to the current power ...
+                    power = Range.clip( power - percentError / 5 , -1, 1);
+                    shoot1.setPower(power);
+                    shoot2.setPower(power);
+                    l.telemetry.clear();
+                    l.telemetry.addData("Delta Avg", DeltaAvg);
+                    l.telemetry.addData("Target", target);
+                    l.telemetry.addData("Power", shoot1.getPower());
+                    l.telemetry.addData("Delta 1", deltaEnc1);
+                    l.telemetry.addData("Delta 2", deltaEnc2);
+                    l.telemetry.addData("Percent Error", percentError);
+                    l.telemetry.update();
+                    pastEnc1 = Math.abs(shoot1.getCurrentPosition());
+                    pastEnc2 = Math.abs(shoot2.getCurrentPosition());
+                    lastTime = l.getRuntime();
+                    // And then store out old times and encoder positions
+                }
+            }
+            sensorsInfo();
+            setDrivePower(power);
+            RBPos = Math.abs(rightBackWheel.getCurrentPosition());
+            RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
+            LBPos = Math.abs(leftBackWheel.getCurrentPosition());
+            LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
+            avg = Math.abs(RBPos - StartRBPos) + Math.abs(RFPos - StartRFPos) + Math.abs(LBPos - StartLBPos) + Math.abs(LFPos - StartLFPos);
+            avg/=4;
         }
         setDrivePower(0);
     }
@@ -1065,6 +1214,47 @@ public class Robot {
 
     }
 
+    public void CheckBeacon(team t){
+        team colorReading;
+        if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
+            colorReading = team.Red;
+        } else {
+            colorReading = team.Blue;
+        }
+        if(colorReading == t){
+            return;
+        } else {
+            try {
+                Thread.sleep(750);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
+                colorReading = team.Red;
+            } else {
+                colorReading = team.Blue;
+            }
+            if(colorReading == t){
+                rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+                leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+                return;
+            }
+            try {
+                Thread.sleep(4250);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+            leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
+            try {
+                Thread.sleep(1250);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+            leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+        }
+    }
     // Sets the shooter to a power based on the parameter input.
     public void ShootAtPower(double power){
         shooterOn = true;
@@ -1074,7 +1264,105 @@ public class Robot {
         shoot2.setPower(power);
     }
 
+    public boolean FindAndPress(team t, double power) throws InterruptedException {
+        return FindAndPress(t, power, 10, 4);
+    }
+    public boolean FindAndPress(team t, double power, double timeOutInSeconds) throws InterruptedException {
+        return FindAndPress(t, power, timeOutInSeconds, 4);
+    }
+    public boolean FindAndPress(team t, double power, double timeOutInSeconds, double expectedReading) throws InterruptedException {
+        team firstFound = t;
+        if(t == team.Red){
+            double startTime = l.getRuntime();
+            while(colorSensorOnSide.red() < expectedReading &&
+                    l.opModeIsActive() &&
+                    (l.getRuntime()-startTime) < timeOutInSeconds&&
+                    !(colorSensorOnSide.red() > colorSensorOnSide.blue())){
+                if(colorSensorOnSide.red()+1 < colorSensorOnSide.blue()){
+                    firstFound = team.Blue;
+                }
+                setDrivePower(power);
+                sensorsInfo();
+            }
+        } else {
+            double startTime = l.getRuntime();
+            while(colorSensorOnSide.blue() < expectedReading &&
+                    l.opModeIsActive() &&
+                    (l.getRuntime()-startTime) < timeOutInSeconds&&
+                    !(colorSensorOnSide.blue() > colorSensorOnSide.red())){
+                if(colorSensorOnSide.red() > colorSensorOnSide.blue()+1){
+                    firstFound = team.Red;
+                }
+                setDrivePower(power);
+                sensorsInfo();
+            }
+        }
+        if(power < 0){
+            Move(7, -.15);
+        } else {
+            if(firstFound == t)
+                Move(2, - .15);
+        }
+        setDrivePower(0);
+        rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
+        Thread.sleep(1250);
+        rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+        Thread.sleep(750);
+        return true;
+    }
+    public boolean FindAndPressThenCorrect(team t, double power) throws InterruptedException {
+        return FindAndPressThenCorrect(t, power, 10, 4);
+    }
+    public boolean FindAndPressThenCorrect(team t, double power, double timeOutInSeconds, double expectedReading) throws InterruptedException {
+        team firstFound = t;
+        if(t == team.Red){
+            double startTime = l.getRuntime();
+            while(colorSensorOnSide.red() < expectedReading &&
+                    l.opModeIsActive() &&
+                    (l.getRuntime()-startTime) < timeOutInSeconds&&
+                    !(colorSensorOnSide.red() > colorSensorOnSide.blue())){
+                if(colorSensorOnSide.red()+1 < colorSensorOnSide.blue()){
+                    firstFound = team.Blue;
+                }
+                setDrivePower(power);
+                sensorsInfo();
+            }
+        } else {
+            double startTime = l.getRuntime();
+            while(colorSensorOnSide.blue() < expectedReading &&
+                    l.opModeIsActive() &&
+                    (l.getRuntime()-startTime) < timeOutInSeconds&&
+                    !(colorSensorOnSide.blue() > colorSensorOnSide.red())){
+                if(colorSensorOnSide.red() > colorSensorOnSide.blue()+1){
+                    firstFound = team.Red;
+                }
+                setDrivePower(power);
+                sensorsInfo();
+            }
+        }
+        if(power < 0){
+            Move(7, -.15);
+        } else {
+            if(firstFound == t)
+                Move(2, - .15);
+        }
+        setDrivePower(0);
+        rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
+        Thread.sleep(1250);
+        rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+        Thread.sleep(750);
+        if(firstFound != t){
+            Move(2, -power);
+        } else {
+            Move(2, -power);
+        }
+        return true;
+    }
+
     // Turns on the infeed motor, and shoots two particles.
+    public void EnableShot(){
+        EnableShot(0, 1);
+    }
     public void EnableShot(double sensor, double power){
         ballBlock.setPosition(BALLBLOCKOPEN);
         if(!l.opModeIsActive())
