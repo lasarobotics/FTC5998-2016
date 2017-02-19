@@ -1,12 +1,16 @@
-package org.firstinspires.ftc.teamcode.Current;
+package org.firstinspires.ftc.teamcode.Red;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import org.firstinspires.ftc.teamcode.Current.Robot;
 
 /**
  * Created by Ethan Schaffer on 1/25/2017.
  */
 @Autonomous(name = "R 90 Defend", group = "Defend")
+@Disabled
 public class Red90PointsDefend extends LinearOpMode {
     Robot robot = new Robot();
 

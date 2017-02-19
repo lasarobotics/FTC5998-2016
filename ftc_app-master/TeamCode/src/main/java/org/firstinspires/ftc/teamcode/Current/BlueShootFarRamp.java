@@ -18,12 +18,11 @@ public class BlueShootFarRamp extends LinearOpMode {
         robot.ShootByVoltage();
         robot.Move(180, .5);
         robot.EnableShot(250, 1);
-        sleep(100);
-        robot.EnableShot(1000, 1);
         robot.StopShooter();
-        robot.TurnRight(45, .05);
-        robot.Move(90, .5);
+        robot.TurnRightEnc(45, .05);
+        robot.Move(110, .5);
         robot.TurnRightEnc(20, .50);
         robot.Move(110, .5);
+        robot.Move(20, .25);
     }
 }

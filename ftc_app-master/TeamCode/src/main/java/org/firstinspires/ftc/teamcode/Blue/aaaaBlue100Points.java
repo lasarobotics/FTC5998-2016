@@ -1,12 +1,16 @@
-package org.firstinspires.ftc.teamcode.Current;
+package org.firstinspires.ftc.teamcode.Blue;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import org.firstinspires.ftc.teamcode.Current.Robot;
 
 /**
  * Created by Ethan Schaffer on 1/25/2017.
  */
 @Autonomous(name = "B Do It All", group = "Main")
+@Disabled
 public class aaaaBlue100Points extends LinearOpMode {
     Robot robot = new Robot();
 
