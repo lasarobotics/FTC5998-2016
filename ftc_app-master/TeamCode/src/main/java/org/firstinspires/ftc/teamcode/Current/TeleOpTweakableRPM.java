@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  */
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Tele Op Tweakable", group="TeleOp")
 public class TeleOpTweakableRPM extends OpMode {
-    public double rpmTarget = 1850;
+    public double rpmTarget = 1700;
     public static final double LEFT_SERVO_OFF_VALUE = .15;
     public static final double LEFT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_ON_VALUE = 1;
@@ -87,11 +87,8 @@ public class TeleOpTweakableRPM extends OpMode {
 
     DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed, lift;
     Servo leftButtonPusher, rightButtonPusher, ballBlock;
-    ColorSensor colorSensorOnSide, colorSensorLeftBottom, colorSensorRightBottom;
     int pastEnc1 = 0, pastEnc2 = 0;
     int deltaEnc1 = 0, deltaEnc2 = 0;
-    DeviceInterfaceModule dim;
-    ModernRoboticsI2cRangeSensor range;
     public double SHOOTERMAXVALUE = 1;
     double DeltaAvg;
 
@@ -129,12 +126,6 @@ public class TeleOpTweakableRPM extends OpMode {
         leftButtonPusher = hardwareMap.servo.get(LEFTPUSHNAME);
         rightButtonPusher = hardwareMap.servo.get(RIGHTPUSHNAME);
 
-        range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGENAME);
-        colorSensorLeftBottom = hardwareMap.colorSensor.get(COLORLEFTBOTTOMNAME);
-        colorSensorOnSide = hardwareMap.colorSensor.get(COLORSIDENAME);
-        colorSensorLeftBottom.setI2cAddress(I2cAddr.create8bit(0x4c));
-        colorSensorOnSide.setI2cAddress(I2cAddr.create8bit(0x3c));
-        dim = hardwareMap.get(DeviceInterfaceModule.class, "Device Interface Module 1");
         leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         ballBlock.setPosition(BALLBLOCKCLOSED);
