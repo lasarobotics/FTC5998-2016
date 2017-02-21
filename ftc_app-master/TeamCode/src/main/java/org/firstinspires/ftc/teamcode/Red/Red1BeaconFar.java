@@ -16,9 +16,9 @@ public class Red1BeaconFar extends LinearOpMode {
     Robot robot = new Robot();
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(Red1BeaconFar.this, hardwareMap, telemetry, true);
+        robot.initializeWithBotton(Red1BeaconFar.this, hardwareMap, telemetry, true);
         while(!isStarted() && !isStopRequested()){
-            robot.sensorsInfo();
+            robot.Housekeeping();
         }
         waitForStart();
         robot.ShootByVoltage();

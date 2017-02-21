@@ -12,9 +12,9 @@ public class _Blue100New extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initializeNoBottom(_Blue100New.this, hardwareMap, telemetry, true);
+        robot.initialize(_Blue100New.this, hardwareMap, telemetry, true);
         while(!isStarted() && !isStopRequested()){
-            robot.sensorsInfo();
+            robot.Housekeeping();
         }
         waitForStart(); //Should be unecessary, as isStarted() is only true when the start button is hit
         robot.MoveCoast(20, -1.0);

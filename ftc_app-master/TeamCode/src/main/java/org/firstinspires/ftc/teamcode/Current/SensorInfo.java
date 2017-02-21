@@ -12,13 +12,13 @@ public class SensorInfo extends LinearOpMode{
     @Override
     public void runOpMode() throws InterruptedException {
 
-        r.initialize(SensorInfo.this, hardwareMap, telemetry, true);
+        r.initializeWithBotton(SensorInfo.this, hardwareMap, telemetry, true);
         while(!isStopRequested() && !isStarted()){
-            r.sensorsInfo();
+            r.Housekeeping();
         }
         waitForStart();
         while(opModeIsActive()){
-            r.sensorsInfo();
+            r.Housekeeping();
             idle();
         }
     }

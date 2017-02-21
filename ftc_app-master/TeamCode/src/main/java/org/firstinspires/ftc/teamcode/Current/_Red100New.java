@@ -12,9 +12,9 @@ public class _Red100New extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initializeNoBottom(_Red100New.this, hardwareMap, telemetry, true);
+        robot.initialize(_Red100New.this, hardwareMap, telemetry, true);
         while(!isStarted() && !isStopRequested()){
-            robot.sensorsInfo();
+            robot.Housekeeping();
         }
         waitForStart(); //Should be unecessary, as isStarted() is only true when the start button is hit
         robot.ShootByVoltage();

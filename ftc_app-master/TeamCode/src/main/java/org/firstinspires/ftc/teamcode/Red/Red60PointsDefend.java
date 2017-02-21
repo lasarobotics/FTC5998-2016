@@ -16,9 +16,9 @@ public class Red60PointsDefend extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(Red60PointsDefend.this, hardwareMap, telemetry, true);
+        robot.initializeWithBotton(Red60PointsDefend.this, hardwareMap, telemetry, true);
         while(!isStarted() && !isStopRequested()){
-            robot.sensorsInfo();
+            robot.Housekeeping();
         }
         waitForStart();
         robot.ShootByVoltage();

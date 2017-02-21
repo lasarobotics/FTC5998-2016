@@ -12,7 +12,7 @@ public class BlueShootFarRamp extends LinearOpMode {
     Robot robot = new Robot();
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initializeNoBottom(BlueShootFarRamp.this, hardwareMap, telemetry, true);
+        robot.initialize(BlueShootFarRamp.this, hardwareMap, telemetry, true);
         waitForStart();
         sleep(1000*5);
         robot.ShootByVoltage();

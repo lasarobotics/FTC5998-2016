@@ -15,7 +15,7 @@ public class Red2BSDefend extends LinearOpMode{
     Robot robot = new Robot();
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(Red2BSDefend.this, hardwareMap, telemetry, true);
+        robot.initializeWithBotton(Red2BSDefend.this, hardwareMap, telemetry, true);
         waitForStart();
 
         robot.ShootByVoltage();

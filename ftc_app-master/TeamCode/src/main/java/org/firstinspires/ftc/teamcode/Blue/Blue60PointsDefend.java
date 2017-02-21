@@ -16,9 +16,9 @@ public class Blue60PointsDefend extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(Blue60PointsDefend.this, hardwareMap, telemetry, true);
+        robot.initializeWithBotton(Blue60PointsDefend.this, hardwareMap, telemetry, true);
         while(!isStarted() && !isStopRequested()){
-            robot.sensorsInfo();
+            robot.Housekeeping();
         }
         waitForStart(); //Should be unecessary, as isStarted() is only true when the start button is hit
         robot.MoveCoast(15, -1.0);

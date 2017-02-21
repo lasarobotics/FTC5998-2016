@@ -15,7 +15,7 @@ public class Blue1BShoot extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(Blue1BShoot.this, hardwareMap, telemetry, true);
+        robot.initializeWithBotton(Blue1BShoot.this, hardwareMap, telemetry, true);
         waitForStart();
         robot.Move(40, - 1.00);
         robot.TurnRight(35, 0.15);

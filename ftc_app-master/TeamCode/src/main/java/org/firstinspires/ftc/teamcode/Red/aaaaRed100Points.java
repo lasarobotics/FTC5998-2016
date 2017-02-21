@@ -16,9 +16,9 @@ public class aaaaRed100Points extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(aaaaRed100Points.this, hardwareMap, telemetry, true);
+        robot.initializeWithBotton(aaaaRed100Points.this, hardwareMap, telemetry, true);
         while(!isStarted() && !isStopRequested()){
-            robot.sensorsInfo();
+            robot.Housekeeping();
         }
         waitForStart();
         robot.ShootByVoltage();

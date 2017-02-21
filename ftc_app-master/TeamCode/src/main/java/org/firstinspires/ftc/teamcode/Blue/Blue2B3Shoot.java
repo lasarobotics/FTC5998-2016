@@ -15,7 +15,7 @@ public class Blue2B3Shoot extends LinearOpMode{
     Robot robot = new Robot();
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(Blue2B3Shoot.this, hardwareMap, telemetry, true);
+        robot.initializeWithBotton(Blue2B3Shoot.this, hardwareMap, telemetry, true);
         waitForStart();
 
         robot.infeed.setPower(1);
