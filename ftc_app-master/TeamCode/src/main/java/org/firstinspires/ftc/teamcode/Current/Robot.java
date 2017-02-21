@@ -50,7 +50,7 @@ public class Robot {
 
     //The Above Values lets us convert encoder ticks to centimeters per travelled, as shown below.
 
-    double targPerSecond = 1900; //This is our target RPM
+    double targPerSecond = 1750; //This is our target RPM
     double timeWait = .50; //in seconds
     /*
     * Our tests showed us that an update rate of 3Hz was the most effective for accuracy.
@@ -61,7 +61,6 @@ public class Robot {
     * 1                10  / 10
     * */
     double target = targPerSecond * timeWait; //Target Rotations per second
-
 
     public static final String LEFT1NAME = "l1"; //LX Port 2
     public static final String LEFT2NAME = "l2"; //LX Port 1
@@ -105,10 +104,15 @@ public class Robot {
         } catch (NullPointerException e){
             t.addData("NavX", "Disabled!");
         }
-//        t.addData("Color Bottom", colorSensorBottom.alpha());
         t.addData("Color Side Red", colorSensorOnSide.red());
         t.addData("Color Side Blue", colorSensorOnSide.blue());
         t.addData("Range CM", range.getDistance(DistanceUnit.CM));
+        /*
+        t.addData("LF", leftFrontWheel.getPower());
+        t.addData("LB", leftBackWheel.getPower());
+        t.addData("RF", rightFrontWheel.getPower());
+        t.addData("RB", rightBackWheel.getPower());
+        */
         t.update();
     }
     // We initialize all of our Motors and Servos locally. This helps our other files maintain readability,
@@ -1244,7 +1248,7 @@ public class Robot {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+            rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
             leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
             try {
                 Thread.sleep(1250);
@@ -1265,19 +1269,19 @@ public class Robot {
     }
 
     public boolean FindAndPress(team t, double power) throws InterruptedException {
-        return FindAndPress(t, power, 10, 4);
+        return FindAndPress(t, power, 4.5, 3);
     }
     public boolean FindAndPress(team t, double power, double timeOutInSeconds) throws InterruptedException {
-        return FindAndPress(t, power, timeOutInSeconds, 4);
+        return FindAndPress(t, power, timeOutInSeconds, 3);
     }
     public boolean FindAndPress(team t, double power, double timeOutInSeconds, double expectedReading) throws InterruptedException {
         team firstFound = t;
+        double startTime;
         if(t == team.Red){
-            double startTime = l.getRuntime();
+            startTime = l.getRuntime();
             while(colorSensorOnSide.red() < expectedReading &&
                     l.opModeIsActive() &&
-                    (l.getRuntime()-startTime) < timeOutInSeconds&&
-                    !(colorSensorOnSide.red() > colorSensorOnSide.blue())){
+                    (l.getRuntime()-startTime) < timeOutInSeconds){
                 if(colorSensorOnSide.red()+1 < colorSensorOnSide.blue()){
                     firstFound = team.Blue;
                 }
@@ -1285,11 +1289,10 @@ public class Robot {
                 sensorsInfo();
             }
         } else {
-            double startTime = l.getRuntime();
+            startTime = l.getRuntime();
             while(colorSensorOnSide.blue() < expectedReading &&
                     l.opModeIsActive() &&
-                    (l.getRuntime()-startTime) < timeOutInSeconds&&
-                    !(colorSensorOnSide.blue() > colorSensorOnSide.red())){
+                    (l.getRuntime()-startTime) < timeOutInSeconds){
                 if(colorSensorOnSide.red() > colorSensorOnSide.blue()+1){
                     firstFound = team.Red;
                 }
@@ -1297,13 +1300,22 @@ public class Robot {
                 sensorsInfo();
             }
         }
+        if(l.getRuntime()-startTime > timeOutInSeconds){
+            return false;
+        }
         if(power < 0){
-            Move(7, -.15);
+            if(firstFound != t){
+                MoveByDelta(10, -.15);
+            } else {
+                MoveByDelta(7, -.15);
+            }
         } else {
-            if(firstFound == t)
-                Move(2, - .15);
+            setDrivePower(0);
+            Move(3, - .15);
         }
         setDrivePower(0);
+        AlignToWithin(.5, .05);
+        StrafeToWall(9, .10);
         rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
         Thread.sleep(1250);
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
@@ -1446,6 +1458,13 @@ public class Robot {
         ballBlock.setPosition(BALLBLOCKCLOSED);
         infeed.setPower(0);
         infeedOn = false;
+    }
+    public void WaitForRange(double readingTarget){
+        double rangeR = 254;
+        while(rangeR > readingTarget && l.opModeIsActive()){
+            rangeR = getRange(rangeR);
+            sensorsInfo();
+        }
     }
 
     // Runs the super.stop() method, and turns off all of the sensors

@@ -29,6 +29,7 @@ import static android.R.attr.hand_hour;
  * Created by Ethan Schaffer on 1/31/2017.
  */
 @TeleOp(group = "TeleOp", name = "RPM Tester")
+@Disabled
 public class rpmTester extends LinearOpMode{
 
     @Override

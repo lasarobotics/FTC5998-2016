@@ -6,17 +6,17 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 /**
  * Created by Ethan Schaffer on 1/12/2017.
  */
-@Autonomous(group = "ZNeutral", name = "CloseNoPark")
+@Autonomous(group = "ZNeutral", name = "Forwards")
 public class NeutralShootCloseNoPark extends LinearOpMode {
     Robot robot = new Robot();
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(NeutralShootCloseNoPark.this, hardwareMap, telemetry, false);
+        robot.initializeNoBottom(NeutralShootCloseNoPark.this, hardwareMap, telemetry, false);
         while(!isStarted() && !isStopRequested()){
             robot.sensorsInfo();
         }
         waitForStart(); //Should be unecessary, as isStarted() is only true when the start button is hit
-        sleep(1000*10);
+//        sleep(1000*10);
         robot.Move(105, .5);
         robot.ShootByVoltage();
         robot.EnableShot(2000, 1.0);

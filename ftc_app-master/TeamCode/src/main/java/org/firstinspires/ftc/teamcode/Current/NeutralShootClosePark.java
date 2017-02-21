@@ -11,7 +11,7 @@ public class NeutralShootClosePark extends LinearOpMode {
     Robot robot = new Robot();
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(NeutralShootClosePark.this, hardwareMap, telemetry, false);
+        robot.initializeNoBottom(NeutralShootClosePark.this, hardwareMap, telemetry, false);
         while(!isStarted() && !isStopRequested()){
             robot.sensorsInfo();
         }

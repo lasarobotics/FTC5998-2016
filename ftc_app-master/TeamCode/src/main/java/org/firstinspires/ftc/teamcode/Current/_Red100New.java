@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 /**
  * Created by Ethan Schaffer on 1/25/2017.
  */
-@Autonomous(name = "R 100 New", group = "New")
+@Autonomous(name = "R 100", group = "New")
 public class _Red100New extends LinearOpMode {
     Robot robot = new Robot();
 
@@ -16,39 +16,32 @@ public class _Red100New extends LinearOpMode {
         while(!isStarted() && !isStopRequested()){
             robot.sensorsInfo();
         }
-        waitForStart();
+        waitForStart(); //Should be unecessary, as isStarted() is only true when the start button is hit
         robot.ShootByVoltage();
-        robot.Move(65, 1.0);
-        robot.EnableShot();
-        robot.StopShooter();
-        robot.Move(10, - 0.75);
-        boolean didCrash = robot.DiagonalForwardsLeft(45, 1);
-        robot.StrafeToWall(25, .5);
+        robot.Move(50, 1.0);
+        robot.EnableShot(); robot.StopShooter();
+        robot.DiagonalForwardsLeftCoast(50, 1);
+        robot.DiagonalForwardsLeft(20, .75, 1);
         robot.AlignToWithin(1.5, .05);
         robot.StrafeToWall(10, .10);
-        robot.AlignToWithin(.5, .05);
-
-        if(!didCrash) {
-            robot.FindAndPress(Robot.team.Red, .25);
-            robot.BackwardsPLoop(70, .5);
-            robot.FindAndPress(Robot.team.Red, - .10);
-        } else {
-            robot.FindAndPress(Robot.team.Red, - .10);
-            robot.ForwardsPLoop(70, .5);
-            robot.FindAndPress(Robot.team.Red, .10);
+        robot.AlignToWithinOf(.5, .5, .05);
+        if(!robot.FindAndPress(Robot.team.Red, .15)){
+            robot.FindAndPress(Robot.team.Red, -.15);
         }
-        robot.StrafeFromWall(25, 1.0);
-        if(!didCrash){
-            robot.AlignToWithin(1.5, .05);
-            robot.Move(115, -1.0);
-            robot.Move(25, -0.25);
-        } else {
-            robot.TurnRightEnc(35, 0.50);
-            robot.Move(15, 1.0);
-            robot.Move(15, -.75);
-            robot.Move(15, 0.50);
-            robot.Move(15, -0.25);
+        robot.CheckBeacon(Robot.team.Red);
+        robot.Move(85, -1.0);
+        robot.StrafeFromWall(10, .10);
+        robot.AlignToWithin(1, .05);
+        robot.StrafeToWall(10, .10);
+        robot.AlignToWithinOf(-.25, 1, .05);
+        if(!robot.FindAndPress(Robot.team.Red, -.15)){
+            robot.FindAndPress(Robot.team.Red, .15);
         }
+        robot.CheckBeacon(Robot.team.Red);
 
+        robot.ArcadeToAngleLeft(0, .25, -.40, 7.5);
+        robot.AlignToWithinOf(-17.5, 1, .05);
+        robot.Move(100, - .5);
+//        robot.MoveToPitch(10, -.25);
     }
 }
