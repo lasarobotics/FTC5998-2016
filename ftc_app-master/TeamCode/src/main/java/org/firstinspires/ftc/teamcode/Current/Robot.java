@@ -31,7 +31,7 @@ public class Robot {
     }
     public static final String DIMNAME = "dim"; //second DIM, reserved for NavX
     public LinearOpMode l;
-    private boolean infeedOn = false, shooterOn = false;
+    public boolean infeedOn = false, shooterOn = false, initialized = false;
     public final double ticksPerRev = 7;
     public final double gearBoxOne = 40.0;
     public final double gearBoxTwo = 24.0 / 16.0;
@@ -87,14 +87,14 @@ public class Robot {
     public DeviceInterfaceModule dim;
     public ModernRoboticsI2cRangeSensor range;
     public AHRS navX;
-    public static final double LEFT_SERVO_OFF_VALUE = .25;
+    public static final double LEFT_SERVO_OFF_VALUE = .35;
     public static final double LEFT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_ON_VALUE = 1;
-    public static final double RIGHT_SERVO_OFF_VALUE = .25;
+    public static final double RIGHT_SERVO_OFF_VALUE = .35;
     Telemetry t;
 
     public double timeInMethod = 0;
-    double power, deltaEnc1, deltaEnc2, pastEnc1 = shoot1.getCurrentPosition(), pastEnc2 = shoot2.getCurrentPosition(), DeltaAvg, percentError;
+    double shootPower, deltaEnc1, deltaEnc2, pastEnc1 = 0, pastEnc2 = 0, DeltaAvg, percentError;
 
     // We call Housekeeping within every control loop cycle.
     // In addition to providing us with Telemetry data,
@@ -103,46 +103,47 @@ public class Robot {
     // This method also lets us check the status
     // of sensors before the start of a match,
     // so we can make sure they are all connected and calibrated.
+
     public void Housekeeping(){
-        if(infeedOn){
-            infeed.setPower(1);
-        } else {
-            infeed.setPower(0);
-        }
-        if(shooterOn){
-            if(shoot1.getPower() == 0) {
-                shoot1.setPower(power);
-                shoot2.setPower(power);
-            } else if( !((l.getRuntime() - timeInMethod) < timeWait)){
-                t.clear();
-                //set up RPM handling within the running of our control loop.
-                // This lets us get more accuracy from our flywheel shooter,
-                // while saving time by letting us tweak the shooter power
-                deltaEnc1 = Math.abs(Math.abs(shoot1.getCurrentPosition())-pastEnc1);
-                deltaEnc2 = Math.abs(Math.abs(shoot2.getCurrentPosition())-pastEnc2);
-                DeltaAvg = (deltaEnc1 + deltaEnc2) / 2;
-                // We take the average change in encoder reading ...
-                percentError = ((DeltaAvg - target) / DeltaAvg);
-                // And calculate the percent error based on an expected change,
-                // which is based on the target speed value.
-                // Based on this, we add our percent error to the current power ...
-                power = Range.clip( power - percentError / 5 , -1, 1);
-                shoot1.setPower(power);
-                shoot2.setPower(power);
-                l.telemetry.clear();
-                l.telemetry.addData("Delta Avg", DeltaAvg);
-                l.telemetry.addData("Target", target);
-                l.telemetry.addData("Power", shoot1.getPower());
-                l.telemetry.addData("Delta 1", deltaEnc1);
-                l.telemetry.addData("Delta 2", deltaEnc2);
-                l.telemetry.addData("Percent Error", percentError);
-                l.telemetry.update();
-                pastEnc1 = Math.abs(shoot1.getCurrentPosition());
-                pastEnc2 = Math.abs(shoot2.getCurrentPosition());
-                timeInMethod = l.getRuntime();
-                // And then store out old times and encoder positions
+            if(infeedOn){
+                infeed.setPower(1);
+            } else {
+                infeed.setPower(0);
             }
-        }
+            if(shooterOn){
+                if(shoot1.getPower() == 0) {
+                    shoot1.setPower(shootPower);
+                    shoot2.setPower(shootPower);
+                } else if( !((l.getRuntime() - timeInMethod) < timeWait)){
+                    t.clear();
+                    //set up RPM handling within the running of our control loop.
+                    // This lets us get more accuracy from our flywheel shooter,
+                    // while saving time by letting us tweak the shooter power
+                    deltaEnc1 = Math.abs(Math.abs(shoot1.getCurrentPosition())-pastEnc1);
+                    deltaEnc2 = Math.abs(Math.abs(shoot2.getCurrentPosition())-pastEnc2);
+                    DeltaAvg = (deltaEnc1 + deltaEnc2) / 2;
+                    // We take the average change in encoder reading ...
+                    percentError = ((DeltaAvg - target) / DeltaAvg);
+                    // And calculate the percent error based on an expected change,
+                    // which is based on the target speed value.
+                    // Based on this, we add our percent error to the current power ...
+                    shootPower  = Range.clip( shootPower - percentError / 5 , -1, 1);
+                    shoot1.setPower(shootPower);
+                    shoot2.setPower(shootPower);
+                    l.telemetry.clear();
+                    l.telemetry.addData("Delta Avg", DeltaAvg);
+                    l.telemetry.addData("Target", target);
+                    l.telemetry.addData("Power", shoot1.getPower());
+                    l.telemetry.addData("Delta 1", deltaEnc1);
+                    l.telemetry.addData("Delta 2", deltaEnc2);
+                    l.telemetry.addData("Percent Error", percentError);
+                    l.telemetry.update();
+                    pastEnc1 = Math.abs(shoot1.getCurrentPosition());
+                    pastEnc2 = Math.abs(shoot2.getCurrentPosition());
+                    timeInMethod = l.getRuntime();
+                    // And then store out old times and encoder positions
+                }
+            }
         try{
             t.addData("NavX", navX.isConnected() ? navX.getYaw() : "Disconnected");
         } catch (NullPointerException e){
@@ -160,6 +161,23 @@ public class Robot {
         t.update();
     }
 
+    public void sensorsInfo(){
+        try{
+            t.addData("NavX", navX.isConnected() ? navX.getYaw() : "Disconnected");
+            t.addData("Color Side Red", colorSensorOnSide.red());
+            t.addData("Color Side Blue", colorSensorOnSide.blue());
+            t.addData("Range CM", range.getDistance(DistanceUnit.CM));
+        } catch (NullPointerException e){
+            t.addData("NavX", "Disabled!");
+        }
+        /*
+        t.addData("LF", leftFrontWheel.getPower());
+        t.addData("LB", leftBackWheel.getPower());
+        t.addData("RF", rightFrontWheel.getPower());
+        t.addData("RB", rightBackWheel.getPower());
+        */
+        t.update();
+    }
     // This was our old initialize code. It is nearly identical to our current one,
     // but it also uses a color sensor to detect the white line.
     // We found that using a fourth sensor caused i2c conenction issues,
@@ -172,6 +190,7 @@ public class Robot {
     public void initializeWithBotton(LinearOpMode lInput, HardwareMap hardwareMap, Telemetry telemetry, boolean navXOn){
         l = lInput;
         t = telemetry;
+        initialized = true;
         leftFrontWheel = hardwareMap.dcMotor.get(LEFT1NAME);
         leftBackWheel = hardwareMap.dcMotor.get(LEFT2NAME);
         rightFrontWheel = hardwareMap.dcMotor.get(RIGHT1NAME);
@@ -238,6 +257,7 @@ public class Robot {
     // and allows us to change how the hardware map works here or otherwise.
     public void initialize(LinearOpMode lInput, HardwareMap hardwareMap, Telemetry telemetry, boolean navXOn){
         l = lInput;
+        initialized = true;
         t = telemetry;
         leftFrontWheel = hardwareMap.dcMotor.get(LEFT1NAME);
         leftBackWheel = hardwareMap.dcMotor.get(LEFT2NAME);
@@ -1103,6 +1123,9 @@ public class Robot {
             leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
         }
     }
+    double getRobotVoltage(){
+        return voltageGetter.getVoltage();
+    }
     // Sets the shooter to a power based on the parameter input.
     public void ShootAtPower(double power){
         shooterOn = true;
@@ -1112,6 +1135,7 @@ public class Robot {
         shoot2.setPower(power);
     }
 
+    double gyroOffSetToFailFindAndPress = 12.5;
     public boolean FindAndPress(team t, double power) throws InterruptedException {
         return FindAndPress(t, power, 4.5, 3);
     }
@@ -1120,17 +1144,34 @@ public class Robot {
     }
     public boolean FindAndPress(team t, double power, double timeOutInSeconds, double expectedReading) throws InterruptedException {
         team firstFound = t;
-        double startTime;
+        double startTime = l.getRuntime();
+        double startGyro = navX.getYaw(); //Take the starting gyro reading for our control loop.
         if(t == team.Red){
             startTime = l.getRuntime();
-            while(colorSensorOnSide.red() < expectedReading &&
-                    l.opModeIsActive() &&
-                    (l.getRuntime()-startTime) < timeOutInSeconds){
+            while(colorSensorOnSide.red() < expectedReading
+                    && l.opModeIsActive()
+                    && (l.getRuntime()-startTime) < timeOutInSeconds
+                    && Math.abs(startGyro-navX.getYaw()) < gyroOffSetToFailFindAndPress){
                 if(colorSensorOnSide.red()+1 < colorSensorOnSide.blue()){
                     firstFound = team.Blue;
                 }
                 setDrivePower(power);
                 Housekeeping();
+            }
+            // This allows us to exit this loop if we seem to have gotten stuck on something.
+            // For example, if we hit the beacon we will back away, realign to zero, and strafe back to the wall.
+            // This way, if we get caught on the wall against the beacon, we can realign and press the beacon again.
+            if(Math.abs(startGyro-navX.getYaw()) >= gyroOffSetToFailFindAndPress){
+                setDrivePower(0);
+                // By moving in the direction of negative power,
+                // we guarantee that we back away from the beacon.
+                Move(10, -power);
+                AlignToWithinOf(startGyro, .3, .05);
+                StrafeToWall(10, .10);
+                AlignToWithinOf(startGyro, .3, .05);
+                // We give a slightly smaller expected reading so that
+                // if the beacons are dimmer than we expect we will get them on the movement back.
+                FindAndPress(t, power, timeOutInSeconds, expectedReading-1);
             }
         } else {
             startTime = l.getRuntime();
@@ -1160,6 +1201,38 @@ public class Robot {
         setDrivePower(0);
         AlignToWithin(.5, .05);
         StrafeToWall(9, .10);
+        rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
+        Thread.sleep(1250);
+        rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+        Thread.sleep(750);
+
+        // We should have pressed the right button,
+        // but we go to the other side of the beacon to double check
+        // We know which side of the beacon we are,
+        // so we go check the other side.
+        if(firstFound != t){
+            Move(15, -power);
+        } else {
+            Move(20, power);
+        }
+        // We detect which color the beacon is.
+        team detected = colorSensorOnSide.red() > colorSensorOnSide.blue() ? team.Red : team.Blue;
+
+        // If we have detected the right color, we exit. Otherwise, we go back and
+        if(detected == t){
+            return true;
+        } else {
+            if(firstFound != t){
+                Move(15, power);
+            } else {
+                Move(20, -power);
+            }
+        }
+        StrafeToWall(8, .10);
+        detected = colorSensorOnSide.red() > colorSensorOnSide.blue() ? team.Red : team.Blue;
+        if(detected != t){
+            Thread.sleep(3000);
+        }
         rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
         Thread.sleep(1250);
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);

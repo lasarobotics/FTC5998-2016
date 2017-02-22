@@ -14,7 +14,7 @@ public class _Blue100New extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         robot.initialize(_Blue100New.this, hardwareMap, telemetry, true);
         while(!isStarted() && !isStopRequested()){
-            robot.Housekeeping();
+            robot.sensorsInfo();
         }
         waitForStart(); //Should be unecessary, as isStarted() is only true when the start button is hit
         robot.MoveCoast(20, -1.0);
@@ -24,16 +24,24 @@ public class _Blue100New extends LinearOpMode {
         robot.StrafeToWall(10, .10);
         robot.AlignToWithinOf(1, .5, .05);
 
-        if(!robot.FindAndPress(Robot.team.Blue, .15)){
-            robot.FindAndPress(Robot.team.Blue, -.15);
+        if(!robot.FindAndPress(Robot.team.Blue,  robot.getRobotVoltage() > 12.7 ? .15 : .20)){
+            robot.Move(20, - .5);
+            robot.AlignToWithin(1, .05);
+            robot.StrafeToWall(10, .10);
+            robot.ForwardsPLoop(30, .25);
+            robot.FindAndPress(Robot.team.Blue, robot.getRobotVoltage() > 12.7 ? -.15 : -.20);
         }
         robot.CheckBeacon(Robot.team.Blue);
         robot.Move(85, -1.0);
         robot.AlignToWithin(1, .05);
         robot.StrafeToWall(10, .10);
-        robot.AlignToWithinOf(-.25, 1, .05);
-        if(!robot.FindAndPress(Robot.team.Blue, -.15)){
-            robot.FindAndPress(Robot.team.Blue, .15);
+        robot.AlignToWithinOf(-1, .5, .05);
+        if(!robot.FindAndPress(Robot.team.Blue,  robot.getRobotVoltage() > 12.7 ? -.15 : -.20)){
+            robot.Move(20, .5);
+            robot.AlignToWithin(1, .05);
+            robot.StrafeToWall(10, .10);
+            robot.BackwardsPLoop(30, .25);
+            robot.FindAndPress(Robot.team.Blue, robot.getRobotVoltage() > 12.7 ? .15 : .20);
         }
         robot.CheckBeacon(Robot.team.Blue);
 

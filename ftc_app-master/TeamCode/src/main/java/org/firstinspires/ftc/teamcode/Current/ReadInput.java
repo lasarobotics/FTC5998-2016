@@ -62,14 +62,14 @@ public class ReadInput extends LinearOpMode {
                         robot.EnableShot(0, 1);
                         break;
                     case 8:
-                        robot.LineSearch(2, .05);
+                        robot.FindAndPress(s.nextDouble() == 1 ? Robot.team.Blue : Robot.team.Red, s.nextDouble());
                         break;
                     case 9:
-                        robot.LineSearch(2, -.05);
+                        robot.FindAndPress(s.nextDouble() == 1 ? Robot.team.Blue : Robot.team.Red, s.nextDouble(), s.nextDouble(), s.nextDouble());
                         break;
                     case 10:
                         double color = s.nextDouble();
-                        robot.PressBeacon(color == 1 ? Robot.team.Blue : Robot.team.Red);
+                        robot.CheckBeacon(color == 1 ? Robot.team.Blue : Robot.team.Red);
                         break;
                     case 11:
                         robot.ShootByVoltage();
@@ -105,7 +105,7 @@ public class ReadInput extends LinearOpMode {
                         break;
                     case 21:
                         // Threshold, Power
-                        robot.LineSearch(s.nextDouble(), s.nextDouble());
+                        robot.MoveByDelta(s.nextDouble(), s.nextDouble());
                         break;
                     case 22:
                         robot.ForwardsPLoop(s.nextDouble(), s.nextDouble());
