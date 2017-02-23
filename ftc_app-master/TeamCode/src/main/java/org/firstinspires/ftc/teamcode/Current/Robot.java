@@ -87,10 +87,10 @@ public class Robot {
     public DeviceInterfaceModule dim;
     public ModernRoboticsI2cRangeSensor range;
     public AHRS navX;
-    public static final double LEFT_SERVO_OFF_VALUE = .35;
+    public static final double LEFT_SERVO_OFF_VALUE = .25;
     public static final double LEFT_SERVO_ON_VALUE = 1;
     public static final double RIGHT_SERVO_ON_VALUE = 1;
-    public static final double RIGHT_SERVO_OFF_VALUE = .35;
+    public static final double RIGHT_SERVO_OFF_VALUE = .25;
     Telemetry t;
 
     public double timeInMethod = 0;
@@ -1142,6 +1142,12 @@ public class Robot {
     public boolean FindAndPress(team t, double power, double timeOutInSeconds) throws InterruptedException {
         return FindAndPress(t, power, timeOutInSeconds, 3);
     }
+    public boolean FindAndPressForwards(team t) throws InterruptedException {
+        return FindAndPress(t, voltageGetter.getVoltage() > 12.7 ? .15 : .20, 5, 3);
+    }
+    public boolean FindAndPressBackwards(team t) throws InterruptedException {
+        return FindAndPress(t, voltageGetter.getVoltage() > 12.7 ? - .15 : - .20, 5, 3);
+    }
     public boolean FindAndPress(team t, double power, double timeOutInSeconds, double expectedReading) throws InterruptedException {
         team firstFound = t;
         double startTime = l.getRuntime();
@@ -1429,9 +1435,7 @@ public class Robot {
         } else {
             infeed.setPower(0);
         }
-        if(shooterOn){
-            ShootByVoltage();
-        } else {
+        if(!shooterOn){
             shoot1.setPower(0);
             shoot2.setPower(0);
         }
@@ -1462,9 +1466,7 @@ public class Robot {
         } else {
             infeed.setPower(0);
         }
-        if(shooterOn){
-            ShootByVoltage();
-        } else {
+        if(!shooterOn){
             shoot1.setPower(0);
             shoot2.setPower(0);
         }
@@ -1494,9 +1496,7 @@ public class Robot {
         } else {
             infeed.setPower(0);
         }
-        if(shooterOn){
-            ShootByVoltage();
-        } else {
+        if(!shooterOn){
             shoot1.setPower(0);
             shoot2.setPower(0);
         }
@@ -1522,9 +1522,7 @@ public class Robot {
         } else {
             infeed.setPower(0);
         }
-        if(shooterOn){
-            ShootByVoltage();
-        } else {
+        if(!shooterOn){
             shoot1.setPower(0);
             shoot2.setPower(0);
         }
@@ -1552,9 +1550,7 @@ public class Robot {
         } else {
             infeed.setPower(0);
         }
-        if(shooterOn){
-            ShootByVoltage();
-        } else {
+        if(!shooterOn){
             shoot1.setPower(0);
             shoot2.setPower(0);
         }
@@ -1577,9 +1573,7 @@ public class Robot {
         } else {
             infeed.setPower(0);
         }
-        if(shooterOn){
-            ShootByVoltage();
-        } else {
+        if(!shooterOn){
             shoot1.setPower(0);
             shoot2.setPower(0);
         }
@@ -1600,9 +1594,7 @@ public class Robot {
         } else {
             infeed.setPower(0);
         }
-        if(shooterOn){
-            ShootByVoltage();
-        } else {
+        if(!shooterOn){
             shoot1.setPower(0);
             shoot2.setPower(0);
         }
@@ -1625,9 +1617,7 @@ public class Robot {
         } else {
             infeed.setPower(0);
         }
-        if(shooterOn){
-            ShootByVoltage();
-        } else {
+        if(!shooterOn){
             shoot1.setPower(0);
             shoot2.setPower(0);
         }
@@ -1650,9 +1640,7 @@ public class Robot {
         } else {
             infeed.setPower(0);
         }
-        if(shooterOn){
-            ShootByVoltage();
-        } else {
+        if(!shooterOn){
             shoot1.setPower(0);
             shoot2.setPower(0);
         }
@@ -1673,9 +1661,7 @@ public class Robot {
         } else {
             infeed.setPower(0);
         }
-        if(shooterOn){
-            ShootByVoltage();
-        } else {
+        if(!shooterOn){
             shoot1.setPower(0);
             shoot2.setPower(0);
         }
@@ -1703,9 +1689,7 @@ public class Robot {
         } else {
             infeed.setPower(0);
         }
-        if(shooterOn){
-            ShootByVoltage();
-        } else {
+        if(!shooterOn){
             shoot1.setPower(0);
             shoot2.setPower(0);
         }
@@ -1731,9 +1715,7 @@ public class Robot {
         } else {
             infeed.setPower(0);
         }
-        if(shooterOn){
-            ShootByVoltage();
-        } else {
+        if(!shooterOn){
             shoot1.setPower(0);
             shoot2.setPower(0);
         }

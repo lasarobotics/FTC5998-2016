@@ -6,17 +6,28 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 /**
  * Created by Ethan Schaffer on 1/25/2017.
  */
-@Autonomous(name = "B 100", group = "New")
-public class _Blue100New extends LinearOpMode {
+@Autonomous(name = "B 90 Defend", group = "New")
+public class _Blue90Defend extends LinearOpMode {
     Robot robot = new Robot();
 
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(_Blue100New.this, hardwareMap, telemetry, true);
+        robot.initialize(_Blue90Defend.this, hardwareMap, telemetry, true);
         while(!isStarted() && !isStopRequested()){
             robot.sensorsInfo();
         }
         waitForStart(); //Should be unecessary, as isStarted() is only true when the start button is hit
+        robot.ShootByVoltage();
+        robot.Move(55, 1.0);
+        sleep(1000);
+        robot.EnableShot();
+        robot.StopShooter();
+        if(robot.navX.getYaw() > 0){
+            robot.TurnLeft(0, .2);
+        } else {
+            robot.TurnRight(0, .2);
+        }
+        robot.AlignToWithin(1, .10);
         robot.MoveCoast(20, -1.0);
         robot.DiagonalBackwardsLeftCoast(80, 1);
         robot.DiagonalBackwardsLeft(25, .75, 1);
@@ -45,14 +56,15 @@ public class _Blue100New extends LinearOpMode {
             robot.FindAndPressForwards(Robot.team.Blue);
         }
         robot.CheckBeacon(Robot.team.Blue);
-
-        robot.ShootByVoltage();
-        robot.ArcadeToAngleRight(0, .25, .40, 20);
-        robot.AlignToWithinOf(40, 1, .05);
-        robot.ForwardsPLoop(135, 1.0);
-        robot.AlignToWithinOf(40, 1, .05);
-        robot.EnableShot();robot.StopShooter();
-        robot.Move(80, 1.0);
+        robot.ArcadeToAngleLeft(0, .25, .40, -15);
+        robot.TurnLeft(100, .25);
+        robot.AlignToWithinOf(135, 1, .05);
+        robot.Move(20, -.5);
+        robot.WaitForRange(10);
+        robot.AlignToWithinOf(-25, 5, .15);
+        robot.Move(30, .5);
+        robot.Move(10, -.5);
+        robot.Move(30, .5);
 
 
     }

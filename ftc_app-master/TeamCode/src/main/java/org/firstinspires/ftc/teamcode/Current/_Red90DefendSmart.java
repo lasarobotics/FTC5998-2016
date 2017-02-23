@@ -6,13 +6,13 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 /**
  * Created by Ethan Schaffer on 1/25/2017.
  */
-@Autonomous(name = "R 100", group = "New")
-public class _Red100New extends LinearOpMode {
+@Autonomous(name = "R 90 Defend", group = "New")
+public class _Red90DefendSmart extends LinearOpMode {
     Robot robot = new Robot();
 
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.initialize(_Red100New.this, hardwareMap, telemetry, true);
+        robot.initialize(_Red90DefendSmart.this, hardwareMap, telemetry, true);
         while(!isStarted() && !isStopRequested()){
             robot.sensorsInfo();
         }
@@ -50,8 +50,14 @@ public class _Red100New extends LinearOpMode {
         }
         robot.CheckBeacon(Robot.team.Red);
 
-        robot.ArcadeToAngleLeft(0, .25, -.40, - 30);
-        robot.AlignToWithinOf(-45, 1, .05);
-        robot.Move(175, -1);
+        robot.ArcadeToAngleRight(0, .25, .40, 15);
+        robot.TurnRight(100, .25);
+        robot.AlignToWithinOf(135, 1, .05);
+        robot.Move(20, .5);
+        robot.WaitForRange(10);
+        robot.AlignToWithinOf(25, 5, .15);
+        robot.Move(30, .5);
+        robot.Move(10, -.5);
+        robot.Move(30, .5);
     }
 }
