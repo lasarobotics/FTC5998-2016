@@ -339,14 +339,14 @@ public class Robot {
     // This method lets us set strafing power to the motors
     // such that we strafe either left or right.
     public void setStrafePower(String Direction, double Speed) {
-        if(Objects.equals(Direction, "Left"))
+        if(Objects.equals(Direction.toLowerCase(), "Left".toLowerCase()))
         {
             rightFrontWheel.setPower(Speed);
             rightBackWheel.setPower(-Speed);
             leftFrontWheel.setPower(-Speed);
             leftBackWheel.setPower(Speed);
         }
-        if(Objects.equals(Direction, "Right"))
+        if(Objects.equals(Direction.toLowerCase(), "Right".toLowerCase()))
         {
             rightFrontWheel.setPower(-Speed);
             rightBackWheel.setPower(Speed);
@@ -1152,6 +1152,9 @@ public class Robot {
         team firstFound = t;
         double startTime = l.getRuntime();
         double startGyro = navX.getYaw(); //Take the starting gyro reading for our control loop.
+        if(Math.abs(startGyro) < 5){
+            startGyro = 0;
+        }
         if(t == team.Red){
             startTime = l.getRuntime();
             while(colorSensorOnSide.red() < expectedReading
@@ -1208,7 +1211,10 @@ public class Robot {
         AlignToWithin(.5, .05);
         StrafeToWall(9, .10);
         rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
-        Thread.sleep(1250);
+        Thread.sleep(750);
+        setStrafePower("Left", .10);
+        Thread.sleep(500);
+        setDrivePower(0);
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         Thread.sleep(750);
 
