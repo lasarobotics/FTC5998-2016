@@ -1,12 +1,14 @@
 package org.firstinspires.ftc.teamcode.Current;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 /**
  * Created by Ethan Schaffer on 1/25/2017.
  */
 @Autonomous(name = "B 90 Defend", group = "New")
+@Disabled
 public class _Blue90Defend extends LinearOpMode {
     Robot robot = new Robot();
 

@@ -24,12 +24,12 @@ public class _Blue100New extends LinearOpMode {
         robot.StrafeToWall(10, .10);
         robot.AlignToWithinOf(2, .5, .05);
 
-        if(!robot.FindAndPressForwards(Robot.team.Blue)){
+        if(!robot.FindAndPressForwardsHit(Robot.team.Blue)){
             robot.Move(20, - .5);
             robot.AlignToWithin(1, .05);
             robot.StrafeToWall(10, .10);
             robot.ForwardsPLoop(30, .25);
-            robot.FindAndPressBackwards(Robot.team.Blue);
+            robot.FindAndPressBackwardsHit(Robot.team.Blue);
         }
         robot.CheckBeacon(Robot.team.Blue);
         robot.Move(85, -1.0);
@@ -37,12 +37,12 @@ public class _Blue100New extends LinearOpMode {
         robot.AlignToWithin(3, .05);
         robot.StrafeToWall(10, .10);
         robot.AlignToWithinOf(-2, .5, .05);
-        if(!robot.FindAndPressBackwards(Robot.team.Blue)){
+        if(!robot.FindAndPressBackwardsHit(Robot.team.Blue)){
             robot.Move(20, .5);
             robot.AlignToWithin(1, .05);
             robot.StrafeToWall(10, .10);
             robot.BackwardsPLoop(30, .25);
-            robot.FindAndPressForwards(Robot.team.Blue);
+            robot.FindAndPressForwardsHit(Robot.team.Blue);
         }
         robot.CheckBeacon(Robot.team.Blue);
 

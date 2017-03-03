@@ -338,7 +338,7 @@ public class Robot {
 
     // This method lets us set strafing power to the motors
     // such that we strafe either left or right.
-    public void setStrafePower(String Direction, double Speed) {
+    public void SetStrafePower(String Direction, double Speed) {
         if(Objects.equals(Direction.toLowerCase(), "Left".toLowerCase()))
         {
             rightFrontWheel.setPower(Speed);
@@ -382,7 +382,7 @@ public class Robot {
 
     // Sets the same power to all four wheels. This lets us stop and start the robot easily,
     // and in a more _ way.
-    public void setDrivePower(double power) {
+    public void SetDrivePower(double power) {
         leftBackWheel.setPower(power);
         leftFrontWheel.setPower(power);
         rightBackWheel.setPower(power);
@@ -416,14 +416,14 @@ public class Robot {
                 DeltaAvg;
         while(avg < ticks && l.opModeIsActive()) {
             Housekeeping();
-            setDrivePower(power);
+            SetDrivePower(power);
             RBPos = Math.abs(rightBackWheel.getCurrentPosition());
             RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
             LBPos = Math.abs(leftBackWheel.getCurrentPosition());
             LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
             avg = (RBPos + LBPos + RFPos + LFPos) / 4;
         }
-        setDrivePower(0);
+        SetDrivePower(0);
     }
 
     //Follows the same logic as Move.
@@ -460,7 +460,7 @@ public class Robot {
         int RBPos, LFPos, LBPos, RFPos;
         while(avg < ticks && l.opModeIsActive()) {
             Housekeeping();
-            setDrivePower(power);
+            SetDrivePower(power);
             RBPos = Math.abs(rightBackWheel.getCurrentPosition());
             RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
             LBPos = Math.abs(leftBackWheel.getCurrentPosition());
@@ -468,17 +468,17 @@ public class Robot {
             avg = Math.abs(RBPos - StartRBPos) + Math.abs(RFPos - StartRFPos) + Math.abs(LBPos - StartLBPos) + Math.abs(LFPos - StartLFPos);
             avg/=4;
         }
-        setDrivePower(0);
+        SetDrivePower(0);
     }
 
     // Drive in a direction until the robot's pitch changes.
     // This is useful for parking on the ramp structure.
     public void MoveToPitch(double pitch, double power){
         while(l.opModeIsActive() && (Math.abs(navX.getPitch()) < pitch) ){
-            setDrivePower(power);
+            SetDrivePower(power);
             Housekeeping();
         }
-        setDrivePower(0);
+        SetDrivePower(0);
     }
 
     // MoveCoast functions like Move, but the drive wheels are not stopped at the end.
@@ -502,7 +502,7 @@ public class Robot {
         double avg = (RBPos + LBPos + RFPos + LFPos)/4;
         while(avg < ticks && l.opModeIsActive()) {
             Housekeeping();
-            setDrivePower(power);
+            SetDrivePower(power);
             RBPos = Math.abs(rightBackWheel.getCurrentPosition());
             RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
             LBPos = Math.abs(leftBackWheel.getCurrentPosition());
@@ -535,14 +535,14 @@ public class Robot {
         while(avg < ticks && l.opModeIsActive()) {
             Housekeeping();
             power = Range.clip((ticks-avg)/ticks, .1, Math.abs(maxPower));
-            setDrivePower(power);
+            SetDrivePower(power);
             RBPos = Math.abs(rightBackWheel.getCurrentPosition());
             RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
             LBPos = Math.abs(leftBackWheel.getCurrentPosition());
             LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
             avg = (RBPos + LBPos + RFPos + LFPos) / 4;
         }
-        setDrivePower(0);
+        SetDrivePower(0);
     }
 
     // The default max power is 1.0, or 100%
@@ -571,14 +571,14 @@ public class Robot {
         while(avg < ticks && l.opModeIsActive()) {
             Housekeeping();
             power = - Range.clip((ticks-avg)/ticks, .1, Math.abs(maxPower));
-            setDrivePower(power);
+            SetDrivePower(power);
             RBPos = Math.abs(rightBackWheel.getCurrentPosition());
             RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
             LBPos = Math.abs(leftBackWheel.getCurrentPosition());
             LFPos = Math.abs(leftFrontWheel.getCurrentPosition());
             avg = (RBPos + LBPos + RFPos + LFPos) / 4;
         }
-        setDrivePower(0);
+        SetDrivePower(0);
     }
     // The default max power is 1.0, or 100%
     public void BackwardsPLoop(double sensor){
@@ -606,7 +606,7 @@ public class Robot {
             leftBackWheel.setPower(-power);
             leftFrontWheel.setPower(-power);
         }
-        setDrivePower(0);
+        SetDrivePower(0);
     }
 
     // Turns left to a precise angle, regardless of current lineup.
@@ -625,7 +625,7 @@ public class Robot {
             leftBackWheel.setPower(-power);
             leftFrontWheel.setPower(-power);
         }
-        setDrivePower(0);
+        SetDrivePower(0);
 
     }
 
@@ -654,7 +654,7 @@ public class Robot {
             leftBackWheel.setPower(-power);
             leftFrontWheel.setPower(-power);
         }
-        setDrivePower(0);
+        SetDrivePower(0);
 
     }
 
@@ -701,7 +701,7 @@ public class Robot {
             avg = (RBPos + RFPos + LBPos + LFPos)/4;
             Housekeeping();
         } while(avg < ticks && l.opModeIsActive());
-        setDrivePower(0);
+        SetDrivePower(0);
     }
 
     /*
@@ -727,7 +727,7 @@ public class Robot {
             leftBackWheel.setPower(-power);
             leftFrontWheel.setPower(-power);
         }
-        setDrivePower(0);
+        SetDrivePower(0);
     }
     public void TurnRightAbsolute(double degrees, double power){
         if(infeedOn){
@@ -744,7 +744,7 @@ public class Robot {
             leftBackWheel.setPower(power);
             leftFrontWheel.setPower(power);
         }
-        setDrivePower(0);
+        SetDrivePower(0);
     }
     public void TurnRight(double degrees, double power){
         TurnRightAbsolute(degrees, power);
@@ -765,7 +765,7 @@ public class Robot {
             leftBackWheel.setPower(power);
             leftFrontWheel.setPower(power);
         }
-        setDrivePower(0);
+        SetDrivePower(0);
     }
     public void TurnRightEnc(double degrees, double power){
         if(infeedOn){
@@ -798,7 +798,7 @@ public class Robot {
             avg = (RBPos + RFPos + LBPos + LFPos)/4;
             Housekeeping();
         } while(avg < ticks && l.opModeIsActive());
-        setDrivePower(0);
+        SetDrivePower(0);
     }
 
     // The StrafeLeft and StrafeRight methods allow us to strafe based on encoder readout.
@@ -827,7 +827,7 @@ public class Robot {
             avg = (RBPos + RFPos + LBPos + LFPos)/4;
             Housekeeping();
         } while(avg < ticks && l.opModeIsActive());
-        setDrivePower(0);
+        SetDrivePower(0);
     }
     public void StrafeRight(double centimeters, double power){
         if(infeedOn){
@@ -840,7 +840,7 @@ public class Robot {
         double ticks = centimeters / cmPerTick;
         ticks *= distance;
         int avg = 0;
-        setStrafePower("Right", power);
+        SetStrafePower("Right", power);
         do {
             int RBPos = Math.abs(rightBackWheel.getCurrentPosition());
             int RFPos = Math.abs(rightFrontWheel.getCurrentPosition());
@@ -849,7 +849,7 @@ public class Robot {
             avg = (RBPos + RFPos + LBPos + LFPos)/4;
             Housekeeping();
         } while(avg < ticks && l.opModeIsActive());
-        setDrivePower(0);
+        SetDrivePower(0);
     }
 
     // The getRange method filters out bogus range values of 255.
@@ -910,12 +910,12 @@ public class Robot {
         while(pastRange > centimeters && l.opModeIsActive()){
             Housekeeping();
             pastRange = getRange(pastRange);
-            setStrafePower("Left", power);
+            SetStrafePower("Left", power);
         }
         if(range.getDistance(DistanceUnit.CM) == 255){
             StrafeToWall(centimeters, power);
         }
-        setDrivePower(0);
+        SetDrivePower(0);
     }
     public void StrafeFromWall(double centimeters, double power){
         if(infeedOn){
@@ -929,12 +929,12 @@ public class Robot {
         while(pastRange < centimeters && l.opModeIsActive()){
             Housekeeping();
             pastRange = getRange(pastRange);
-            setStrafePower("Right", power);
+            SetStrafePower("Right", power);
         }
         if(range.getDistance(DistanceUnit.CM) == 255){
             StrafeFromWall(centimeters, power);
         }
-        setDrivePower(0);
+        SetDrivePower(0);
     }
 
     // Finds the white tape line beneath the robot.
@@ -955,9 +955,9 @@ public class Robot {
             Finish();
         while(colorSensorBottom.red() < sensor && colorSensorBottom.blue() < sensor && colorSensorBottom.alpha() < sensor && l.opModeIsActive()){
             Housekeeping();
-            setDrivePower(power);
+            SetDrivePower(power);
         }
-        setDrivePower(0);
+        SetDrivePower(0);
     }
 
     // Follows the same logic as AlignToWithinOf,
@@ -1148,6 +1148,13 @@ public class Robot {
     public boolean FindAndPressBackwards(team t) throws InterruptedException {
         return FindAndPress(t, voltageGetter.getVoltage() > 12.7 ? - .15 : - .20, 5, 3);
     }
+    public boolean FindAndPressForwardsHit(team t) throws InterruptedException {
+        return FindAndPressHit(t, voltageGetter.getVoltage() > 12.7 ? .15 : .20, 5, 3);
+    }
+    public boolean FindAndPressBackwardsHit(team t) throws InterruptedException {
+        return FindAndPressHit(t, voltageGetter.getVoltage() > 12.7 ? - .15 : - .20, 5, 3);
+    }
+
     public boolean FindAndPress(team t, double power, double timeOutInSeconds, double expectedReading) throws InterruptedException {
         team firstFound = t;
         double startTime = l.getRuntime();
@@ -1164,14 +1171,14 @@ public class Robot {
                 if(colorSensorOnSide.red()+1 < colorSensorOnSide.blue()){
                     firstFound = team.Blue;
                 }
-                setDrivePower(power);
+                SetDrivePower(power);
                 Housekeeping();
             }
             // This allows us to exit this loop if we seem to have gotten stuck on something.
             // For example, if we hit the beacon we will back away, realign to zero, and strafe back to the wall.
             // This way, if we get caught on the wall against the beacon, we can realign and press the beacon again.
             if(Math.abs(startGyro-navX.getYaw()) >= gyroOffSetToFailFindAndPress){
-                setDrivePower(0);
+                SetDrivePower(0);
                 // By moving in the direction of negative power,
                 // we guarantee that we back away from the beacon.
                 Move(10, -power);
@@ -1190,7 +1197,7 @@ public class Robot {
                 if(colorSensorOnSide.red() > colorSensorOnSide.blue()+1){
                     firstFound = team.Red;
                 }
-                setDrivePower(power);
+                SetDrivePower(power);
                 Housekeeping();
             }
         }
@@ -1204,20 +1211,20 @@ public class Robot {
                 MoveByDelta(7, -.15);
             }
         } else {
-            setDrivePower(0);
+            SetDrivePower(0);
             Move(3, - .15);
         }
-        setDrivePower(0);
+        SetDrivePower(0);
         AlignToWithin(.5, .05);
-        StrafeToWall(9, .10);
+        StrafeToWall(9, .25);
+
         rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
         Thread.sleep(750);
-        setStrafePower("Left", .10);
+        SetStrafePower("Left", .10);
         Thread.sleep(500);
-        setDrivePower(0);
+        SetDrivePower(0);
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         Thread.sleep(750);
-
         // We should have pressed the right button,
         // but we go to the other side of the beacon to double check
         // We know which side of the beacon we are,
@@ -1251,6 +1258,184 @@ public class Robot {
         Thread.sleep(750);
         return true;
     }
+    public void FindAndPressSquareToBeacon(team t, double power) throws InterruptedException {
+        FindAndPressSquareToBeacon(t, power, 3);
+        leftButtonPusher.setPosition(0);
+        rightButtonPusher.setPosition(0);
+        l.telemetry.addData("L", leftButtonPusher.getPosition());
+        l.telemetry.addData("R", rightButtonPusher.getPosition());
+        l.telemetry.update();
+    }
+
+    public void FindAndPressSquareToBeacon(team t, double power, double expectedReading) throws InterruptedException {
+        team firstFound = t;
+        double startTime = l.getRuntime();
+        double startGyro = navX.getYaw(); //Take the starting gyro reading for our control loop.
+        if(Math.abs(startGyro) < 5){
+            startGyro = 0;
+        }
+        while(colorSensorOnSide.red() < expectedReading
+            && colorSensorOnSide.blue() < expectedReading
+            && l.opModeIsActive()
+            && Math.abs(startGyro-navX.getYaw()) < gyroOffSetToFailFindAndPress){
+            if(colorSensorOnSide.red()+1 < colorSensorOnSide.blue()){
+                firstFound = team.Blue;
+            }
+            SetDrivePower(power);
+            Housekeeping();
+        }
+        if(power > 0){
+            if(colorSensorOnSide.red() >= expectedReading){
+                while(colorSensorOnSide.blue() < expectedReading
+                        && l.opModeIsActive()
+                        && Math.abs(startGyro-navX.getYaw()) < gyroOffSetToFailFindAndPress){
+                    SetDrivePower(power);
+                    Housekeeping();
+                }
+            } else {
+                while(colorSensorOnSide.red() < expectedReading
+                        && l.opModeIsActive()
+                        && Math.abs(startGyro-navX.getYaw()) < gyroOffSetToFailFindAndPress){
+                    SetDrivePower(power);
+                    Housekeeping();
+                }
+            }
+        } else {
+            Move(4, power);
+        }
+        SetDrivePower(0);
+        team initialReading = (colorSensorOnSide.red() > colorSensorOnSide.blue()) ? team.Red : team.Blue;
+        if(initialReading == t){
+            rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
+        } else {
+            leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
+        }
+        double timeSt = l.getRuntime();
+        if(range.getDistance(DistanceUnit.CM ) > 9){
+            while(range.getDistance(DistanceUnit.CM) > 9){
+                SetStrafePower("Left", .10);
+            }
+            Thread.sleep(250);
+        }
+        SetDrivePower(0);
+        long sleepTime = (long)(1250-(l.getRuntime()-timeSt)*1000);
+        Thread.sleep(sleepTime > 0 ? sleepTime : 0);
+        leftButtonPusher.setPosition(0);
+        rightButtonPusher.setPosition(0);
+        StrafeFromWall(10, .10);
+    }
+
+    public boolean FindAndPressHit(team t, double power, double timeOutInSeconds, double expectedReading) throws InterruptedException {
+        team firstFound = t;
+        double startTime = l.getRuntime();
+        double startGyro = navX.getYaw(); //Take the starting gyro reading for our control loop.
+        if(Math.abs(startGyro) < 5){
+            startGyro = 0;
+        }
+        if(t == team.Red){
+            startTime = l.getRuntime();
+            while(colorSensorOnSide.red() < expectedReading
+                    && l.opModeIsActive()
+                    && (l.getRuntime()-startTime) < timeOutInSeconds
+                    && Math.abs(startGyro-navX.getYaw()) < gyroOffSetToFailFindAndPress){
+                if(colorSensorOnSide.red()+1 < colorSensorOnSide.blue()){
+                    firstFound = team.Blue;
+                }
+                SetDrivePower(power);
+                Housekeeping();
+            }
+            // This allows us to exit this loop if we seem to have gotten stuck on something.
+            // For example, if we hit the beacon we will back away, realign to zero, and strafe back to the wall.
+            // This way, if we get caught on the wall against the beacon, we can realign and press the beacon again.
+            if(Math.abs(startGyro-navX.getYaw()) >= gyroOffSetToFailFindAndPress){
+                SetDrivePower(0);
+                // By moving in the direction of negative power,
+                // we guarantee that we back away from the beacon.
+                Move(10, -power);
+                AlignToWithinOf(startGyro, .3, .05);
+                StrafeToWall(10, .10);
+                AlignToWithinOf(startGyro, .3, .05);
+                // We give a slightly smaller expected reading so that
+                // if the beacons are dimmer than we expect we will get them on the movement back.
+                FindAndPress(t, power, timeOutInSeconds, expectedReading-1);
+            }
+        } else {
+            startTime = l.getRuntime();
+            while(colorSensorOnSide.blue() < expectedReading &&
+                    l.opModeIsActive() &&
+                    (l.getRuntime()-startTime) < timeOutInSeconds){
+                if(colorSensorOnSide.red() > colorSensorOnSide.blue()+1){
+                    firstFound = team.Red;
+                }
+                SetDrivePower(power);
+                Housekeeping();
+            }
+        }
+        if(l.getRuntime()-startTime > timeOutInSeconds){
+            return false;
+        }
+        if(power < 0){
+            if(firstFound != t){
+                MoveByDelta(17, -.15);
+            } else {
+                MoveByDelta(7, -.15);
+            }
+        } else {
+            if(firstFound != t){
+                Move(2, .15);
+            } else {
+                Move(5, .15);
+            }
+        }
+        SetDrivePower(0);
+        SetStrafePower("Left", .15);
+        Thread.sleep(1000);
+        SetDrivePower(0);
+        StrafeFromWall(10, .15);
+
+        // We should have pressed the right button,
+        // but we go to the other side of the beacon to double check
+        // We know which side of the beacon we are,
+        // so we go check the other side.
+/*
+        if(firstFound != t){
+            Move(15, -power);
+        } else {
+            Move(20, power);
+        }
+*/
+        // We detect which color the beacon is.
+        if(power < 0){
+            if(firstFound != t){
+                Move(17, .15);
+            } else {
+                Move(7, .15);
+            }
+        } else {
+            if(firstFound != t){
+                Move(3, -.15);
+            } else {
+                Move(5, .15);
+            }
+        }
+
+        team detected = colorSensorOnSide.red() > colorSensorOnSide.blue() ? team.Red : team.Blue;
+
+        // If we have detected the right color, we exit. Otherwise, we go back and
+        if(detected == t){
+            return true;
+        } else {
+            StrafeToWall(9, .10);
+            leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
+            rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
+            Thread.sleep(1250);
+            leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+            rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
+            StrafeFromWall(10, .10);
+            return false;
+        }
+    }
+
     public boolean FindAndPressThenCorrect(team t, double power) throws InterruptedException {
         return FindAndPressThenCorrect(t, power, 10, 4);
     }
@@ -1265,7 +1450,7 @@ public class Robot {
                 if(colorSensorOnSide.red()+1 < colorSensorOnSide.blue()){
                     firstFound = team.Blue;
                 }
-                setDrivePower(power);
+                SetDrivePower(power);
                 Housekeeping();
             }
         } else {
@@ -1277,7 +1462,7 @@ public class Robot {
                 if(colorSensorOnSide.red() > colorSensorOnSide.blue()+1){
                     firstFound = team.Red;
                 }
-                setDrivePower(power);
+                SetDrivePower(power);
                 Housekeeping();
             }
         }
@@ -1287,7 +1472,7 @@ public class Robot {
             if(firstFound == t)
                 Move(2, - .15);
         }
-        setDrivePower(0);
+        SetDrivePower(0);
         rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
         Thread.sleep(1250);
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
@@ -1456,10 +1641,10 @@ public class Robot {
         }
         if(Math.abs(navX.getYaw() - angStart) > diagonalBrokeThreshold){
             handleCollision(distance);
-            setDrivePower(0);
+            SetDrivePower(0);
             return true;
         }
-        setDrivePower(0);
+        SetDrivePower(0);
         return false;
     }
 
@@ -1488,10 +1673,10 @@ public class Robot {
         }
         if(Math.abs(navX.getYaw() - angStart) > diagonalBrokeThreshold){
             handleCollision(distance);
-            setDrivePower(0);
+            SetDrivePower(0);
             return true;
         }
-        setDrivePower(0);
+        SetDrivePower(0);
         return false;
     }
 
@@ -1517,7 +1702,7 @@ public class Robot {
         }
         if(Math.abs(navX.getYaw() - angStart) > diagonalBrokeThreshold){
             handleCollision(distance);
-            setDrivePower(0);
+            SetDrivePower(0);
             return true;
         }
         return false;
@@ -1547,7 +1732,7 @@ public class Robot {
             return true;
         }
 
-        setDrivePower(0);
+        SetDrivePower(0);
         return false;
     }
     public boolean DiagonalForwardsRight(double sensor, double yIn, double xIn){
@@ -1567,10 +1752,10 @@ public class Robot {
             Housekeeping();
             pastRange = getRange(pastRange);
             arcadeMecanum(yIn, xIn, 0);
-            setDrivePower(0);
+            SetDrivePower(0);
             return true;
         }
-        setDrivePower(0);
+        SetDrivePower(0);
         return false;
     }
     public boolean DiagonalForwardsRightCoast(double sensor, double power){
@@ -1611,10 +1796,10 @@ public class Robot {
             Housekeeping();
             pastRange = getRange(pastRange);
             arcadeMecanum(-power, power, 0);
-            setDrivePower(0);
+            SetDrivePower(0);
             return true;
         }
-        setDrivePower(0);
+        SetDrivePower(0);
         return false;
     }
     public boolean DiagonalBackwardsRight(double sensor, double yIn, double xIn){
@@ -1634,10 +1819,10 @@ public class Robot {
             Housekeeping();
             pastRange = getRange(pastRange);
             arcadeMecanum(-yIn, xIn, 0);
-            setDrivePower(0);
+            SetDrivePower(0);
             return true;
         }
-        setDrivePower(0);
+        SetDrivePower(0);
         return false;
     }
     public boolean DiagonalBackwardsRightCoast(double sensor, double power){
@@ -1683,10 +1868,10 @@ public class Robot {
 
         if(Math.abs(navX.getYaw() - angStart) > 25){
             handleCollision(sensor);
-            setDrivePower(0);
+            SetDrivePower(0);
             return true;
         }
-        setDrivePower(0);
+        SetDrivePower(0);
         return false;
     }
     public boolean DiagonalBackwardsLeft(double sensor, double yIn, double xIn){
@@ -1712,7 +1897,7 @@ public class Robot {
             handleCollision(sensor);
             return true;
         }
-        setDrivePower(0);
+        SetDrivePower(0);
         return false;
     }
     public boolean DiagonalBackwardsLeftCoast(double sensor, double power){
@@ -1746,14 +1931,14 @@ public class Robot {
         while(navX.getYaw() >= -Math.abs(angleTarget) && l.opModeIsActive()){
             Housekeeping();
         }
-        setDrivePower(0);
+        SetDrivePower(0);
     }
     public void ArcadeToAngleRight(double yIn, double xIn, double cIn, double angleTarget){
         arcadeMecanum(yIn, xIn, cIn);
         while(navX.getYaw() <= Math.abs(angleTarget) && l.opModeIsActive()){
             Housekeeping();
         }
-        setDrivePower(0);
+        SetDrivePower(0);
     }
     public void ArcadeToAngleLeftCoast(double yIn, double xIn, double cIn, double angleTarget){
         arcadeMecanum(yIn, xIn, cIn);
