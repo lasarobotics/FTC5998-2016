@@ -9,12 +9,11 @@ import com.qualcomm.robotcore.hardware.Servo;
  * Created by Ethan Schaffer on 1/31/2017.
  */
 @TeleOp(group = "TeleOp", name = "Servo Tester")
-@Disabled
 public class servoTester extends OpMode{
     Servo s;
     @Override
     public void init() {
-        s = hardwareMap.servo.get("s");
+        s = hardwareMap.servo.get("c");
         s.setPosition(0);
     }
     //open = .62 closed = 0

@@ -88,8 +88,8 @@ public class Robot {
     public ModernRoboticsI2cRangeSensor range;
     public AHRS navX;
     public static final double LEFT_SERVO_OFF_VALUE = .25;
-    public static final double LEFT_SERVO_ON_VALUE = 1;
-    public static final double RIGHT_SERVO_ON_VALUE = 1;
+    public static final double LEFT_SERVO_ON_VALUE =.6;
+    public static final double RIGHT_SERVO_ON_VALUE = .6;
     public static final double RIGHT_SERVO_OFF_VALUE = .25;
     Telemetry t;
 
@@ -1082,8 +1082,9 @@ public class Robot {
 
     }
 
-    public void CheckBeacon(team t){
+    public void CheckBeacon(team t) throws InterruptedException {
         team colorReading;
+        Move(7, -.10);
         if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
             colorReading = team.Red;
         } else {
@@ -1092,35 +1093,31 @@ public class Robot {
         if(colorReading == t){
             return;
         } else {
-            try {
-                Thread.sleep(750);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            Move(7, .10);
             if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
                 colorReading = team.Red;
             } else {
                 colorReading = team.Blue;
             }
             if(colorReading == t){
-                rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
-                leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+                rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
+                SetStrafePower("Left", .15);
+                Thread.sleep(1000);
+                SetDrivePower(0);
                 return;
             }
-            try {
-                Thread.sleep(4250);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            Thread.sleep(2550);
+            SetDrivePower(0);
+            colorReading = team.NotSensed;
+            while(colorReading != t){
+                SetStrafePower("Left", .15);
+                if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
+                    colorReading = team.Red;
+                } else {
+                    colorReading = team.Blue;
+                }
             }
-            rightButtonPusher.setPosition(RIGHT_SERVO_ON_VALUE);
-            leftButtonPusher.setPosition(LEFT_SERVO_ON_VALUE);
-            try {
-                Thread.sleep(1250);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
-            leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
+            SetDrivePower(0);
         }
     }
     double getRobotVoltage(){
@@ -1316,6 +1313,9 @@ public class Robot {
                 SetStrafePower("Left", .10);
             }
             Thread.sleep(250);
+        } else {
+            SetStrafePower("Left", .10);
+            Thread.sleep(750);
         }
         SetDrivePower(0);
         long sleepTime = (long)(1250-(l.getRuntime()-timeSt)*1000);
