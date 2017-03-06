@@ -38,22 +38,22 @@ public class _Blue100New extends LinearOpMode {
             robot.SetDrivePower(0);
         }
 
-        robot.FindAndPressSquareToBeacon(Robot.team.Blue, .10);
-        leftButtonPusher.setPosition(.3);
-        rightButtonPusher.setPosition(.3);
+        robot.FindAndPressSquareToBeacon(Robot.team.Blue, .12);
+        robot.leftButtonPusher.setPosition(robot.LEFT_SERVO_OFF_VALUE);
+        robot.rightButtonPusher.setPosition(robot.RIGHT_SERVO_OFF_VALUE);
         robot.CheckBeacon(Robot.team.Blue);
-        leftButtonPusher.setPosition(.3);
-        rightButtonPusher.setPosition(.3);
+        robot.leftButtonPusher.setPosition(robot.LEFT_SERVO_OFF_VALUE);
+        robot.rightButtonPusher.setPosition(robot.RIGHT_SERVO_OFF_VALUE);
 
         robot.Move(85, -1.0);
         robot.StrafeFromWall(9, .10);
         robot.AlignToWithinOf(-2, .5, .05);
-        robot.FindAndPressSquareToBeacon(Robot.team.Blue, -.10);
-        leftButtonPusher.setPosition(.3);
-        rightButtonPusher.setPosition(.3);
+        robot.FindAndPressSquareToBeacon(Robot.team.Blue, -.12);
+        robot.leftButtonPusher.setPosition(robot.LEFT_SERVO_OFF_VALUE);
+        robot.rightButtonPusher.setPosition(robot.RIGHT_SERVO_OFF_VALUE);
         robot.CheckBeacon(Robot.team.Blue);
-        leftButtonPusher.setPosition(.3);
-        rightButtonPusher.setPosition(.3);
+        robot.leftButtonPusher.setPosition(robot.LEFT_SERVO_OFF_VALUE);
+        robot.rightButtonPusher.setPosition(robot.RIGHT_SERVO_OFF_VALUE);
 
         robot.ShootByVoltage();
         robot.ArcadeToAngleRight(0, .25, .40, 20);

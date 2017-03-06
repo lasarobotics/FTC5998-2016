@@ -899,6 +899,7 @@ public class Robot {
 
     //
     public void StrafeToWall(double centimeters, double power){
+        double startYaw = navX.getYaw();
         if(infeedOn){
             infeed.setPower(1);
         } else {
@@ -907,7 +908,20 @@ public class Robot {
         double pastRange = 254;
         if(!l.opModeIsActive())
             Finish();
+        double rangeLastSecond = 254;
+        double lastTime = l.getRuntime();
         while(pastRange > centimeters && l.opModeIsActive()){
+            if(l.getRuntime()-1 >= lastTime){ //if a second has passed
+                lastTime = l.getRuntime();
+                if(rangeLastSecond == pastRange){
+                    StrafeFromWall(range.getDistance(DistanceUnit.CM)+1, .10);
+                    Move(15*2.54, .10);
+                    AlignToWithinOf(startYaw, .5, .05);
+                    StrafeToWall(centimeters, power);
+                    Move(15*2.54, -.10);
+                }
+                rangeLastSecond = pastRange;
+            }
             Housekeeping();
             pastRange = getRange(pastRange);
             SetStrafePower("Left", power);
@@ -1084,7 +1098,7 @@ public class Robot {
 
     public void CheckBeacon(team t) throws InterruptedException {
         team colorReading;
-        Move(7, -.10);
+        Move(15, -.15);
         if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
             colorReading = team.Red;
         } else {
@@ -1093,7 +1107,7 @@ public class Robot {
         if(colorReading == t){
             return;
         } else {
-            Move(7, .10);
+            Move(15, .15);
             if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
                 colorReading = team.Red;
             } else {
@@ -1593,7 +1607,7 @@ public class Robot {
     // If the NavX is offset by more than this angle,
     // the robot will exit the strafing control loop and
     // run the handleCollision code.
-    double diagonalBrokeThreshold = 17.5;
+    double diagonalBrokeThreshold = 15;
 
     // We want to back away from whatever dislodged us,
     // and then strafe to the wall to the same distance as the

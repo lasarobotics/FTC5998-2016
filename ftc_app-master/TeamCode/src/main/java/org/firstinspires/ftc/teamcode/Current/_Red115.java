@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Current;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -10,6 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * Created by Ethan Schaffer on 1/25/2017.
  */
 @Autonomous(name = "R 115", group = "New")
+@Disabled
 public class _Red115 extends LinearOpMode {
     Robot robot = new Robot();
 
@@ -25,40 +27,49 @@ public class _Red115 extends LinearOpMode {
         }
         waitForStart(); //Should be unecessary, as isStarted() is only true when the start button is hit
         robot.infeed.setPower(1);
-        sleep(250);
+        sleep(1000);
+        robot.Move(40, -1);
         robot.infeed.setPower(0);
-        robot.Move(25, -1);
         robot.ArcadeToAngleLeft(0, .25, -.40, 20);
+        robot.AlignToWithin(.5, .05);
         robot.ShootByVoltage();
-        robot.AlignToWithinOf(-30, .5, .05);
-
-        robot.Move(150, 1);
-        robot.AlignToWithinOf(70, 5, .15);
-        robot.AlignToWithinOf(90, 1.5, .05);
+        robot.Move(55, 1.0);
+        sleep(500);
         robot.EnableShot();
         robot.StopShooter();
-        robot.AlignToWithin(1.5, .05);
-        robot.DiagonalForwardsLeft(9, .65, 1);
-        robot.AlignToWithinOf(-2, .5, .05);
-        robot.FindAndPressSquareToBeacon(Robot.team.Red, -.10);
-        leftButtonPusher.setPosition(.3);
-        rightButtonPusher.setPosition(.3);
-        robot.CheckBeacon(Robot.team.Red);
-        leftButtonPusher.setPosition(.3);
-        rightButtonPusher.setPosition(.3);
 
-        robot.Move(85, 1.0);
-        robot.StrafeFromWall(9, .10);
+        robot.DiagonalForwardsLeftCoast(50, 1);
+        robot.SetDrivePower(0);
+        sleep(100);
+        while( (robot.range.getDistance(DistanceUnit.CM) > 255) && robot.range.getDistance(DistanceUnit.CM) > 50){
+            robot.DiagonalForwardsLeftCoast(50, 1);
+        }
+        robot.DiagonalForwardsLeft(20, .75, 1);
+        sleep(100);
+        while( (robot.range.getDistance(DistanceUnit.CM) > 255) && robot.range.getDistance(DistanceUnit.CM) > 25){
+            robot.DiagonalForwardsLeft(25, .75, .1);
+        }
+
+        robot.AlignToWithin(1.5, .05);
+        robot.StrafeToWall(9, .10);
+
         robot.AlignToWithinOf(2, .5, .05);
         robot.FindAndPressSquareToBeacon(Robot.team.Red, .10);
-        leftButtonPusher.setPosition(.3);
-        rightButtonPusher.setPosition(.3);
-        robot.CheckBeacon(Robot.team.Red);
-        leftButtonPusher.setPosition(.3);
-        rightButtonPusher.setPosition(.3);
 
-        robot.ArcadeToAngleLeft(0, .25, -.40, 20);
-        robot.AlignToWithinOf(-40, 1, .05);
-        robot.Move(180, -1.0);
+        robot.CheckBeacon(Robot.team.Red);
+
+        robot.Move(85, -1.0);
+        robot.StrafeFromWall(9, .25);
+        robot.AlignToWithin(3, .05);
+        robot.StrafeToWall(10, .10);
+        robot.AlignToWithinOf(-2, .5, .05);
+
+        robot.FindAndPressSquareToBeacon(Robot.team.Red, -.10);
+        robot.CheckBeacon(Robot.team.Red);
+
+        robot.ArcadeToAngleLeft(0, .25, -.40, 7.5);
+        robot.AlignToWithinOf(-17.5, 1, .05);
+        robot.MoveCoast(100, - .5);
+        robot.Move(25, - .25);
     }
 }
