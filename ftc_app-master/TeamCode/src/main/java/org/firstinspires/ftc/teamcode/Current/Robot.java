@@ -89,8 +89,8 @@ public class Robot {
     public AHRS navX;
     public static final double LEFT_SERVO_OFF_VALUE = .25;
     public static final double LEFT_SERVO_ON_VALUE =.6;
-    public static final double RIGHT_SERVO_ON_VALUE = .6;
-    public static final double RIGHT_SERVO_OFF_VALUE = .25;
+    public static final double RIGHT_SERVO_ON_VALUE = .3;
+    public static final double RIGHT_SERVO_OFF_VALUE = .17;
     Telemetry t;
 
     public double timeInMethod = 0;

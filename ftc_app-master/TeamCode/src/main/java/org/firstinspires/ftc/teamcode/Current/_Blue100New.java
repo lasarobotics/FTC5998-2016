@@ -18,6 +18,8 @@ public class _Blue100New extends LinearOpMode {
         Servo leftButtonPusher = hardwareMap.servo.get(LEFTPUSHNAME);
         Servo rightButtonPusher = hardwareMap.servo.get(RIGHTPUSHNAME);
         robot.initialize(_Blue100New.this, hardwareMap, telemetry, true);
+        robot.leftButtonPusher.setPosition(robot.LEFT_SERVO_OFF_VALUE);
+        robot.rightButtonPusher.setPosition(robot.RIGHT_SERVO_OFF_VALUE);
         while(!isStarted() && !isStopRequested()){
             robot.sensorsInfo();
         }

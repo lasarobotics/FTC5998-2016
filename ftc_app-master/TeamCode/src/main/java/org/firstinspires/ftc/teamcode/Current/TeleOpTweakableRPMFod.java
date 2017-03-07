@@ -20,10 +20,10 @@ import java.util.concurrent.TimeUnit;
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Tele Op FOD", group="TeleOp")
 public class TeleOpTweakableRPMFod extends OpMode {
     public double rpmTarget = 1700;
-    public static final double LEFT_SERVO_OFF_VALUE = .25;
-    public static final double LEFT_SERVO_ON_VALUE = 1;
-    public static final double RIGHT_SERVO_ON_VALUE = 1;
-    public static final double RIGHT_SERVO_OFF_VALUE = .25;
+    public static final double LEFT_SERVO_OFF_VALUE = Robot.LEFT_SERVO_OFF_VALUE;
+    public static final double LEFT_SERVO_ON_VALUE = Robot.LEFT_SERVO_ON_VALUE;
+    public static final double RIGHT_SERVO_ON_VALUE = Robot.RIGHT_SERVO_ON_VALUE;
+    public static final double RIGHT_SERVO_OFF_VALUE = Robot.RIGHT_SERVO_OFF_VALUE;
 
     public static final double MAXINFEEDPOWER = 1;
     public static final double MAXOUTFEEDPOWER = -1;
