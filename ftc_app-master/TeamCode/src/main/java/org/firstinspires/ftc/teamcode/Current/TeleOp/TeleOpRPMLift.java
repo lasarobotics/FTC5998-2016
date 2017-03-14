@@ -2,13 +2,15 @@
 ADB guide can be found at:
 https://ftcprogramming.wordpress.com/2015/11/30/building-ftc_app-wirelessly/
 */
-package org.firstinspires.ftc.teamcode.Current;
+package org.firstinspires.ftc.teamcode.Current.TeleOp;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.Current.Robot;
 import org.firstinspires.ftc.teamcode.navX.ftc.AHRS;
 
 import java.util.Arrays;
@@ -17,13 +19,20 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Tele Op FOD", group="TeleOp")
-public class TeleOpTweakableRPMFod extends OpMode {
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Tele Op Lift", group="TeleOp")
+@Disabled
+public class TeleOpRPMLift extends OpMode {
+    public static final double FORKHODEROFF = 1;
+    public static final double FORKHODERON = 0;
+    public int targLiftTicks = 250;
+    public int LiftStart;
+
     public double rpmTarget = 1700;
     public static final double LEFT_SERVO_OFF_VALUE = Robot.LEFT_SERVO_OFF_VALUE;
     public static final double LEFT_SERVO_ON_VALUE = Robot.LEFT_SERVO_ON_VALUE;
     public static final double RIGHT_SERVO_ON_VALUE = Robot.RIGHT_SERVO_ON_VALUE;
     public static final double RIGHT_SERVO_OFF_VALUE = Robot.RIGHT_SERVO_OFF_VALUE;
+    double liftTime;
 
     public static final double MAXINFEEDPOWER = 1;
     public static final double MAXOUTFEEDPOWER = -1;
@@ -82,15 +91,18 @@ public class TeleOpTweakableRPMFod extends OpMode {
     public static final String COLORLEFTBOTTOMNAME = "cb";//Port 2
     public static final String COLORRIGHTBOTTOMNAME = "cb2"; //Port 4
     public static final String GYRONAME = "g"; //Port 4
+    public static final String FORKHOLDERNAME = "b"; //Port 2
     final double NANOSECONDS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
     public AHRS navX;
+    int liftCycles = 0;
 
     DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed, lift;
-    Servo leftButtonPusher, rightButtonPusher, ballBlock;
+    Servo leftButtonPusher, rightButtonPusher, ballBlock, topCapHolder, forkliftHolder;
     int pastEnc1 = 0, pastEnc2 = 0;
     int deltaEnc1 = 0, deltaEnc2 = 0;
     public double SHOOTERMAXVALUE = 1;
     double DeltaAvg;
+    boolean capOn = false;
 
     public double lastTime, lastEnc1, percentError = 0, power;
 
@@ -128,6 +140,9 @@ public class TeleOpTweakableRPMFod extends OpMode {
         ballBlock = hardwareMap.servo.get(BALLBLOCKNAME);
         leftButtonPusher = hardwareMap.servo.get(LEFTPUSHNAME);
         rightButtonPusher = hardwareMap.servo.get(RIGHTPUSHNAME);
+        topCapHolder = hardwareMap.servo.get("c");
+        forkliftHolder = hardwareMap.servo.get(FORKHOLDERNAME);
+        forkliftHolder.setPosition(FORKHODEROFF);
 
         leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
@@ -150,6 +165,11 @@ public class TeleOpTweakableRPMFod extends OpMode {
         } else {
             power = 0.90;
         }
+        topCapHolder.setPosition(0);
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        while(lift.getCurrentPosition()!=0){ }
+        lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
     }
 
     @Override
@@ -162,9 +182,12 @@ public class TeleOpTweakableRPMFod extends OpMode {
         RECENT_X_BUTTON_C1 = gamepad1.x;
         RECENT_B_BUTTON_C1 = gamepad1.b;
         telemetry.addData("RPM Target", rpmTarget);
-        telemetry.addData("Drive Mode", driveModeFOD ? "FOD" : "Arcade");
         telemetry.addData("Yaw", navX.getYaw());
+        telemetry.addData("LiftTargetTicks", targLiftTicks);
+        telemetry.addData("Lift", lift.getCurrentPosition());
         telemetry.update();
+
+        LiftStart = lift.getCurrentPosition();
         /*
               _                 _
              | |               | |
@@ -218,6 +241,10 @@ public class TeleOpTweakableRPMFod extends OpMode {
         RECENT_RB = gamepad2.right_bumper;
 
 
+        if(gamepad1.left_bumper && gamepad1.right_bumper){
+            forkliftHolder.setPosition(FORKHODERON);
+        }
+
         if(gamepad2.dpad_down){
             infeed.setPower(MAXINFEEDPOWER);
         } else if(gamepad2.dpad_up) {
@@ -225,6 +252,24 @@ public class TeleOpTweakableRPMFod extends OpMode {
         } else {
             infeed.setPower(0);
         }
+
+        if(gamepad2.y){
+            topCapHolder.setPosition(topCapHolder.getPosition() + .01);
+        } else if(gamepad2.a){
+            topCapHolder.setPosition(topCapHolder.getPosition() - .01);
+        }
+
+        if(gamepad2.left_trigger > .75 && gamepad2.right_trigger > .75){
+            capOn = true;
+            lift.setPower(-1);
+        }
+        if(lift.getCurrentPosition() < -600 && lift.getCurrentPosition() > -1200){
+            lift.setPower(0);
+        }
+        if(lift.getCurrentPosition() < -1200){
+            lift.setPower(.5);
+        }
+
 
 
         /*
@@ -259,15 +304,7 @@ public class TeleOpTweakableRPMFod extends OpMode {
         }
         //Use the larger trigger value to scale down the inputs.
 
-        if(!RECENT_G1_A && gamepad1.a){
-            driveModeFOD = !driveModeFOD;
-        }
-        RECENT_G1_A = gamepad1.a;
-        if(driveModeFOD){
-            fieldOriented(inputY, inputX, inputC, navX.getYaw(), leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
-        } else {
-            arcadeMecanum(inputY, inputX, inputC, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
-        }
+        arcadeMecanum(inputY, inputX, inputC, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
 
         /*
           ___  ___ _ ____   _____

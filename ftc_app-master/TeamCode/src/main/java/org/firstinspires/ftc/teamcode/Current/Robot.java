@@ -88,9 +88,9 @@ public class Robot {
     public ModernRoboticsI2cRangeSensor range;
     public AHRS navX;
     public static final double LEFT_SERVO_OFF_VALUE = .25;
-    public static final double LEFT_SERVO_ON_VALUE =.6;
-    public static final double RIGHT_SERVO_ON_VALUE = .3;
-    public static final double RIGHT_SERVO_OFF_VALUE = .17;
+    public static final double LEFT_SERVO_ON_VALUE =.7;
+    public static final double RIGHT_SERVO_ON_VALUE = .35;
+    public static final double RIGHT_SERVO_OFF_VALUE = .19;
     Telemetry t;
 
     public double timeInMethod = 0;
@@ -1098,7 +1098,7 @@ public class Robot {
 
     public void CheckBeacon(team t) throws InterruptedException {
         team colorReading;
-        Move(15, -.15);
+        Move(15, -.2);
         if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
             colorReading = team.Red;
         } else {
@@ -1107,7 +1107,7 @@ public class Robot {
         if(colorReading == t){
             return;
         } else {
-            Move(15, .15);
+            Move(15, .2);
             if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
                 colorReading = team.Red;
             } else {
@@ -1120,17 +1120,12 @@ public class Robot {
                 SetDrivePower(0);
                 return;
             }
-            Thread.sleep(2550);
+            Thread.sleep(3000);
             SetDrivePower(0);
             colorReading = team.NotSensed;
-            while(colorReading != t){
-                SetStrafePower("Left", .15);
-                if(colorSensorOnSide.red() > colorSensorOnSide.blue()){
-                    colorReading = team.Red;
-                } else {
-                    colorReading = team.Blue;
-                }
-            }
+            SetStrafePower("Left", .15);
+            Thread.sleep(1000);
+            StrafeFromWall(9, .10);
             SetDrivePower(0);
         }
     }
@@ -1839,6 +1834,27 @@ public class Robot {
         SetDrivePower(0);
         return false;
     }
+    public void ToRangeByArcade(double sensor, double yIn, double xIn, double cIn){
+        if(infeedOn){
+            infeed.setPower(1);
+        } else {
+            infeed.setPower(0);
+        }
+        if(!shooterOn){
+            shoot1.setPower(0);
+            shoot2.setPower(0);
+        }
+        double pastRange = 254;
+        if(!l.opModeIsActive())
+            Finish();
+        while(pastRange > sensor && l.opModeIsActive()){
+            Housekeeping();
+            pastRange = getRange(pastRange);
+            arcadeMecanum(yIn, xIn, cIn);
+        }
+        SetDrivePower(0);
+    }
+
     public boolean DiagonalBackwardsRightCoast(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);

@@ -2,14 +2,18 @@
 ADB guide can be found at:
 https://ftcprogramming.wordpress.com/2015/11/30/building-ftc_app-wirelessly/
 */
-package org.firstinspires.ftc.teamcode.Current;
+package org.firstinspires.ftc.teamcode.Current.TeleOp;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
+import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.navX.ftc.AHRS;
+import org.firstinspires.ftc.teamcode.Current.Robot;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -17,14 +21,13 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Tele Op Lift Only", group="TeleOp")
-public class TeleOpLiftOnly extends OpMode {
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Tele Op Tweakable", group="TeleOp")
+public class TeleOpRPM extends OpMode {
     public double rpmTarget = 1700;
     public static final double LEFT_SERVO_OFF_VALUE = Robot.LEFT_SERVO_OFF_VALUE;
     public static final double LEFT_SERVO_ON_VALUE = Robot.LEFT_SERVO_ON_VALUE;
     public static final double RIGHT_SERVO_ON_VALUE = Robot.RIGHT_SERVO_ON_VALUE;
     public static final double RIGHT_SERVO_OFF_VALUE = Robot.RIGHT_SERVO_OFF_VALUE;
-    double liftTime;
 
     public static final double MAXINFEEDPOWER = 1;
     public static final double MAXOUTFEEDPOWER = -1;
@@ -47,8 +50,6 @@ public class TeleOpLiftOnly extends OpMode {
     public boolean RECENT_DRIVER_RIGHT_BUMPER = false;
     public boolean RECENT_Y_BUTTON = false;
     public boolean RECENT_TRIGGER = false;
-    public boolean RECENT_G1_A = false;
-    public boolean driveModeFOD = false;
     public double timeIn = 0;
 
     public boolean RECENT_B_BUTTON_C1 = false;
@@ -84,10 +85,9 @@ public class TeleOpLiftOnly extends OpMode {
     public static final String COLORRIGHTBOTTOMNAME = "cb2"; //Port 4
     public static final String GYRONAME = "g"; //Port 4
     final double NANOSECONDS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
-    public AHRS navX;
 
     DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, shoot1, shoot2, infeed, lift;
-    Servo leftButtonPusher, rightButtonPusher, ballBlock, topCapHolder;
+    Servo leftButtonPusher, rightButtonPusher, ballBlock;
     int pastEnc1 = 0, pastEnc2 = 0;
     int deltaEnc1 = 0, deltaEnc2 = 0;
     public double SHOOTERMAXVALUE = 1;
@@ -115,16 +115,23 @@ public class TeleOpLiftOnly extends OpMode {
         leftFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
         leftBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
         lift = hardwareMap.dcMotor.get(LIFTNAME);
-        lift.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        shoot1 = hardwareMap.dcMotor.get(SHOOT1NAME);
+        shoot1.setDirection(DcMotorSimple.Direction.REVERSE);
+        shoot2 = hardwareMap.dcMotor.get(SHOOT2NAME);
+        infeed = hardwareMap.dcMotor.get(INFEEDNAME);
+        infeed.setDirection(DcMotorSimple.Direction.REVERSE);
+//        shoot1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT); //allows the shooter to slow down properly
+//        shoot2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT); //to avoid the gearboxes getting damaged over time
         ballBlock = hardwareMap.servo.get(BALLBLOCKNAME);
         leftButtonPusher = hardwareMap.servo.get(LEFTPUSHNAME);
         rightButtonPusher = hardwareMap.servo.get(RIGHTPUSHNAME);
-        topCapHolder = hardwareMap.servo.get("c");
-
 
         leftButtonPusher.setPosition(LEFT_SERVO_OFF_VALUE);
         rightButtonPusher.setPosition(RIGHT_SERVO_OFF_VALUE);
         ballBlock.setPosition(BALLBLOCKCLOSED);
+        pastEnc1 = shoot1.getCurrentPosition();
+        pastEnc2 = shoot2.getCurrentPosition();
         double volts = hardwareMap.voltageSensor.get("Motor Controller 1").getVoltage();
         if(volts > 13.3){
             power = 0.40;
@@ -141,11 +148,11 @@ public class TeleOpLiftOnly extends OpMode {
         } else {
             power = 0.90;
         }
-        topCapHolder.setPosition(0);
     }
 
     @Override
     public void loop() {
+
         if(!RECENT_B_BUTTON_C1 && gamepad1.b && !gamepad1.start){
             rpmTarget+=50;
         } else if (!RECENT_X_BUTTON_C1 && gamepad1.x){
@@ -154,23 +161,78 @@ public class TeleOpLiftOnly extends OpMode {
         RECENT_X_BUTTON_C1 = gamepad1.x;
         RECENT_B_BUTTON_C1 = gamepad1.b;
         telemetry.addData("RPM Target", rpmTarget);
-        telemetry.addData("Drive Mode", driveModeFOD ? "FOD" : "Arcade");
         telemetry.update();
-        if(gamepad2.left_bumper){
-            topCapHolder.setPosition(topCapHolder.getPosition() + .01);
-        } else if(gamepad2.right_bumper){
-            topCapHolder.setPosition(topCapHolder.getPosition() - .01);
+        /*
+              _                 _
+             | |               | |
+          ___| |__   ___   ___ | |_
+         / __| '_ \ / _ \ / _ \| __|
+         \__ \ | | | (_) | (_) | |_
+         |___/_| |_|\___/ \___/ \__|
+        */
+        if(!RECENT_LB && gamepad2.left_bumper){
+            SHOOTERSTATUS = (SHOOTERSTATUS == SHOOTERSTATE.SHOOTING) ? SHOOTERSTATE.NOTSHOOTING : SHOOTERSTATE.SHOOTING;
+        } else if (!RECENT_RB && gamepad2.right_bumper){
+            SHOOTERSTATUS =(SHOOTERSTATUS == SHOOTERSTATE.BACK) ? SHOOTERSTATE.NOTSHOOTING : SHOOTERSTATE.BACK;
         }
-        if(gamepad2.left_trigger > .75 && gamepad2.right_trigger > .75){
-            lift.setPower(1);
-            liftTime = getRuntime();
+        //Ternary Operations used to toggle SHOOTERSTATUS
+        switch(SHOOTERSTATUS){
+            case SHOOTING:
+                ballBlock.setPosition(BALLBLOCKOPEN);
+                if( (getRuntime() - timeWait) < lastTime){
+                    break;
+                }
+                if(timeIn < 2){
+                    // This ensures that we don't over adjust the shooter as it gains momentum
+                    timeIn++;
+                    break;
+                }
+                target = rpmTarget* timeWait; //Target Rotations per second
+                deltaEnc1 = Math.abs(Math.abs(shoot1.getCurrentPosition())-pastEnc1);
+                deltaEnc2 = Math.abs(Math.abs(shoot2.getCurrentPosition())-pastEnc2);
+                DeltaAvg = (deltaEnc1 + deltaEnc2) / 2;
+                percentError = ((DeltaAvg - target) / DeltaAvg);
+
+                power = Range.clip( power - percentError / 5 , -1, 1);
+                shoot1.setPower(power);
+                shoot2.setPower(power);
+/*
+                telemetry.clear();
+                telemetry.addData("Delta Avg", DeltaAvg);
+                telemetry.addData("Target", target);
+                telemetry.addData("Power", shoot1.getPower());
+                telemetry.addData("Delta 1", deltaEnc1);
+                telemetry.addData("Delta 2", deltaEnc2);
+                telemetry.addData("Percent Error", percentError);
+                telemetry.update();
+*/
+                pastEnc1 = Math.abs(shoot1.getCurrentPosition());
+                pastEnc2 = Math.abs(shoot2.getCurrentPosition());
+                lastTime = getRuntime();
+                break;
+            case BACK:
+                shoot1.setPower(-1.0);
+                shoot2.setPower(-1.0);
+                ballBlock.setPosition(BALLBLOCKOPEN);
+                break;
+            default:
+                timeIn = 0;
+                shoot1.setPower(0);
+                shoot2.setPower(0);
+                ballBlock.setPosition(BALLBLOCKCLOSED);
         }
-        if(lift.getPower() > 0){
-            if(getRuntime() - liftTime > .2){
-                liftTime = 0;
-                lift.setPower(0);
-            }
+        RECENT_LB = gamepad2.left_bumper;
+        RECENT_RB = gamepad2.right_bumper;
+
+
+        if(gamepad2.dpad_down){
+            infeed.setPower(MAXINFEEDPOWER);
+        } else if(gamepad2.dpad_up) {
+            infeed.setPower(MAXOUTFEEDPOWER);
+        } else {
+            infeed.setPower(0);
         }
+
 
         /*
               _      _
@@ -204,15 +266,7 @@ public class TeleOpLiftOnly extends OpMode {
         }
         //Use the larger trigger value to scale down the inputs.
 
-        if(!RECENT_G1_A && gamepad1.a){
-            driveModeFOD = !driveModeFOD;
-        }
-        RECENT_G1_A = gamepad1.a;
-        if(driveModeFOD){
-            fieldOriented(inputY, inputX, inputC, 0, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
-        } else {
-            arcadeMecanum(inputY, inputX, inputC, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
-        }
+        arcadeMecanum(inputY, inputX, inputC, leftFrontWheel, rightFrontWheel, leftBackWheel, rightBackWheel);
 
         /*
           ___  ___ _ ____   _____
@@ -267,21 +321,5 @@ public class TeleOpLiftOnly extends OpMode {
         rightFront.setPower(rightFrontVal*scaledPower+rightFront.getPower()*(1-scaledPower));
         leftBack.setPower(leftBackVal*scaledPower+leftBack.getPower()*(1-scaledPower));
         rightBack.setPower(rightBackVal*scaledPower+rightBack.getPower()*(1-scaledPower));
-    }
-    public void fieldOriented(double y, double x, double c, double gyroheading, DcMotor leftFront, DcMotor rightFront, DcMotor leftBack, DcMotor rightBack) {
-        double cosA = Math.cos(Math.toRadians(normalize(gyroheading)));
-        double sinA = Math.sin(Math.toRadians(normalize(gyroheading)));
-        double xOut = x * cosA - y * sinA;
-        double yOut = x * sinA + y * cosA;
-        arcadeMecanum(yOut, xOut, c, leftFront, rightFront, leftBack, rightBack);
-    }
-
-    public double normalize(double heading){
-        //This allows us to normalize our motion to assume a gyro drift of 5 degrees or more.
-        if (heading < 0) {
-            return 360 - (Math.abs(heading) % 360);
-        } else {
-            return (heading % 360);
-        }
     }
 }

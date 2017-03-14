@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Current;
+package org.firstinspires.ftc.teamcode.Current.Red;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.Current.Robot;
 
 /**
  * Created by Ethan Schaffer on 1/25/2017.
