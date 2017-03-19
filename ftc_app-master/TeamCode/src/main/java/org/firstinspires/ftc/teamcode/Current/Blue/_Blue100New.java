@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.Current.Robot;
 /**
  * Created by Ethan Schaffer on 1/25/2017.
  */
-@Autonomous(name = "B 100", group = "New")
+@Autonomous(name = "B 100", group = "Blue")
 public class _Blue100New extends LinearOpMode {
     Robot robot = new Robot();
 

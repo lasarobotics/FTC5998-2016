@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.Current.Robot;
  * Created by Ethan Schaffer on 1/12/2017.
  */
 
-@Autonomous(group = "ZNeutral", name = "FarNoPark")
+@Autonomous(group = "Neutral", name = "FarNoPark")
 public class NeutralShootFarNoPark extends LinearOpMode {
     Robot robot = new Robot();
     @Override

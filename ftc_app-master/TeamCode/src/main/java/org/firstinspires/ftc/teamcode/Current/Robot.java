@@ -183,7 +183,7 @@ public class Robot {
     // We found that using a fourth sensor caused i2c conenction issues,
     // even if we used two i2c busses.
     //
-    // Our solution was to use only 2 sensors total.
+    // Our solution was to use only 3 sensors total.
     // All methods that used the line sensor on the bottom of the robot have been deprecated,
     // but have been kept for reference and in case we make a change.
     @Deprecated

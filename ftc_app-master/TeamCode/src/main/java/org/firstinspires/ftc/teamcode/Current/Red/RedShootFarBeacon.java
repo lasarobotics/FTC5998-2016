@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.Current.Robot;
  * Created by Ethan Schaffer on 1/12/2017.
  */
 
-@Autonomous(group = "Neutral", name = "R_FarOneBeacon")
+@Autonomous(group = "Red", name = "R_FarOneBeacon")
 public class RedShootFarBeacon extends LinearOpMode {
     Robot robot = new Robot();
     @Override

@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by Ethan Schaffer on 10/31/2016.
  */
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Tele Op Tweakable", group="TeleOp")
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Tele Op", group="TeleOp")
 public class TeleOpRPM extends OpMode {
     public double rpmTarget = 1700;
     public static final double LEFT_SERVO_OFF_VALUE = Robot.LEFT_SERVO_OFF_VALUE;
