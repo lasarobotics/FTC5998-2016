@@ -26,6 +26,7 @@ public class ReadInput extends LinearOpMode {
             robot.Housekeeping();
         }
         waitForStart();
+        double startTime = getRuntime();
 
         try {
             s = new Scanner(file);
@@ -62,10 +63,13 @@ public class ReadInput extends LinearOpMode {
                         robot.EnableShot(0, 1);
                         break;
                     case 8:
-                        robot.FindAndPress(s.nextDouble() == 1 ? Robot.team.Blue : Robot.team.Red, s.nextDouble());
+                        robot.FindAndPressSquareToBeacon(s.nextDouble() == 1 ? Robot.team.Blue : Robot.team.Red, s.nextDouble());
                         break;
                     case 9:
-                        robot.FindAndPress(s.nextDouble() == 1 ? Robot.team.Blue : Robot.team.Red, s.nextDouble(), s.nextDouble(), s.nextDouble());
+                        double timeTarg = s.nextDouble();
+                        while(getRuntime()-startTime > timeTarg){
+                            sleep(1);
+                        }
                         break;
                     case 10:
                         double color = s.nextDouble();
