@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Current.Defensive;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.Range;
 
@@ -11,6 +12,7 @@ import org.firstinspires.ftc.teamcode.Current.Robot;
  */
 
 @Autonomous(group = "Defend", name = "R_Defend")
+@Disabled
 public class RedShootDefend2 extends LinearOpMode {
     Robot robot = new Robot();
     boolean Forwards = true;
@@ -45,7 +47,7 @@ public class RedShootDefend2 extends LinearOpMode {
 
         robot.Move(135, 1);
         robot.AlignToWithin(1, .05);
-        while ((getRuntime() - stTime) < 9.5) {
+        while ((getRuntime() - stTime) < 10.5) {
             sleep(1);
         }
         robot.Move(115, 1);

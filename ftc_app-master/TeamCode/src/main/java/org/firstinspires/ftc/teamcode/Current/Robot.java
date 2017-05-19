@@ -88,8 +88,8 @@ public class Robot {
     public ModernRoboticsI2cRangeSensor range;
     public AHRS navX;
     public static final double LEFT_SERVO_OFF_VALUE = .25;
-    public static final double LEFT_SERVO_ON_VALUE =.7;
-    public static final double RIGHT_SERVO_ON_VALUE = .35;
+    public static final double LEFT_SERVO_ON_VALUE =.85;
+    public static final double RIGHT_SERVO_ON_VALUE = .50;
     public static final double RIGHT_SERVO_OFF_VALUE = .19;
     Telemetry t;
 
@@ -131,6 +131,11 @@ public class Robot {
                     shoot1.setPower(shootPower);
                     shoot2.setPower(shootPower);
                     l.telemetry.clear();
+                    try {
+                        l.telemetry.addData("Bottom", colorSensorBottom.alpha());
+                    } catch (Exception e){
+
+                    }
                     l.telemetry.addData("Delta Avg", DeltaAvg);
                     l.telemetry.addData("Target", target);
                     l.telemetry.addData("Power", shoot1.getPower());
@@ -170,6 +175,10 @@ public class Robot {
         } catch (NullPointerException e){
             t.addData("NavX", "Disabled!");
         }
+        try{
+            t.addData("Bottom", colorSensorBottom.alpha());
+        } catch (Exception e){
+        }
         /*
         t.addData("LF", leftFrontWheel.getPower());
         t.addData("LB", leftBackWheel.getPower());
@@ -186,7 +195,6 @@ public class Robot {
     // Our solution was to use only 3 sensors total.
     // All methods that used the line sensor on the bottom of the robot have been deprecated,
     // but have been kept for reference and in case we make a change.
-    @Deprecated
     public void initializeWithBotton(LinearOpMode lInput, HardwareMap hardwareMap, Telemetry telemetry, boolean navXOn){
         l = lInput;
         t = telemetry;
@@ -214,8 +222,8 @@ public class Robot {
         voltageGetter = hardwareMap.voltageSensor.get("Motor Controller 1");
 
         range = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "r");
-
-        colorSensorBottom.setI2cAddress(I2cAddr.create8bit(0x4c));
+        colorSensorBottom = hardwareMap.colorSensor.get(COLORLEFTBOTTOMNAME);
+        colorSensorBottom.setI2cAddress(I2cAddr.create8bit(0x3c));
         colorSensorOnSide = hardwareMap.colorSensor.get(COLORSIDENAME);
         colorSensorOnSide.setI2cAddress(I2cAddr.create8bit(0x3c));
         colorSensorBottom.enableLed(true);
@@ -952,13 +960,11 @@ public class Robot {
     }
 
     // Finds the white tape line beneath the robot.
-    @Deprecated
     public void LineSearch(double power){
         LineSearch(2, power);
     }
     // The sensor value is the expected value of
     // the Color Sensor's Alpha reading.
-    @Deprecated
     public void LineSearch(double sensor, double power){
         if(infeedOn){
             infeed.setPower(1);
@@ -967,7 +973,7 @@ public class Robot {
         }
         if(!l.opModeIsActive())
             Finish();
-        while(colorSensorBottom.red() < sensor && colorSensorBottom.blue() < sensor && colorSensorBottom.alpha() < sensor && l.opModeIsActive()){
+        while(colorSensorBottom.alpha() < sensor && l.opModeIsActive()){
             Housekeeping();
             SetDrivePower(power);
         }

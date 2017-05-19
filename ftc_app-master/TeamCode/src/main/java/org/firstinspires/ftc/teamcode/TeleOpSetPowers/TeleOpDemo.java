@@ -20,7 +20,6 @@ import java.util.concurrent.TimeUnit;
  * Created by Ethan Schaffer on 10/31/2016.
  */
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Demo Op", group="TeleOp")
-@Disabled
 public class TeleOpDemo extends OpMode {
     public double rpmTarget = 1800;
     public static final double LEFT_SERVO_OFF_VALUE = .3;
